@@ -23,7 +23,7 @@ export default function Home() {
   const [agents, setAgents] = useState<Agent[]>([]);
   const [namespaces, setNamespaces] = useState<Namespace[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [resolveAddress, setResolveAddress] = useState("research@jidoo");
+  const [resolveAddress, setResolveAddress] = useState("");
   const [resolveResult, setResolveResult] = useState<ResolutionResponse | null>(null);
   const [isResolving, setIsResolving] = useState(false);
   const [resolveError, setResolveError] = useState("");
@@ -34,7 +34,7 @@ export default function Home() {
 
   // Modal State
   const [showModal, setShowModal] = useState(false);
-  const [newNamespace, setNewNamespace] = useState("jidoo");
+  const [newNamespace, setNewNamespace] = useState("");
   const [newAlias, setNewAlias] = useState("");
   const [newDisplayName, setNewDisplayName] = useState("");
   const [newDescription, setNewDescription] = useState("");
@@ -51,8 +51,19 @@ export default function Home() {
       ]);
       const dataAgents = await resAgents.json();
       const dataNs = await resNs.json();
-      if (dataAgents.agents) setAgents(dataAgents.agents);
-      if (dataNs.namespaces) setNamespaces(dataNs.namespaces);
+      if (dataNs.namespaces) {
+        setNamespaces(dataNs.namespaces);
+        if (dataNs.namespaces.length > 0 && !newNamespace) {
+          setNewNamespace(dataNs.namespaces[0].slug);
+        }
+      }
+      if (dataAgents.agents) {
+        setAgents(dataAgents.agents);
+        if (dataAgents.agents.length > 0 && !resolveAddress) {
+          setResolveAddress(dataAgents.agents[0].primaryAddress);
+          handleResolve(dataAgents.agents[0].primaryAddress);
+        }
+      }
     } catch (e) {
       console.error(e);
     }
@@ -90,11 +101,22 @@ export default function Home() {
     setFormError("");
 
     try {
+      const selectedNs = (newNamespace || "aid").toLowerCase().replace(/^@/, "");
+      // If namespace doesn't exist yet, auto-create it
+      const nsExists = namespaces.some((ns) => ns.slug.toLowerCase() === selectedNs);
+      if (!nsExists) {
+        await fetch("/api/v1/namespaces", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ slug: selectedNs, name: `${selectedNs} Namespace` }),
+        });
+      }
+
       const res = await fetch("/api/v1/agents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          namespace: newNamespace,
+          namespace: selectedNs,
           alias: newAlias,
           displayName: newDisplayName,
           description: newDescription,
@@ -114,8 +136,8 @@ export default function Home() {
         setNewEndpoint("");
         fetchData();
         // Automatically resolve the newly registered agent
-        setResolveAddress(`${newAlias}@${newNamespace}`);
-        handleResolve(`${newAlias}@${newNamespace}`);
+        setResolveAddress(`${newAlias}@${selectedNs}`);
+        handleResolve(`${newAlias}@${selectedNs}`);
       }
     } catch (err: any) {
       setFormError(err.message || "Error submitting form");
@@ -185,7 +207,7 @@ export default function Home() {
 
             <div className="mt-4">
               <label className="block text-xs font-medium text-slate-400 mb-1">
-                Enter Agent Address (e.g. research@jidoo)
+                Enter Agent Address (e.g. registry@aid)
               </label>
               <div className="flex gap-2">
                 <input
@@ -207,28 +229,29 @@ export default function Home() {
                   )}
                 </button>
               </div>
-              <div className="flex gap-2 mt-2">
-                <span className="text-xs text-slate-500">Quick tests:</span>
-                <button
-                  onClick={() => {
-                    setResolveAddress("research@jidoo");
-                    handleResolve("research@jidoo");
-                  }}
-                  className="text-xs text-indigo-400 hover:underline font-mono"
-                >
-                  research@jidoo
-                </button>
-                <span className="text-xs text-slate-600">|</span>
-                <button
-                  onClick={() => {
-                    setResolveAddress("support@samsung");
-                    handleResolve("support@samsung");
-                  }}
-                  className="text-xs text-indigo-400 hover:underline font-mono"
-                >
-                  support@samsung
-                </button>
-              </div>
+              {agents.length > 0 ? (
+                <div className="flex gap-2 mt-2 items-center flex-wrap">
+                  <span className="text-xs text-slate-500">Quick tests:</span>
+                  {agents.slice(0, 3).map((a, idx) => (
+                    <span key={a.id} className="inline-flex items-center gap-2">
+                      {idx > 0 && <span className="text-xs text-slate-600">|</span>}
+                      <button
+                        onClick={() => {
+                          setResolveAddress(a.primaryAddress);
+                          handleResolve(a.primaryAddress);
+                        }}
+                        className="text-xs text-indigo-400 hover:underline font-mono"
+                      >
+                        {a.primaryAddress}
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-slate-500 mt-2">
+                  No agents registered yet. Register your first agent to begin!
+                </p>
+              )}
             </div>
 
             {/* Resolve Result View */}
@@ -236,6 +259,12 @@ export default function Home() {
               <div className="mt-4 p-3 rounded-lg bg-red-950/40 border border-red-800/50 flex items-start gap-2 text-red-300 text-xs">
                 <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                 <div>{resolveError}</div>
+              </div>
+            )}
+
+            {!resolveResult && !resolveError && !isResolving && (
+              <div className="mt-4 p-6 rounded-lg bg-slate-900/40 border border-dashed border-slate-800 text-center text-xs text-slate-500">
+                Enter an address above or select an agent from the catalog to resolve its verifiable identity passport.
               </div>
             )}
 
@@ -363,6 +392,11 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+              {namespaces.length === 0 && (
+                <div className="py-4 text-center text-xs text-slate-500">
+                  No claimed namespaces yet.
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -464,18 +498,31 @@ export default function Home() {
             <form onSubmit={handleRegisterAgent} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Namespace</label>
-                  <select
-                    value={newNamespace}
-                    onChange={(e) => setNewNamespace(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                  >
-                    {namespaces.map((ns) => (
-                      <option key={ns.slug} value={ns.slug}>
-                        @{ns.slug}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">
+                    Namespace (@slug)
+                  </label>
+                  {namespaces.length > 0 ? (
+                    <select
+                      value={newNamespace}
+                      onChange={(e) => setNewNamespace(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    >
+                      {namespaces.map((ns) => (
+                        <option key={ns.id} value={ns.slug}>
+                          @{ns.slug}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. aid"
+                      value={newNamespace}
+                      onChange={(e) => setNewNamespace(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    />
+                  )}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-400 mb-1">Agent Alias</label>

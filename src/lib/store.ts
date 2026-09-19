@@ -8,102 +8,13 @@ import {
 } from "./ulid";
 import crypto from "crypto";
 
-// Initial Demo Seed Data
-const initialNamespaces: Namespace[] = [
-  {
-    id: "ns_01K72M8KQ4JIDOO",
-    slug: "jidoo",
-    name: "Jidoo Autonomous Systems",
-    domain: "jidoo.net",
-    status: "CLAIMED",
-    isVerified: true,
-    verifiedAt: "2026-09-01T10:00:00Z",
-    createdAt: "2026-09-01T10:00:00Z",
-    updatedAt: "2026-09-01T10:00:00Z",
-  },
-  {
-    id: "ns_01K72M8KQ4SAMSUNG",
-    slug: "samsung",
-    name: "Samsung Electronics AI",
-    domain: "samsung.com",
-    status: "CLAIMED",
-    isVerified: true,
-    verifiedAt: "2026-09-05T12:00:00Z",
-    createdAt: "2026-09-05T12:00:00Z",
-    updatedAt: "2026-09-05T12:00:00Z",
-  },
-];
-
-const initialAgents: Agent[] = [
-  {
-    id: "aid_01K72M8KQ4A7F901",
-    namespaceId: "ns_01K72M8KQ4JIDOO",
-    namespaceSlug: "jidoo",
-    defaultAlias: "research",
-    displayName: "Technology Research Agent",
-    description: "Deep web intelligence, paper synthesis, and patent search agent.",
-    visibility: "PUBLIC",
-    status: "ACTIVE",
-    primaryAddress: "research@jidoo",
-    endpoints: [
-      {
-        id: "ep_01K72M8KQ4EP01",
-        agentId: "aid_01K72M8KQ4A7F901",
-        protocol: "a2a",
-        url: "https://agent.jidoo.net/a2a",
-        isPrimary: true,
-        isActive: true,
-        createdAt: "2026-09-01T10:00:00Z",
-      },
-      {
-        id: "ep_01K72M8KQ4EP02",
-        agentId: "aid_01K72M8KQ4A7F901",
-        protocol: "mcp",
-        url: "https://agent.jidoo.net/mcp",
-        isPrimary: false,
-        isActive: true,
-        createdAt: "2026-09-01T10:00:00Z",
-      },
-    ],
-    publicKey: "ed25519:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
-    isDomainVerified: true,
-    isKeyVerified: true,
-    createdAt: "2026-09-01T10:00:00Z",
-    updatedAt: "2026-09-01T10:00:00Z",
-  },
-  {
-    id: "aid_01K72M8KQ4A7F902",
-    namespaceId: "ns_01K72M8KQ4SAMSUNG",
-    namespaceSlug: "samsung",
-    defaultAlias: "support",
-    displayName: "Customer Support Automation",
-    description: "Global 24/7 technical customer support routing agent.",
-    visibility: "PUBLIC",
-    status: "ACTIVE",
-    primaryAddress: "support@samsung",
-    endpoints: [
-      {
-        id: "ep_01K72M8KQ4EP03",
-        agentId: "aid_01K72M8KQ4A7F902",
-        protocol: "a2a",
-        url: "https://support-agent.samsung.com/v1/a2a",
-        isPrimary: true,
-        isActive: true,
-        createdAt: "2026-09-05T12:00:00Z",
-      },
-    ],
-    publicKey: "ed25519:8a93b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9123",
-    isDomainVerified: true,
-    isKeyVerified: true,
-    createdAt: "2026-09-05T12:00:00Z",
-    updatedAt: "2026-09-05T12:00:00Z",
-  },
-];
-
-// Global in-memory cache for seamless local testing
-const globalStore = {
-  namespaces: [...initialNamespaces],
-  agents: [...initialAgents],
+// Pure, clean fallback store (empty by default)
+const globalStore: {
+  namespaces: Namespace[];
+  agents: Agent[];
+} = {
+  namespaces: [],
+  agents: [],
 };
 
 export class AIDStore {
@@ -122,21 +33,28 @@ export class AIDStore {
   static async getNamespaces(): Promise<Namespace[]> {
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      const { data, error } = await supabase.from("aid_namespaces").select("*");
-      if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
-          id: d.id,
-          slug: d.slug,
-          name: d.name,
-          ownerId: d.owner_id,
-          domain: d.domain,
-          status: d.status,
-          isVerified: d.is_verified,
-          verifiedAt: d.verified_at,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
+      const { data, error } = await supabase
+        .from("aid_namespaces")
+        .select("*")
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.error("Supabase error fetching namespaces:", error);
+        return [];
       }
+
+      return (data || []).map((d: any) => ({
+        id: d.id,
+        slug: d.slug,
+        name: d.name,
+        ownerId: d.owner_id,
+        domain: d.domain,
+        status: d.status,
+        isVerified: d.is_verified,
+        verifiedAt: d.verified_at,
+        createdAt: d.created_at,
+        updatedAt: d.updated_at,
+      }));
     }
     return globalStore.namespaces;
   }
@@ -145,25 +63,26 @@ export class AIDStore {
     const normalized = slug.replace(/^@/, "").toLowerCase();
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("aid_namespaces")
         .select("*")
         .eq("slug", normalized)
         .single();
-      if (data) {
-        return {
-          id: data.id,
-          slug: data.slug,
-          name: data.name,
-          ownerId: data.owner_id,
-          domain: data.domain,
-          status: data.status,
-          isVerified: data.is_verified,
-          verifiedAt: data.verified_at,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-        };
-      }
+
+      if (error || !data) return null;
+
+      return {
+        id: data.id,
+        slug: data.slug,
+        name: data.name,
+        ownerId: data.owner_id,
+        domain: data.domain,
+        status: data.status,
+        isVerified: data.is_verified,
+        verifiedAt: data.verified_at,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      };
     }
     return (
       globalStore.namespaces.find((ns) => ns.slug.toLowerCase() === normalized) || null
@@ -194,7 +113,7 @@ export class AIDStore {
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      await supabase.from("aid_namespaces").insert({
+      const { error } = await supabase.from("aid_namespaces").insert({
         id: newNs.id,
         slug: newNs.slug,
         name: newNs.name,
@@ -204,9 +123,13 @@ export class AIDStore {
         created_at: newNs.createdAt,
         updated_at: newNs.updatedAt,
       });
+      if (error) {
+        throw new Error(`Failed to save namespace to Supabase: ${error.message}`);
+      }
+    } else {
+      globalStore.namespaces.push(newNs);
     }
 
-    globalStore.namespaces.push(newNs);
     return newNs;
   }
 
@@ -226,44 +149,47 @@ export class AIDStore {
         )
         .order("created_at", { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        return data.map((d: any) => {
-          const endpoints: AgentEndpoint[] = (d.aid_agent_endpoints || []).map(
-            (ep: any) => ({
-              id: ep.id,
-              agentId: ep.agent_id,
-              protocol: ep.protocol,
-              url: ep.url,
-              isPrimary: ep.is_primary,
-              isActive: ep.is_active,
-              createdAt: ep.created_at,
-            })
-          );
-          const primaryKey = (d.aid_agent_keys || []).find(
-            (k: any) => k.is_primary && !k.is_revoked
-          );
-          const nsSlug = d.aid_namespaces?.slug || d.namespace_id;
-          const isDomainVerified = !!d.aid_namespaces?.is_verified;
-
-          return {
-            id: d.id,
-            namespaceId: d.namespace_id,
-            namespaceSlug: nsSlug,
-            defaultAlias: d.default_alias,
-            displayName: d.display_name,
-            description: d.description,
-            visibility: d.visibility,
-            status: d.status,
-            primaryAddress: `${d.default_alias}@${nsSlug}`,
-            endpoints,
-            publicKey: primaryKey?.public_key,
-            isDomainVerified,
-            isKeyVerified: !!primaryKey,
-            createdAt: d.created_at,
-            updatedAt: d.updated_at,
-          };
-        });
+      if (error) {
+        console.error("Supabase error fetching agents:", error);
+        return [];
       }
+
+      return (data || []).map((d: any) => {
+        const endpoints: AgentEndpoint[] = (d.aid_agent_endpoints || []).map(
+          (ep: any) => ({
+            id: ep.id,
+            agentId: ep.agent_id,
+            protocol: ep.protocol,
+            url: ep.url,
+            isPrimary: ep.is_primary,
+            isActive: ep.is_active,
+            createdAt: ep.created_at,
+          })
+        );
+        const primaryKey = (d.aid_agent_keys || []).find(
+          (k: any) => k.is_primary && !k.is_revoked
+        );
+        const nsSlug = d.aid_namespaces?.slug || d.namespace_id;
+        const isDomainVerified = !!d.aid_namespaces?.is_verified;
+
+        return {
+          id: d.id,
+          namespaceId: d.namespace_id,
+          namespaceSlug: nsSlug,
+          defaultAlias: d.default_alias,
+          displayName: d.display_name,
+          description: d.description,
+          visibility: d.visibility,
+          status: d.status,
+          primaryAddress: `${d.default_alias}@${nsSlug}`,
+          endpoints,
+          publicKey: primaryKey?.public_key,
+          isDomainVerified,
+          isKeyVerified: !!primaryKey,
+          createdAt: d.created_at,
+          updatedAt: d.updated_at,
+        };
+      });
     }
     return globalStore.agents;
   }
@@ -271,7 +197,7 @@ export class AIDStore {
   static async findAgentByAID(aid: string): Promise<Agent | null> {
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("aid_agents")
         .select(
           `
@@ -284,40 +210,40 @@ export class AIDStore {
         .eq("id", aid)
         .single();
 
-      if (data) {
-        const endpoints: AgentEndpoint[] = (data.aid_agent_endpoints || []).map(
-          (ep: any) => ({
-            id: ep.id,
-            agentId: ep.agent_id,
-            protocol: ep.protocol,
-            url: ep.url,
-            isPrimary: ep.is_primary,
-            isActive: ep.is_active,
-            createdAt: ep.created_at,
-          })
-        );
-        const primaryKey = (data.aid_agent_keys || []).find(
-          (k: any) => k.is_primary && !k.is_revoked
-        );
-        const nsSlug = data.aid_namespaces?.slug || data.namespace_id;
-        return {
-          id: data.id,
-          namespaceId: data.namespace_id,
-          namespaceSlug: nsSlug,
-          defaultAlias: data.default_alias,
-          displayName: data.display_name,
-          description: data.description,
-          visibility: data.visibility,
-          status: data.status,
-          primaryAddress: `${data.default_alias}@${nsSlug}`,
-          endpoints,
-          publicKey: primaryKey?.public_key,
-          isDomainVerified: !!data.aid_namespaces?.is_verified,
-          isKeyVerified: !!primaryKey,
-          createdAt: data.created_at,
-          updatedAt: data.updated_at,
-        };
-      }
+      if (error || !data) return null;
+
+      const endpoints: AgentEndpoint[] = (data.aid_agent_endpoints || []).map(
+        (ep: any) => ({
+          id: ep.id,
+          agentId: ep.agent_id,
+          protocol: ep.protocol,
+          url: ep.url,
+          isPrimary: ep.is_primary,
+          isActive: ep.is_active,
+          createdAt: ep.created_at,
+        })
+      );
+      const primaryKey = (data.aid_agent_keys || []).find(
+        (k: any) => k.is_primary && !k.is_revoked
+      );
+      const nsSlug = data.aid_namespaces?.slug || data.namespace_id;
+      return {
+        id: data.id,
+        namespaceId: data.namespace_id,
+        namespaceSlug: nsSlug,
+        defaultAlias: data.default_alias,
+        displayName: data.display_name,
+        description: data.description,
+        visibility: data.visibility,
+        status: data.status,
+        primaryAddress: `${data.default_alias}@${nsSlug}`,
+        endpoints,
+        publicKey: primaryKey?.public_key,
+        isDomainVerified: !!data.aid_namespaces?.is_verified,
+        isKeyVerified: !!primaryKey,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      };
     }
     return globalStore.agents.find((a) => a.id === aid) || null;
   }
@@ -374,9 +300,11 @@ export class AIDStore {
           };
         }
       }
+      // If Supabase is connected and address not found in DB, return null
+      return null;
     }
 
-    // In-memory fallback
+    // In-memory fallback (only when offline / no Supabase env)
     const agent = globalStore.agents.find(
       (a) =>
         a.primaryAddress.toLowerCase() === `${aliasPart}@${namespacePart}` ||
@@ -437,14 +365,12 @@ export class AIDStore {
   }): Promise<Agent> {
     const ns = await this.findNamespaceBySlug(params.namespaceSlug);
     if (!ns) {
-      throw new Error(`Namespace @${params.namespaceSlug} does not exist.`);
+      throw new Error(`Namespace @${params.namespaceSlug} does not exist. Please create the namespace first.`);
     }
 
     const fullAddress = `${params.alias.toLowerCase()}@${ns.slug}`;
-    const duplicate = globalStore.agents.find(
-      (a) => a.primaryAddress.toLowerCase() === fullAddress
-    );
-    if (duplicate) {
+    const existing = await this.resolveAddress(fullAddress);
+    if (existing) {
       throw new Error(`Address ${fullAddress} is already registered.`);
     }
 
@@ -484,7 +410,7 @@ export class AIDStore {
     const supabase = this.getSupabaseClient();
     if (supabase) {
       // 1. Insert Agent
-      await supabase.from("aid_agents").insert({
+      const { error: agentErr } = await supabase.from("aid_agents").insert({
         id: newAgent.id,
         namespace_id: ns.id,
         default_alias: newAgent.defaultAlias,
@@ -495,6 +421,7 @@ export class AIDStore {
         created_at: newAgent.createdAt,
         updated_at: newAgent.updatedAt,
       });
+      if (agentErr) throw new Error(`Supabase error inserting agent: ${agentErr.message}`);
 
       // 2. Insert Alias
       await supabase.from("aid_agent_aliases").insert({
@@ -545,9 +472,10 @@ export class AIDStore {
         payload: { address: fullAddress, endpoint: params.endpointUrl },
         event_hash: eventHash,
       });
+    } else {
+      globalStore.agents.unshift(newAgent);
     }
 
-    globalStore.agents.unshift(newAgent);
     return newAgent;
   }
 }
