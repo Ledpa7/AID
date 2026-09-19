@@ -1,10 +1,11 @@
 -- ==========================================
 -- AID (AI Agent Identity Infrastructure) Schema
 -- PostgreSQL / Supabase Migration
+-- Tables are prefixed with 'aid_' to coexist cleanly in shared Supabase projects
 -- ==========================================
 
 -- 1. Namespaces (@jidoo, @samsung, etc.)
-CREATE TABLE IF NOT EXISTS namespaces (
+CREATE TABLE IF NOT EXISTS aid_namespaces (
     id TEXT PRIMARY KEY,                       -- e.g., 'ns_01K72M...' or slug
     slug TEXT UNIQUE NOT NULL,                  -- e.g., 'jidoo' (used as @jidoo)
     name TEXT NOT NULL,                         -- Human-readable name: 'Jidoo Lab'
@@ -18,9 +19,9 @@ CREATE TABLE IF NOT EXISTS namespaces (
 );
 
 -- 2. Agents (Core Permanent Identity)
-CREATE TABLE IF NOT EXISTS agents (
+CREATE TABLE IF NOT EXISTS aid_agents (
     id TEXT PRIMARY KEY,                       -- Permanent AID: 'aid_01K72M8KQ4A7F'
-    namespace_id TEXT NOT NULL REFERENCES namespaces(id) ON DELETE RESTRICT,
+    namespace_id TEXT NOT NULL REFERENCES aid_namespaces(id) ON DELETE RESTRICT,
     default_alias TEXT NOT NULL,                -- e.g., 'research' -> 'research@jidoo'
     display_name TEXT NOT NULL,                 -- e.g., 'Technology Research Agent'
     description TEXT,                           -- Description / Capabilities summary
@@ -31,10 +32,10 @@ CREATE TABLE IF NOT EXISTS agents (
 );
 
 -- 3. Agent Aliases (Human-readable Addresses)
-CREATE TABLE IF NOT EXISTS agent_aliases (
+CREATE TABLE IF NOT EXISTS aid_agent_aliases (
     id TEXT PRIMARY KEY,
-    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
-    namespace_id TEXT NOT NULL REFERENCES namespaces(id) ON DELETE CASCADE,
+    agent_id TEXT NOT NULL REFERENCES aid_agents(id) ON DELETE CASCADE,
+    namespace_id TEXT NOT NULL REFERENCES aid_namespaces(id) ON DELETE CASCADE,
     alias TEXT NOT NULL,                        -- e.g., 'research'
     full_address TEXT UNIQUE NOT NULL,          -- e.g., 'research@jidoo'
     is_primary BOOLEAN NOT NULL DEFAULT TRUE,
@@ -43,9 +44,9 @@ CREATE TABLE IF NOT EXISTS agent_aliases (
 );
 
 -- 4. Agent Endpoints (A2A, MCP, REST communication targets)
-CREATE TABLE IF NOT EXISTS agent_endpoints (
+CREATE TABLE IF NOT EXISTS aid_agent_endpoints (
     id TEXT PRIMARY KEY,
-    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    agent_id TEXT NOT NULL REFERENCES aid_agents(id) ON DELETE CASCADE,
     protocol TEXT NOT NULL,                     -- 'a2a', 'mcp', 'rest'
     url TEXT NOT NULL,                          -- e.g., 'https://agent.example.com/a2a'
     is_primary BOOLEAN NOT NULL DEFAULT TRUE,
@@ -55,9 +56,9 @@ CREATE TABLE IF NOT EXISTS agent_endpoints (
 );
 
 -- 5. Agent Cards (A2A Specification Snapshots)
-CREATE TABLE IF NOT EXISTS agent_cards (
+CREATE TABLE IF NOT EXISTS aid_agent_cards (
     id TEXT PRIMARY KEY,
-    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    agent_id TEXT NOT NULL REFERENCES aid_agents(id) ON DELETE CASCADE,
     source_url TEXT NOT NULL,                   -- 'https://example.com/.well-known/agent-card.json'
     snapshot_json JSONB NOT NULL,               -- Fetched Card payload
     sha256_hash TEXT NOT NULL,                  -- Content integrity hash
@@ -66,9 +67,9 @@ CREATE TABLE IF NOT EXISTS agent_cards (
 );
 
 -- 6. Agent Public Keys (Ed25519 Cryptographic Identity)
-CREATE TABLE IF NOT EXISTS agent_keys (
+CREATE TABLE IF NOT EXISTS aid_agent_keys (
     id TEXT PRIMARY KEY,
-    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    agent_id TEXT NOT NULL REFERENCES aid_agents(id) ON DELETE CASCADE,
     key_type TEXT NOT NULL DEFAULT 'Ed25519',
     public_key TEXT NOT NULL,                   -- Base64 or Hex public key
     is_primary BOOLEAN NOT NULL DEFAULT TRUE,
@@ -78,9 +79,9 @@ CREATE TABLE IF NOT EXISTS agent_keys (
 );
 
 -- 7. Identity Events (Append-only Audit Log / Hash Chain)
-CREATE TABLE IF NOT EXISTS identity_events (
+CREATE TABLE IF NOT EXISTS aid_identity_events (
     id BIGSERIAL PRIMARY KEY,
-    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    agent_id TEXT NOT NULL REFERENCES aid_agents(id) ON DELETE CASCADE,
     event_type TEXT NOT NULL,                   -- AGENT_CREATED, KEY_ROTATED, ENDPOINT_UPDATED, VERIFIED
     payload JSONB NOT NULL,
     prev_hash TEXT,
@@ -89,9 +90,9 @@ CREATE TABLE IF NOT EXISTS identity_events (
 );
 
 -- 8. Domain Verifications (DNS TXT based verification)
-CREATE TABLE IF NOT EXISTS domain_verifications (
+CREATE TABLE IF NOT EXISTS aid_domain_verifications (
     id TEXT PRIMARY KEY,
-    namespace_id TEXT NOT NULL REFERENCES namespaces(id) ON DELETE CASCADE,
+    namespace_id TEXT NOT NULL REFERENCES aid_namespaces(id) ON DELETE CASCADE,
     domain TEXT NOT NULL,
     challenge_token TEXT NOT NULL,              -- e.g., 'aid-verification=01K72...'
     status TEXT NOT NULL DEFAULT 'PENDING',     -- PENDING, VERIFIED, FAILED
@@ -100,7 +101,7 @@ CREATE TABLE IF NOT EXISTS domain_verifications (
 );
 
 -- 9. API Keys (Access control for Developer Console & Programmatic APIs)
-CREATE TABLE IF NOT EXISTS api_keys (
+CREATE TABLE IF NOT EXISTS aid_api_keys (
     id TEXT PRIMARY KEY,
     owner_id UUID,
     name TEXT NOT NULL,
@@ -112,7 +113,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
 );
 
 -- Create Indexes for High-Performance Resolution
-CREATE INDEX IF NOT EXISTS idx_agent_aliases_full_address ON agent_aliases(full_address);
-CREATE INDEX IF NOT EXISTS idx_agents_namespace ON agents(namespace_id);
-CREATE INDEX IF NOT EXISTS idx_endpoints_agent ON agent_endpoints(agent_id);
-CREATE INDEX IF NOT EXISTS idx_identity_events_agent ON identity_events(agent_id);
+CREATE INDEX IF NOT EXISTS idx_aid_agent_aliases_full_address ON aid_agent_aliases(full_address);
+CREATE INDEX IF NOT EXISTS idx_aid_agents_namespace ON aid_agents(namespace_id);
+CREATE INDEX IF NOT EXISTS idx_aid_endpoints_agent ON aid_agent_endpoints(agent_id);
+CREATE INDEX IF NOT EXISTS idx_aid_identity_events_agent ON aid_identity_events(agent_id);

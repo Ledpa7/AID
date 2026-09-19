@@ -122,7 +122,7 @@ export class AIDStore {
   static async getNamespaces(): Promise<Namespace[]> {
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      const { data, error } = await supabase.from("namespaces").select("*");
+      const { data, error } = await supabase.from("aid_namespaces").select("*");
       if (!error && data && data.length > 0) {
         return data.map((d: any) => ({
           id: d.id,
@@ -146,7 +146,7 @@ export class AIDStore {
     const supabase = this.getSupabaseClient();
     if (supabase) {
       const { data } = await supabase
-        .from("namespaces")
+        .from("aid_namespaces")
         .select("*")
         .eq("slug", normalized)
         .single();
@@ -194,7 +194,7 @@ export class AIDStore {
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      await supabase.from("namespaces").insert({
+      await supabase.from("aid_namespaces").insert({
         id: newNs.id,
         slug: newNs.slug,
         name: newNs.name,
@@ -215,20 +215,20 @@ export class AIDStore {
     const supabase = this.getSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
-        .from("agents")
+        .from("aid_agents")
         .select(
           `
           *,
-          namespaces(slug, is_verified),
-          agent_endpoints(*),
-          agent_keys(*)
+          aid_namespaces(slug, is_verified),
+          aid_agent_endpoints(*),
+          aid_agent_keys(*)
         `
         )
         .order("created_at", { ascending: false });
 
       if (!error && data && data.length > 0) {
         return data.map((d: any) => {
-          const endpoints: AgentEndpoint[] = (d.agent_endpoints || []).map(
+          const endpoints: AgentEndpoint[] = (d.aid_agent_endpoints || []).map(
             (ep: any) => ({
               id: ep.id,
               agentId: ep.agent_id,
@@ -239,11 +239,11 @@ export class AIDStore {
               createdAt: ep.created_at,
             })
           );
-          const primaryKey = (d.agent_keys || []).find(
+          const primaryKey = (d.aid_agent_keys || []).find(
             (k: any) => k.is_primary && !k.is_revoked
           );
-          const nsSlug = d.namespaces?.slug || d.namespace_id;
-          const isDomainVerified = !!d.namespaces?.is_verified;
+          const nsSlug = d.aid_namespaces?.slug || d.namespace_id;
+          const isDomainVerified = !!d.aid_namespaces?.is_verified;
 
           return {
             id: d.id,
@@ -272,20 +272,20 @@ export class AIDStore {
     const supabase = this.getSupabaseClient();
     if (supabase) {
       const { data } = await supabase
-        .from("agents")
+        .from("aid_agents")
         .select(
           `
           *,
-          namespaces(slug, is_verified),
-          agent_endpoints(*),
-          agent_keys(*)
+          aid_namespaces(slug, is_verified),
+          aid_agent_endpoints(*),
+          aid_agent_keys(*)
         `
         )
         .eq("id", aid)
         .single();
 
       if (data) {
-        const endpoints: AgentEndpoint[] = (data.agent_endpoints || []).map(
+        const endpoints: AgentEndpoint[] = (data.aid_agent_endpoints || []).map(
           (ep: any) => ({
             id: ep.id,
             agentId: ep.agent_id,
@@ -296,10 +296,10 @@ export class AIDStore {
             createdAt: ep.created_at,
           })
         );
-        const primaryKey = (data.agent_keys || []).find(
+        const primaryKey = (data.aid_agent_keys || []).find(
           (k: any) => k.is_primary && !k.is_revoked
         );
-        const nsSlug = data.namespaces?.slug || data.namespace_id;
+        const nsSlug = data.aid_namespaces?.slug || data.namespace_id;
         return {
           id: data.id,
           namespaceId: data.namespace_id,
@@ -312,7 +312,7 @@ export class AIDStore {
           primaryAddress: `${data.default_alias}@${nsSlug}`,
           endpoints,
           publicKey: primaryKey?.public_key,
-          isDomainVerified: !!data.namespaces?.is_verified,
+          isDomainVerified: !!data.aid_namespaces?.is_verified,
           isKeyVerified: !!primaryKey,
           createdAt: data.created_at,
           updatedAt: data.updated_at,
@@ -329,9 +329,9 @@ export class AIDStore {
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      // 1. Check agent_aliases table
+      // 1. Check aid_agent_aliases table
       const { data: aliasData } = await supabase
-        .from("agent_aliases")
+        .from("aid_agent_aliases")
         .select("agent_id")
         .eq("full_address", `${aliasPart}@${namespacePart}`)
         .eq("is_active", true)
@@ -484,7 +484,7 @@ export class AIDStore {
     const supabase = this.getSupabaseClient();
     if (supabase) {
       // 1. Insert Agent
-      await supabase.from("agents").insert({
+      await supabase.from("aid_agents").insert({
         id: newAgent.id,
         namespace_id: ns.id,
         default_alias: newAgent.defaultAlias,
@@ -497,7 +497,7 @@ export class AIDStore {
       });
 
       // 2. Insert Alias
-      await supabase.from("agent_aliases").insert({
+      await supabase.from("aid_agent_aliases").insert({
         id: aliasId,
         agent_id: newAgent.id,
         namespace_id: ns.id,
@@ -509,7 +509,7 @@ export class AIDStore {
       });
 
       // 3. Insert Endpoint
-      await supabase.from("agent_endpoints").insert({
+      await supabase.from("aid_agent_endpoints").insert({
         id: endpointId,
         agent_id: newAgent.id,
         protocol: params.protocol || "a2a",
@@ -522,7 +522,7 @@ export class AIDStore {
 
       // 4. Insert Public Key (if provided)
       if (params.publicKey) {
-        await supabase.from("agent_keys").insert({
+        await supabase.from("aid_agent_keys").insert({
           id: generateKeyId(),
           agent_id: newAgent.id,
           key_type: "Ed25519",
@@ -539,7 +539,7 @@ export class AIDStore {
         .update(`${newAgent.id}:AGENT_CREATED:${newAgent.createdAt}`)
         .digest("hex");
 
-      await supabase.from("identity_events").insert({
+      await supabase.from("aid_identity_events").insert({
         agent_id: newAgent.id,
         event_type: "AGENT_CREATED",
         payload: { address: fullAddress, endpoint: params.endpointUrl },
