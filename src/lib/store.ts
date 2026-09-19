@@ -1,6 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
-import { Namespace, Agent, ResolutionResponse } from "./types";
-import { generateAID, generateEndpointId, generateNamespaceId } from "./ulid";
+import { Namespace, Agent, ResolutionResponse, AgentEndpoint } from "./types";
+import {
+  generateAID,
+  generateEndpointId,
+  generateNamespaceId,
+  generateKeyId,
+} from "./ulid";
+import crypto from "crypto";
 
 // Initial Demo Seed Data
 const initialNamespaces: Namespace[] = [
@@ -103,7 +109,9 @@ const globalStore = {
 export class AIDStore {
   private static getSupabaseClient() {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const key =
+      process.env.SUPABASE_SERVICE_ROLE_KEY ||
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     if (url && key && !url.includes("your-project")) {
       return createClient(url, key);
     }
@@ -115,7 +123,20 @@ export class AIDStore {
     const supabase = this.getSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase.from("namespaces").select("*");
-      if (!error && data) return data as Namespace[];
+      if (!error && data && data.length > 0) {
+        return data.map((d: any) => ({
+          id: d.id,
+          slug: d.slug,
+          name: d.name,
+          ownerId: d.owner_id,
+          domain: d.domain,
+          status: d.status,
+          isVerified: d.is_verified,
+          verifiedAt: d.verified_at,
+          createdAt: d.created_at,
+          updatedAt: d.updated_at,
+        }));
+      }
     }
     return globalStore.namespaces;
   }
@@ -129,12 +150,31 @@ export class AIDStore {
         .select("*")
         .eq("slug", normalized)
         .single();
-      if (data) return data as Namespace;
+      if (data) {
+        return {
+          id: data.id,
+          slug: data.slug,
+          name: data.name,
+          ownerId: data.owner_id,
+          domain: data.domain,
+          status: data.status,
+          isVerified: data.is_verified,
+          verifiedAt: data.verified_at,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        };
+      }
     }
-    return globalStore.namespaces.find((ns) => ns.slug.toLowerCase() === normalized) || null;
+    return (
+      globalStore.namespaces.find((ns) => ns.slug.toLowerCase() === normalized) || null
+    );
   }
 
-  static async createNamespace(slug: string, name: string, domain?: string): Promise<Namespace> {
+  static async createNamespace(
+    slug: string,
+    name: string,
+    domain?: string
+  ): Promise<Namespace> {
     const normalized = slug.replace(/^@/, "").toLowerCase();
     const existing = await this.findNamespaceBySlug(normalized);
     if (existing) {
@@ -154,7 +194,16 @@ export class AIDStore {
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      await supabase.from("namespaces").insert(newNs);
+      await supabase.from("namespaces").insert({
+        id: newNs.id,
+        slug: newNs.slug,
+        name: newNs.name,
+        domain: newNs.domain,
+        status: newNs.status,
+        is_verified: newNs.isVerified,
+        created_at: newNs.createdAt,
+        updated_at: newNs.updatedAt,
+      });
     }
 
     globalStore.namespaces.push(newNs);
@@ -165,8 +214,56 @@ export class AIDStore {
   static async getAgents(): Promise<Agent[]> {
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      const { data } = await supabase.from("agents").select("*, agent_endpoints(*)");
-      if (data) return data as Agent[];
+      const { data, error } = await supabase
+        .from("agents")
+        .select(
+          `
+          *,
+          namespaces(slug, is_verified),
+          agent_endpoints(*),
+          agent_keys(*)
+        `
+        )
+        .order("created_at", { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return data.map((d: any) => {
+          const endpoints: AgentEndpoint[] = (d.agent_endpoints || []).map(
+            (ep: any) => ({
+              id: ep.id,
+              agentId: ep.agent_id,
+              protocol: ep.protocol,
+              url: ep.url,
+              isPrimary: ep.is_primary,
+              isActive: ep.is_active,
+              createdAt: ep.created_at,
+            })
+          );
+          const primaryKey = (d.agent_keys || []).find(
+            (k: any) => k.is_primary && !k.is_revoked
+          );
+          const nsSlug = d.namespaces?.slug || d.namespace_id;
+          const isDomainVerified = !!d.namespaces?.is_verified;
+
+          return {
+            id: d.id,
+            namespaceId: d.namespace_id,
+            namespaceSlug: nsSlug,
+            defaultAlias: d.default_alias,
+            displayName: d.display_name,
+            description: d.description,
+            visibility: d.visibility,
+            status: d.status,
+            primaryAddress: `${d.default_alias}@${nsSlug}`,
+            endpoints,
+            publicKey: primaryKey?.public_key,
+            isDomainVerified,
+            isKeyVerified: !!primaryKey,
+            createdAt: d.created_at,
+            updatedAt: d.updated_at,
+          };
+        });
+      }
     }
     return globalStore.agents;
   }
@@ -174,26 +271,124 @@ export class AIDStore {
   static async findAgentByAID(aid: string): Promise<Agent | null> {
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      const { data } = await supabase.from("agents").select("*").eq("id", aid).single();
-      if (data) return data as Agent;
+      const { data } = await supabase
+        .from("agents")
+        .select(
+          `
+          *,
+          namespaces(slug, is_verified),
+          agent_endpoints(*),
+          agent_keys(*)
+        `
+        )
+        .eq("id", aid)
+        .single();
+
+      if (data) {
+        const endpoints: AgentEndpoint[] = (data.agent_endpoints || []).map(
+          (ep: any) => ({
+            id: ep.id,
+            agentId: ep.agent_id,
+            protocol: ep.protocol,
+            url: ep.url,
+            isPrimary: ep.is_primary,
+            isActive: ep.is_active,
+            createdAt: ep.created_at,
+          })
+        );
+        const primaryKey = (data.agent_keys || []).find(
+          (k: any) => k.is_primary && !k.is_revoked
+        );
+        const nsSlug = data.namespaces?.slug || data.namespace_id;
+        return {
+          id: data.id,
+          namespaceId: data.namespace_id,
+          namespaceSlug: nsSlug,
+          defaultAlias: data.default_alias,
+          displayName: data.display_name,
+          description: data.description,
+          visibility: data.visibility,
+          status: data.status,
+          primaryAddress: `${data.default_alias}@${nsSlug}`,
+          endpoints,
+          publicKey: primaryKey?.public_key,
+          isDomainVerified: !!data.namespaces?.is_verified,
+          isKeyVerified: !!primaryKey,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        };
+      }
     }
     return globalStore.agents.find((a) => a.id === aid) || null;
   }
 
   static async resolveAddress(address: string): Promise<ResolutionResponse | null> {
-    const [aliasPart, namespacePart] = address.toLowerCase().split("@");
+    const raw = address.toLowerCase().trim();
+    const [aliasPart, namespacePart] = raw.split("@");
     if (!aliasPart || !namespacePart) return null;
 
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      // 1. Check agent_aliases table
+      const { data: aliasData } = await supabase
+        .from("agent_aliases")
+        .select("agent_id")
+        .eq("full_address", `${aliasPart}@${namespacePart}`)
+        .eq("is_active", true)
+        .single();
+
+      const targetAgentId = aliasData?.agent_id;
+      if (targetAgentId) {
+        const agent = await this.findAgentByAID(targetAgentId);
+        if (agent) {
+          const ns = await this.findNamespaceBySlug(agent.namespaceSlug);
+          const primaryEndpoint =
+            agent.endpoints.find((ep) => ep.isPrimary) || agent.endpoints[0];
+
+          return {
+            aid: agent.id,
+            address: `${aliasPart}@${namespacePart}`,
+            status: agent.status,
+            visibility: agent.visibility,
+            namespace: {
+              slug: agent.namespaceSlug,
+              domain: ns?.domain,
+              isVerified: !!ns?.isVerified,
+            },
+            endpoints: agent.endpoints.map((ep) => ({
+              protocol: ep.protocol,
+              url: ep.url,
+              isPrimary: ep.isPrimary,
+            })),
+            primaryEndpoint: primaryEndpoint
+              ? { protocol: primaryEndpoint.protocol, url: primaryEndpoint.url }
+              : undefined,
+            verification: {
+              domain: agent.isDomainVerified,
+              key: agent.isKeyVerified,
+              card: false,
+            },
+            capabilities: ["web.search", "a2a.query"],
+            publicKey: agent.publicKey,
+            resolvedAt: new Date().toISOString(),
+          };
+        }
+      }
+    }
+
+    // In-memory fallback
     const agent = globalStore.agents.find(
       (a) =>
         a.primaryAddress.toLowerCase() === `${aliasPart}@${namespacePart}` ||
-        (a.defaultAlias.toLowerCase() === aliasPart && a.namespaceSlug.toLowerCase() === namespacePart)
+        (a.defaultAlias.toLowerCase() === aliasPart &&
+          a.namespaceSlug.toLowerCase() === namespacePart)
     );
 
     if (!agent) return null;
 
     const ns = await this.findNamespaceBySlug(agent.namespaceSlug);
-    const primaryEndpoint = agent.endpoints.find((ep) => ep.isPrimary) || agent.endpoints[0];
+    const primaryEndpoint =
+      agent.endpoints.find((ep) => ep.isPrimary) || agent.endpoints[0];
 
     return {
       aid: agent.id,
@@ -254,6 +449,9 @@ export class AIDStore {
     }
 
     const aid = generateAID();
+    const endpointId = generateEndpointId();
+    const aliasId = `alias_${aid.replace("aid_", "")}`;
+
     const newAgent: Agent = {
       id: aid,
       namespaceId: ns.id,
@@ -266,7 +464,7 @@ export class AIDStore {
       primaryAddress: fullAddress,
       endpoints: [
         {
-          id: generateEndpointId(),
+          id: endpointId,
           agentId: aid,
           protocol: params.protocol || "a2a",
           url: params.endpointUrl,
@@ -282,6 +480,72 @@ export class AIDStore {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      // 1. Insert Agent
+      await supabase.from("agents").insert({
+        id: newAgent.id,
+        namespace_id: ns.id,
+        default_alias: newAgent.defaultAlias,
+        display_name: newAgent.displayName,
+        description: newAgent.description,
+        visibility: newAgent.visibility,
+        status: newAgent.status,
+        created_at: newAgent.createdAt,
+        updated_at: newAgent.updatedAt,
+      });
+
+      // 2. Insert Alias
+      await supabase.from("agent_aliases").insert({
+        id: aliasId,
+        agent_id: newAgent.id,
+        namespace_id: ns.id,
+        alias: newAgent.defaultAlias,
+        full_address: fullAddress,
+        is_primary: true,
+        is_active: true,
+        created_at: newAgent.createdAt,
+      });
+
+      // 3. Insert Endpoint
+      await supabase.from("agent_endpoints").insert({
+        id: endpointId,
+        agent_id: newAgent.id,
+        protocol: params.protocol || "a2a",
+        url: params.endpointUrl,
+        is_primary: true,
+        is_active: true,
+        created_at: newAgent.createdAt,
+        updated_at: newAgent.updatedAt,
+      });
+
+      // 4. Insert Public Key (if provided)
+      if (params.publicKey) {
+        await supabase.from("agent_keys").insert({
+          id: generateKeyId(),
+          agent_id: newAgent.id,
+          key_type: "Ed25519",
+          public_key: params.publicKey,
+          is_primary: true,
+          is_revoked: false,
+          created_at: newAgent.createdAt,
+        });
+      }
+
+      // 5. Append-only Audit Log
+      const eventHash = crypto
+        .createHash("sha256")
+        .update(`${newAgent.id}:AGENT_CREATED:${newAgent.createdAt}`)
+        .digest("hex");
+
+      await supabase.from("identity_events").insert({
+        agent_id: newAgent.id,
+        event_type: "AGENT_CREATED",
+        payload: { address: fullAddress, endpoint: params.endpointUrl },
+        event_hash: eventHash,
+      });
+    }
 
     globalStore.agents.unshift(newAgent);
     return newAgent;
