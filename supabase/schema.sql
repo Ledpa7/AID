@@ -1,0 +1,118 @@
+-- ==========================================
+-- AID (AI Agent Identity Infrastructure) Schema
+-- PostgreSQL / Supabase Migration
+-- ==========================================
+
+-- 1. Namespaces (@jidoo, @samsung, etc.)
+CREATE TABLE IF NOT EXISTS namespaces (
+    id TEXT PRIMARY KEY,                       -- e.g., 'ns_01K72M...' or slug
+    slug TEXT UNIQUE NOT NULL,                  -- e.g., 'jidoo' (used as @jidoo)
+    name TEXT NOT NULL,                         -- Human-readable name: 'Jidoo Lab'
+    owner_id UUID,                              -- Supabase Auth User ID (nullable for system/reserved)
+    domain TEXT,                                -- Associated domain: 'jidoo.net'
+    status TEXT NOT NULL DEFAULT 'CLAIMED',     -- AVAILABLE, CLAIMED, RESERVED, VERIFICATION_REQUIRED, SUSPENDED
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE, -- Domain TXT verification status
+    verified_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 2. Agents (Core Permanent Identity)
+CREATE TABLE IF NOT EXISTS agents (
+    id TEXT PRIMARY KEY,                       -- Permanent AID: 'aid_01K72M8KQ4A7F'
+    namespace_id TEXT NOT NULL REFERENCES namespaces(id) ON DELETE RESTRICT,
+    default_alias TEXT NOT NULL,                -- e.g., 'research' -> 'research@jidoo'
+    display_name TEXT NOT NULL,                 -- e.g., 'Technology Research Agent'
+    description TEXT,                           -- Description / Capabilities summary
+    visibility TEXT NOT NULL DEFAULT 'PUBLIC',  -- PUBLIC, UNLISTED, PRIVATE
+    status TEXT NOT NULL DEFAULT 'ACTIVE',      -- ACTIVE, SUSPENDED, COMPROMISED, REVOKED
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 3. Agent Aliases (Human-readable Addresses)
+CREATE TABLE IF NOT EXISTS agent_aliases (
+    id TEXT PRIMARY KEY,
+    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    namespace_id TEXT NOT NULL REFERENCES namespaces(id) ON DELETE CASCADE,
+    alias TEXT NOT NULL,                        -- e.g., 'research'
+    full_address TEXT UNIQUE NOT NULL,          -- e.g., 'research@jidoo'
+    is_primary BOOLEAN NOT NULL DEFAULT TRUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 4. Agent Endpoints (A2A, MCP, REST communication targets)
+CREATE TABLE IF NOT EXISTS agent_endpoints (
+    id TEXT PRIMARY KEY,
+    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    protocol TEXT NOT NULL,                     -- 'a2a', 'mcp', 'rest'
+    url TEXT NOT NULL,                          -- e.g., 'https://agent.example.com/a2a'
+    is_primary BOOLEAN NOT NULL DEFAULT TRUE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 5. Agent Cards (A2A Specification Snapshots)
+CREATE TABLE IF NOT EXISTS agent_cards (
+    id TEXT PRIMARY KEY,
+    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    source_url TEXT NOT NULL,                   -- 'https://example.com/.well-known/agent-card.json'
+    snapshot_json JSONB NOT NULL,               -- Fetched Card payload
+    sha256_hash TEXT NOT NULL,                  -- Content integrity hash
+    status TEXT NOT NULL DEFAULT 'VALID',       -- VALID, EXPIRED, FETCH_FAILED
+    fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 6. Agent Public Keys (Ed25519 Cryptographic Identity)
+CREATE TABLE IF NOT EXISTS agent_keys (
+    id TEXT PRIMARY KEY,
+    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    key_type TEXT NOT NULL DEFAULT 'Ed25519',
+    public_key TEXT NOT NULL,                   -- Base64 or Hex public key
+    is_primary BOOLEAN NOT NULL DEFAULT TRUE,
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    revoked_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 7. Identity Events (Append-only Audit Log / Hash Chain)
+CREATE TABLE IF NOT EXISTS identity_events (
+    id BIGSERIAL PRIMARY KEY,
+    agent_id TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    event_type TEXT NOT NULL,                   -- AGENT_CREATED, KEY_ROTATED, ENDPOINT_UPDATED, VERIFIED
+    payload JSONB NOT NULL,
+    prev_hash TEXT,
+    event_hash TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 8. Domain Verifications (DNS TXT based verification)
+CREATE TABLE IF NOT EXISTS domain_verifications (
+    id TEXT PRIMARY KEY,
+    namespace_id TEXT NOT NULL REFERENCES namespaces(id) ON DELETE CASCADE,
+    domain TEXT NOT NULL,
+    challenge_token TEXT NOT NULL,              -- e.g., 'aid-verification=01K72...'
+    status TEXT NOT NULL DEFAULT 'PENDING',     -- PENDING, VERIFIED, FAILED
+    verified_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 9. API Keys (Access control for Developer Console & Programmatic APIs)
+CREATE TABLE IF NOT EXISTS api_keys (
+    id TEXT PRIMARY KEY,
+    owner_id UUID,
+    name TEXT NOT NULL,
+    key_prefix TEXT NOT NULL,
+    key_hash TEXT NOT NULL,
+    scopes TEXT[] NOT NULL DEFAULT '{"read", "write"}',
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Create Indexes for High-Performance Resolution
+CREATE INDEX IF NOT EXISTS idx_agent_aliases_full_address ON agent_aliases(full_address);
+CREATE INDEX IF NOT EXISTS idx_agents_namespace ON agents(namespace_id);
+CREATE INDEX IF NOT EXISTS idx_endpoints_agent ON agent_endpoints(agent_id);
+CREATE INDEX IF NOT EXISTS idx_identity_events_agent ON identity_events(agent_id);
