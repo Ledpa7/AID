@@ -1,6 +1,7 @@
 -- ==========================================
--- AID Production Seed Data
--- Run this in Supabase SQL Editor to populate initial real database rows
+-- AID Guide Sample Data (가이드 샘플 데이터)
+-- 에이전트 및 네임스페이스 표준 작성 규격을 제시하는 레퍼런스 데이터입니다.
+-- Supabase SQL Editor에서 실행하여 실제 DB에 가이드 데이터를 적재할 수 있습니다.
 -- ==========================================
 
 -- 1. Initial Verified Namespaces (@aid, @community)
