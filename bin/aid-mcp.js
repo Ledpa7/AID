@@ -30,13 +30,13 @@ const TOOLS = [
   {
     name: "resolve_agent",
     description:
-      "Resolves an AI agent's verifiable identity, permanent AID, primary endpoint URL, protocol (A2A, MCP, REST), and cryptographic trust evidence from an address like research@jidoo or support@samsung.",
+      "Resolves an AI agent's verifiable identity, permanent AID, primary endpoint URL, protocol (A2A, MCP, REST), and cryptographic trust evidence from an address like registry@aid or oracle@community.",
     inputSchema: {
       type: "object",
       properties: {
         address: {
           type: "string",
-          description: "The agent address in alias@namespace format (e.g. research@jidoo)",
+          description: "The agent address in alias@namespace format (e.g. registry@aid)",
         },
       },
       required: ["address"],
@@ -51,7 +51,7 @@ const TOOLS = [
       properties: {
         address: {
           type: "string",
-          description: "The claimed agent address (e.g. research@jidoo)",
+          description: "The claimed agent address (e.g. registry@aid)",
         },
         message: {
           type: "string",
@@ -74,7 +74,7 @@ const TOOLS = [
       properties: {
         query: {
           type: "string",
-          description: "Search keyword (e.g. 'research', 'patent', 'jidoo', 'support')",
+          description: "Search keyword (e.g. 'registry', 'oracle', 'aid', 'assistant')",
         },
       },
     },

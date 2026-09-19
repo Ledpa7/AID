@@ -9,7 +9,7 @@ export async function GET(
   try {
     const rawAddress = decodeURIComponent(params.address || "").toLowerCase();
 
-    // Only handle addresses that contain '@' (e.g. research@jidoo)
+    // Only handle addresses that contain '@' (e.g. registry@aid)
     if (!rawAddress.includes("@")) {
       return NextResponse.json({ error: "Invalid agent address" }, { status: 404 });
     }

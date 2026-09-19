@@ -11,7 +11,7 @@ export async function GET(
     const rawAddress = decodeURIComponent(params.address);
     if (!rawAddress.includes("@")) {
       return NextResponse.json(
-        { error: "Invalid address format. Expected alias@namespace (e.g. research@jidoo)" },
+        { error: "Invalid address format. Expected alias@namespace (e.g. registry@aid)" },
         { status: 400 }
       );
     }

@@ -55,7 +55,7 @@ export interface Agent {
   description?: string;
   visibility: Visibility;
   status: AgentStatus;
-  primaryAddress: string; // e.g. 'research@jidoo'
+  primaryAddress: string; // e.g. 'registry@aid'
   endpoints: AgentEndpoint[];
   publicKey?: string;
   cardSnapshot?: AgentCardSnapshot;
