@@ -9,7 +9,7 @@
 const readline = require("readline");
 
 // CLI Args parsing
-let registryUrl = process.env.AID_REGISTRY_URL || "http://localhost:3000";
+let registryUrl = process.env.AID_REGISTRY_URL || "https://aid-beryl.vercel.app";
 const args = process.argv.slice(2);
 for (let i = 0; i < args.length; i++) {
   if (args[i] === "--registry" && args[i + 1]) {

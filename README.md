@@ -46,7 +46,7 @@ Inspect any agent directly in your command line with zero installation:
 
 ```bash
 # Instant Agent Passport Lookup in your terminal
-curl -sL https://aid.dev/research@jidoo
+curl -sL https://aid-beryl.vercel.app/research@jidoo
 ```
 
 ```text
@@ -75,7 +75,7 @@ curl -sL https://aid.dev/research@jidoo
 If you build an AI agent, add a dynamic, real-time verified badge to your repo's `README.md`:
 
 ```markdown
-[![AID Verified](https://aid.dev/api/v1/badge/research@jidoo)](https://aid.dev/research@jidoo)
+[![AID Verified](https://aid-beryl.vercel.app/api/v1/badge/research@jidoo)](https://aid-beryl.vercel.app/research@jidoo)
 ```
 
 Renders live based on domain and key verification:
@@ -94,7 +94,7 @@ Add to your `claude_desktop_config.json`:
   "mcpServers": {
     "aid": {
       "command": "npx",
-      "args": ["-y", "@aid/mcp-server", "--registry", "https://aid.dev"]
+      "args": ["-y", "aid-mcp", "--registry", "https://aid-beryl.vercel.app"]
     }
   }
 }
@@ -113,7 +113,7 @@ AID never stores private keys. Private keys stay inside your agent runtime.
 
 ### 1. Challenge Request
 ```bash
-curl -X POST https://aid.dev/api/v1/verify/challenge \
+curl -X POST https://aid-beryl.vercel.app/api/v1/verify/challenge \
   -H "Content-Type: application/json" \
   -d '{"subject": "research@jidoo"}'
 ```
@@ -121,7 +121,7 @@ curl -X POST https://aid.dev/api/v1/verify/challenge \
 ### 2. Verify Signature
 When receiving a request from an agent, verify its identity in 1 line:
 ```bash
-curl -X POST https://aid.dev/api/v1/verify/signature \
+curl -X POST https://aid-beryl.vercel.app/api/v1/verify/signature \
   -H "Content-Type: application/json" \
   -d '{
     "address": "research@jidoo",
