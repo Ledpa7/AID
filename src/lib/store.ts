@@ -13,13 +13,130 @@ import {
   sanitizeDomain,
 } from "./dns";
 
-// Pure, clean fallback store (empty by default)
+// Pure fallback store for offline/local development
 const globalStore: {
   namespaces: Namespace[];
   agents: Agent[];
 } = {
-  namespaces: [],
-  agents: [],
+  namespaces: [
+    {
+      id: "ns_01K72M8KQ4AIDROOT",
+      slug: "aid",
+      name: "AID Protocol Foundation",
+      domain: "aid-beryl.vercel.app",
+      status: "CLAIMED",
+      isVerified: true,
+      verifiedAt: "2026-09-19T08:09:48.303708+00:00",
+      createdAt: "2026-09-19T08:09:48.303708+00:00",
+      updatedAt: "2026-09-19T08:42:02.452686+00:00",
+    },
+    {
+      id: "ns_01K72M8KQ4COMMUNITY",
+      slug: "community",
+      name: "Autonomous Agent Ecosystem",
+      domain: "aid-beryl.vercel.app",
+      status: "CLAIMED",
+      isVerified: true,
+      verifiedAt: "2026-09-19T08:09:48.303708+00:00",
+      createdAt: "2026-09-19T08:09:48.303708+00:00",
+      updatedAt: "2026-09-19T08:42:02.452686+00:00",
+    },
+    {
+      id: "ns_01M30DVVY1E8QFP99G70ZVGQ53",
+      slug: "github",
+      name: "GitHub Ecosystem",
+      domain: "github.com",
+      status: "CLAIMED",
+      isVerified: true,
+      verifiedAt: "2026-09-20T22:09:25.442Z",
+      createdAt: "2026-09-20T22:09:25.442Z",
+      updatedAt: "2026-09-20T22:09:25.442Z",
+    },
+  ],
+  agents: [
+    {
+      id: "aid_01M30DW5MS43TTBR0BBS3KRSZ4",
+      namespaceId: "ns_01M30DVVY1E8QFP99G70ZVGQ53",
+      namespaceSlug: "github",
+      defaultAlias: "scout",
+      displayName: "GitHub Scout Agent (Vibe Coder Edition)",
+      description:
+        "Autonomous open-source research agent for vibe coders. Discovers curated AI boilerplates, extracts verified README docs to eliminate LLM hallucinations, and audits package dependencies in real time.",
+      visibility: "PUBLIC",
+      status: "ACTIVE",
+      primaryAddress: "scout@github",
+      endpoints: [
+        {
+          id: "ep_01M30DW5MSQC3HMA9BW69FVQ7T",
+          agentId: "aid_01M30DW5MS43TTBR0BBS3KRSZ4",
+          protocol: "rest",
+          url: "https://aid-beryl.vercel.app/api/agents/github",
+          isPrimary: true,
+          isActive: true,
+          createdAt: "2026-09-20T22:09:35.385Z",
+        },
+      ],
+      publicKey: "ed25519:6c91a32b0f44e26f59c2598379c1d65dfc2d4b1fa3d677284addd200126d8888",
+      isDomainVerified: true,
+      isKeyVerified: true,
+      createdAt: "2026-09-20T22:09:35.385Z",
+      updatedAt: "2026-09-20T22:09:35.385Z",
+    },
+    {
+      id: "aid_01K72M8KQ4GENESIS01",
+      namespaceId: "ns_01K72M8KQ4AIDROOT",
+      namespaceSlug: "aid",
+      defaultAlias: "registry",
+      displayName: "AID Global Registry Agent",
+      description: "Core identity resolution & agent discovery protocol agent.",
+      visibility: "PUBLIC",
+      status: "ACTIVE",
+      primaryAddress: "registry@aid",
+      endpoints: [
+        {
+          id: "ep_01K72M8KQ4EP01",
+          agentId: "aid_01K72M8KQ4GENESIS01",
+          protocol: "mcp",
+          url: "https://aid-beryl.vercel.app/bin/aid-mcp.js",
+          isPrimary: true,
+          isActive: true,
+          createdAt: "2026-09-19T08:09:48.303708+00:00",
+        },
+      ],
+      publicKey: "ed25519:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
+      isDomainVerified: true,
+      isKeyVerified: true,
+      createdAt: "2026-09-19T08:09:48.303708+00:00",
+      updatedAt: "2026-09-19T08:42:02.452686+00:00",
+    },
+    {
+      id: "aid_01K72M8KQ4GENESIS02",
+      namespaceId: "ns_01K72M8KQ4COMMUNITY",
+      namespaceSlug: "community",
+      defaultAlias: "oracle",
+      displayName: "Decentralized Verification Oracle",
+      description: "Cryptographic proof verification and trust evidence evaluator.",
+      visibility: "PUBLIC",
+      status: "ACTIVE",
+      primaryAddress: "oracle@community",
+      endpoints: [
+        {
+          id: "ep_01K72M8KQ4EP02",
+          agentId: "aid_01K72M8KQ4GENESIS02",
+          protocol: "a2a",
+          url: "https://aid-beryl.vercel.app/api/v1/resolve/oracle@community",
+          isPrimary: true,
+          isActive: true,
+          createdAt: "2026-09-19T08:09:48.303708+00:00",
+        },
+      ],
+      publicKey: "ed25519:8a93b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9123",
+      isDomainVerified: true,
+      isKeyVerified: true,
+      createdAt: "2026-09-19T08:09:48.303708+00:00",
+      updatedAt: "2026-09-19T08:42:02.452686+00:00",
+    },
+  ],
 };
 
 export class AIDStore {

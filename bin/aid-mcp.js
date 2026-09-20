@@ -74,9 +74,52 @@ const TOOLS = [
       properties: {
         query: {
           type: "string",
-          description: "Search keyword (e.g. 'registry', 'oracle', 'aid', 'assistant')",
+          description: "Search keyword (e.g. 'registry', 'oracle', 'aid', 'github', 'scout')",
         },
       },
+    },
+  },
+  {
+    name: "invoke_agent",
+    description:
+      "Directly delegates an autonomous task to a verified AI agent registered on AID (e.g. scout@github). Resolves the agent's endpoint and executes the requested action.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        address: {
+          type: "string",
+          description: "The agent address (e.g. 'scout@github')",
+        },
+        action: {
+          type: "string",
+          description: "Action to execute on target agent (e.g. 'search_repos', 'fetch_readme', 'inspect_dependencies')",
+        },
+        params: {
+          type: "object",
+          description: "Parameters for the agent action (e.g. { query: 'nextjs-saas' } or { owner: 'vercel', repo: 'ai' })",
+        },
+      },
+      required: ["address", "action"],
+    },
+  },
+  {
+    name: "scout_github",
+    description:
+      "Shorthand tool to invoke the scout@github verified agent for open-source exploration, live README extraction (zero-hallucination context), or package dependency auditing.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["search_repos", "fetch_readme", "inspect_dependencies", "trending_templates"],
+          description: "Action to execute on GitHub Scout",
+        },
+        params: {
+          type: "object",
+          description: "Parameters: { query } for search, { owner, repo } for readme/inspect, { category } for trending",
+        },
+      },
+      required: ["action"],
     },
   },
 ];
@@ -186,6 +229,65 @@ async function handleToolCall(name, params) {
               null,
               2
             ),
+          },
+        ],
+      };
+    case "invoke_agent": {
+      const address = encodeURIComponent(params.address || "");
+      const resolveRes = await fetch(`${registryUrl}/api/v1/resolve/${address}`, {
+        headers: { Accept: "application/json" },
+      });
+      if (!resolveRes.ok) {
+        return {
+          isError: true,
+          content: [{ type: "text", text: `Could not resolve agent '${params.address}' on AID registry.` }],
+        };
+      }
+      const resolution = await resolveRes.json();
+      const endpoint = resolution.primaryEndpoint?.url || resolution.endpoints?.[0]?.url;
+      if (!endpoint) {
+        return {
+          isError: true,
+          content: [{ type: "text", text: `Agent '${params.address}' has no active communication endpoint.` }],
+        };
+      }
+
+      const invokeRes = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: params.action,
+          params: params.params || {},
+        }),
+      });
+      const invokeData = await invokeRes.json().catch(() => ({}));
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(invokeData, null, 2),
+          },
+        ],
+      };
+    }
+
+    case "scout_github": {
+      // Direct call to GitHub Scout agent endpoint or via resolution
+      const endpoint = `${registryUrl}/api/agents/github`;
+      const invokeRes = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: params.action,
+          params: params.params || {},
+        }),
+      });
+      const invokeData = await invokeRes.json().catch(() => ({}));
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(invokeData, null, 2),
           },
         ],
       };

@@ -59,17 +59,17 @@ Want to check if an agent on the internet is authentic, who owns it, and what ca
 #### Option A: View the Official Web Passport
 Visit any agent's public passport page directly in your browser:
 ```text
-https://aid-beryl.vercel.app/research@jidoo
+https://aid-beryl.vercel.app/scout@github
 ```
 * Shows verified badges for domain ownership and cryptographic signature capability.
-* Displays registered endpoints (`MCP`, `A2A`, `REST`).
+* Displays registered endpoints (`REST`, `MCP`, `A2A`).
 * Provides one-click copyable configuration snippets for Claude Desktop and Cursor.
 
 #### Option B: Terminal Lookup (Zero Installation)
 Inspect any agent passport instantly using standard `curl`:
 
 ```bash
-curl -sL https://aid-beryl.vercel.app/research@jidoo
+curl -sL https://aid-beryl.vercel.app/scout@github
 ```
 
 **Terminal Output:**
@@ -77,18 +77,17 @@ curl -sL https://aid-beryl.vercel.app/research@jidoo
 ┌────────────────────────────────────────────────────────────────────────┐
 │  AID AGENT PASSPORT — Verifiable AI Identity                           │
 ├────────────────────────────────────────────────────────────────────────┤
-  Address:       research@jidoo
-  Permanent AID: aid_01K72M8KQ4A7F901
+  Address:       scout@github
+  Permanent AID: aid_01M30DW5MS43TTBR0BBS3KRSZ4
   Status:        ACTIVE (PUBLIC)
 
   [ TRUST EVIDENCE ]
-  • Domain (jidoo.net):       ✓ Verified
+  • Domain (github.com):      ✓ Verified
   • Cryptographic Key:        ✓ Verified (Ed25519)
   • Agent Card Metadata:      ✓ Valid
 
   [ ENDPOINTS ]
-    • [A2A] https://agent.jidoo.net/a2a (primary)
-    • [MCP] https://agent.jidoo.net/mcp
+    • [REST] https://aid-beryl.vercel.app/api/agents/github (primary)
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -152,11 +151,11 @@ Add the AID MCP server to your `claude_desktop_config.json` (or Cursor MCP setti
 
 Once configured, your AI assistant gains the `resolve_agent` tool. You can simply prompt it:
 
-> *"Check the identity of `research@jidoo` on AID, verify its domain, and connect to its MCP endpoint to fetch the latest paper on agent architectures."*
+> *"Check the identity of `scout@github` on AID, verify its status, and ask it to find the top trending Next.js 15 AI agent boilerplates."*
 
 Your assistant will:
 1. Call AID's resolution API to get the endpoint and trust status.
-2. Confirm that the agent is DNS-verified.
+2. Confirm that the agent is officially registered with verified cryptographic keys.
 3. Directly communicate with the remote agent's tool server.
 
 ---
