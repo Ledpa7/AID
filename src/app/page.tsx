@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   ShieldCheck,
   Search,
@@ -359,6 +360,17 @@ export default function Home() {
                         )}
                       </button>
                     </div>
+
+                    <div className="pt-2">
+                      <Link
+                        href={`/${encodeURIComponent(resolveResult.address)}`}
+                        className="w-full py-2 px-3 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-xs text-indigo-300 hover:text-indigo-200 flex items-center justify-center gap-1.5 transition font-medium"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5" />
+                        <span>공식 웹 여권 열기 (Open Official Passport)</span>
+                        <ExternalLink className="w-3 h-3 ml-0.5" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
 
@@ -441,15 +453,24 @@ export default function Home() {
                     )}
                   </div>
 
-                  <button
-                    onClick={() => {
-                      setResolveAddress(agent.primaryAddress);
-                      handleResolve(agent.primaryAddress);
-                    }}
-                    className="shrink-0 px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-md border border-slate-700 transition"
-                  >
-                    Resolve
-                  </button>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Link
+                      href={`/${encodeURIComponent(agent.primaryAddress)}`}
+                      className="px-2.5 py-1 text-xs font-medium text-indigo-300 hover:text-white bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-800/60 rounded-md transition flex items-center gap-1"
+                    >
+                      <span>여권 보기</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setResolveAddress(agent.primaryAddress);
+                        handleResolve(agent.primaryAddress);
+                      }}
+                      className="px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-md border border-slate-700 transition"
+                    >
+                      Resolve
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
