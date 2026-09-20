@@ -291,11 +291,11 @@ export default function Home() {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
-              Just like an email address, call verified agents like{" "}
+              Just like an email address, connect directly to verified AI agents like{" "}
               <code className="text-yellow-300 bg-yellow-950/40 px-1.5 py-0.5 rounded font-mono text-sm border border-yellow-800/40">
                 scout@github
               </code>{" "}
-              across any app, agent, or workflow. No fake bots, zero complex setup.
+              across any app or workflow. No fake bots, zero complex setup.
             </p>
 
             {/* CTAs */}
@@ -412,7 +412,7 @@ export default function Home() {
                 <div className="p-3 bg-black/70 rounded-lg border border-slate-800/80 text-[11px] text-slate-300">
                   <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/scout@github</div>
                   <div className="text-yellow-400 mt-1">✓ Identity resolved in 8ms via Edge CDN</div>
-                  <div className="text-slate-400 mt-0.5">✓ Ready for any autonomous agent &amp; tool calling</div>
+                  <div className="text-slate-400 mt-0.5">✓ Ready for instant tool execution &amp; MCP integration</div>
                 </div>
               </div>
             </div>
@@ -431,7 +431,7 @@ export default function Home() {
               How AID Works in 3 Simple Steps
             </p>
             <p className="text-sm text-slate-400">
-              Like a global phonebook for AI, AID helps people and assistants find who an agent belongs to and connect directly with total confidence.
+              AID makes it effortless to discover verified AI agents, verify their creators, and connect directly with total confidence.
             </p>
           </div>
 
