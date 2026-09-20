@@ -280,22 +280,22 @@ export default function Home() {
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-xs font-medium text-yellow-300">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
-              <span>The Universal Directory & Verified Passports for AI Agents</span>
+              <span>One Universal ID for Every AI Agent</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
-              The Verified Address Book for{" "}
+              The Universal ID for{" "}
               <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent">
-                Autonomous AI Agents.
+                AI Agents.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
-              Turn complex API links into clean, trusted handles like{" "}
+              Just like an email address, call verified agents like{" "}
               <code className="text-yellow-300 bg-yellow-950/40 px-1.5 py-0.5 rounded font-mono text-sm border border-yellow-800/40">
-                research@priesm
-              </code>
-              . Stop fake bots with domain verification, and plug directly into Claude Desktop or Cursor with zero configuration.
+                scout@github
+              </code>{" "}
+              directly inside Cursor &amp; Claude. No fake bots, zero complex setup.
             </p>
 
             {/* CTAs */}
@@ -318,7 +318,7 @@ export default function Home() {
 
               <button
                 onClick={() => {
-                  const cmd = "curl -sL https://aid-beryl.vercel.app/weather@community";
+                  const cmd = "curl -sL https://aid-beryl.vercel.app/scout@github";
                   navigator.clipboard.writeText(cmd);
                   setHeroCurlCopied(true);
                   setTimeout(() => setHeroCurlCopied(false), 2000);
@@ -326,7 +326,7 @@ export default function Home() {
                 className="px-4 py-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono transition flex items-center gap-2"
               >
                 <Terminal className="w-3.5 h-3.5 text-yellow-400" />
-                <span>curl .../weather@community</span>
+                <span>curl .../scout@github</span>
                 {heroCurlCopied ? (
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
                 ) : (
@@ -381,17 +381,17 @@ export default function Home() {
                 <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800/80 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-[11px]">Primary Address</span>
-                    <span className="text-yellow-400 font-bold text-sm">research@priesm</span>
+                    <span className="text-yellow-400 font-bold text-sm">scout@github</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-[11px]">Permanent AID</span>
-                    <span className="text-emerald-400 text-[11px]">aid_01K72M8KQ4A7F901</span>
+                    <span className="text-emerald-400 text-[11px]">aid_01M30DW5MS43TTBR0BBS3KRSZ4</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-[11px]">Domain Authority</span>
                     <span className="text-slate-300 flex items-center gap-1 text-[11px]">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                      priesm.network (DNS TXT)
+                      github.com (Verified)
                     </span>
                   </div>
                 </div>
@@ -399,8 +399,8 @@ export default function Home() {
                 {/* Evidence tags */}
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
-                    <div className="text-slate-500 text-[10px]">MCP Tool Endpoint</div>
-                    <div className="text-slate-300 truncate mt-0.5 font-sans">https://agent.priesm.network/mcp</div>
+                    <div className="text-slate-500 text-[10px]">MCP / REST Endpoint</div>
+                    <div className="text-slate-300 truncate mt-0.5 font-sans">https://aid-beryl.vercel.app/api/agents/github</div>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                     <div className="text-slate-500 text-[10px]">Cryptographic Key</div>
@@ -410,8 +410,8 @@ export default function Home() {
 
                 {/* Simulated CLI prompt */}
                 <div className="p-3 bg-black/70 rounded-lg border border-slate-800/80 text-[11px] text-slate-300">
-                  <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/research@priesm</div>
-                  <div className="text-yellow-400 mt-1">✓ Identity resolved in 11ms via Edge CDN</div>
+                  <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/scout@github</div>
+                  <div className="text-yellow-400 mt-1">✓ Identity resolved in 8ms via Edge CDN</div>
                   <div className="text-slate-400 mt-0.5">✓ Ready for Claude Desktop & Cursor tool calling</div>
                 </div>
               </div>
