@@ -210,21 +210,6 @@ export default function Home() {
     }
   };
 
-  const filteredAgents = agents.filter((a) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      a.primaryAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      a.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (a.description && a.description.toLowerCase().includes(searchQuery.toLowerCase()));
-
-    const matchesNamespace =
-      selectedNamespace === "all" ||
-      a.namespaceSlug.toLowerCase() === selectedNamespace.toLowerCase();
-
-    return matchesSearch && matchesNamespace;
-  });
-
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col">
       {/* Glow Background Gradients */}
@@ -251,9 +236,15 @@ export default function Home() {
             <a href="#how-it-works" className="hover:text-white transition-colors">
               How It Works
             </a>
-            <a href="#registry" className="hover:text-white transition-colors">
-              Agent Registry
-            </a>
+            <Link
+              href="/directory"
+              className="hover:text-white transition-colors text-yellow-400 font-semibold flex items-center gap-1.5"
+            >
+              <span>Agent Directory</span>
+              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-yellow-400/15 text-yellow-300 border border-yellow-400/30">
+                {agents.length}
+              </span>
+            </Link>
             <a
               href="https://github.com/Ledpa7/AID"
               target="_blank"
@@ -489,91 +480,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Main Verified Agent Catalog Section */}
-      <section id="registry" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+      {/* Featured Verified Agents Section */}
+      <section id="featured" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-slate-800/80 gap-6">
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-400 uppercase tracking-wider mb-1.5">
-              <Layers className="w-3.5 h-3.5" />
-              <span>Verified Agent Directory</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Genesis Live Directory</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-              <span>Official Agent Registry</span>
+              <span>Featured Verified Agents</span>
               <span className="text-xs px-2.5 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 font-mono font-medium">
-                {filteredAgents.length} Agents Live
+                {agents.length} Agents Live
               </span>
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Browse authentic AI agents, verify their identity passports, and connect directly with total confidence.
+              Top autonomous agents verified with cryptographic identity and ready for instant MCP or REST integration.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            {/* Single Unified Search Bar */}
-            <div className="relative min-w-[300px] sm:min-w-[360px]">
-              <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search by handle (e.g. scout@github) or AID..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && searchQuery.trim()) {
-                    const q = searchQuery.trim();
-                    if (q.startsWith("aid_") || q.includes("@")) {
-                      window.location.href = `/${encodeURIComponent(q)}`;
-                    }
-                  }
-                }}
-                className="w-full pl-9 pr-4 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400 transition"
-              />
-            </div>
-
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-4 py-2 text-xs font-bold text-black bg-yellow-400 hover:bg-yellow-300 rounded-xl shadow-sm shadow-yellow-400/20 transition flex items-center justify-center gap-1.5 shrink-0"
+          <div className="flex items-center gap-3">
+            <Link
+              href="/directory"
+              className="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs transition shadow-lg shadow-yellow-400/20 flex items-center gap-2 group shrink-0"
             >
-              <PlusCircle className="w-4 h-4" />
-              <span>Register Agent</span>
-            </button>
+              <span>Explore Full Directory ({agents.length})</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+            </Link>
           </div>
         </div>
 
-        {/* Namespace Filter Chips */}
-        {namespaces.length > 0 && (
-          <div className="flex items-center gap-2 mb-8 overflow-x-auto pb-2 text-xs">
-            <span className="text-slate-500 font-medium mr-1">Namespaces:</span>
-            <button
-              onClick={() => setSelectedNamespace("all")}
-              className={`px-3 py-1.5 rounded-lg font-mono transition border ${
-                selectedNamespace === "all"
-                  ? "bg-yellow-400 text-black font-bold border-yellow-400"
-                  : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700"
-              }`}
-            >
-              All ({agents.length})
-            </button>
-            {namespaces.map((ns) => (
-              <button
-                key={ns.id}
-                onClick={() => setSelectedNamespace(ns.slug)}
-                className={`px-3 py-1.5 rounded-lg font-mono transition border flex items-center gap-1.5 ${
-                  selectedNamespace === ns.slug
-                    ? "bg-yellow-400 text-black font-bold border-yellow-400"
-                    : "bg-slate-900/80 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700"
-                }`}
-              >
-                <span>@{ns.slug}</span>
-                {ns.isVerified && <CheckCircle2 className="w-3 h-3 text-emerald-400" />}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Clean 3-Column Responsive Grid */}
+        {/* Featured 3-Column Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAgents.map((agent) => (
+          {agents.slice(0, 3).map((agent) => (
             <div
               key={agent.id}
               className="group bg-[#0f172a]/70 hover:bg-[#0f172a] border border-slate-800 hover:border-yellow-400/40 rounded-2xl p-6 shadow-xl transition-all flex flex-col justify-between"
@@ -670,14 +610,25 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Empty Search State */}
-        {filteredAgents.length === 0 && (
-          <div className="text-center py-16 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
-            <Cpu className="w-8 h-8 text-slate-600 mx-auto mb-3" />
-            <p className="text-sm font-semibold text-slate-300">No agents match your query</p>
-            <p className="text-xs text-slate-500 mt-1">Try searching for 'scout@github', 'aid_01M30...', or 'registry'</p>
+        {/* Directory Explorer Banner CTA */}
+        <div className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-slate-900/90 via-[#0f172a] to-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-left">
+            <div className="w-10 h-10 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-yellow-400 shrink-0">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-white">Looking for More AI Agents?</div>
+              <div className="text-xs text-slate-400">Search by handle, filter by protocol (MCP / REST / A2A), or submit your own.</div>
+            </div>
           </div>
-        )}
+          <Link
+            href="/directory"
+            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-black bg-yellow-400 hover:bg-yellow-300 rounded-xl transition shrink-0"
+          >
+            <span>Open Directory Explorer</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
 
         {/* Verified Namespaces Strip */}
         <div className="mt-16 p-6 rounded-2xl bg-slate-900/50 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
