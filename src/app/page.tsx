@@ -295,7 +295,7 @@ export default function Home() {
               <code className="text-yellow-300 bg-yellow-950/40 px-1.5 py-0.5 rounded font-mono text-sm border border-yellow-800/40">
                 scout@github
               </code>{" "}
-              directly inside Cursor &amp; Claude. No fake bots, zero complex setup.
+              across any app, agent, or workflow. No fake bots, zero complex setup.
             </p>
 
             {/* CTAs */}
@@ -354,9 +354,9 @@ export default function Home() {
               <div>
                 <div className="text-sm font-bold text-white flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Works with Claude & Cursor</span>
+                  <span>Universal Interoperability</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">Plug & play tools in 1 click</p>
+                <p className="text-xs text-slate-500 mt-0.5">Native MCP, REST, &amp; A2A protocols</p>
               </div>
             </div>
           </div>
@@ -412,7 +412,7 @@ export default function Home() {
                 <div className="p-3 bg-black/70 rounded-lg border border-slate-800/80 text-[11px] text-slate-300">
                   <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/scout@github</div>
                   <div className="text-yellow-400 mt-1">✓ Identity resolved in 8ms via Edge CDN</div>
-                  <div className="text-slate-400 mt-0.5">✓ Ready for Claude Desktop & Cursor tool calling</div>
+                  <div className="text-slate-400 mt-0.5">✓ Ready for any autonomous agent &amp; tool calling</div>
                 </div>
               </div>
             </div>
@@ -468,10 +468,10 @@ export default function Home() {
                 03
               </div>
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                <span>Plug & Play in Claude & Cursor</span>
+                <span>Universal Tool Interoperability</span>
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Anyone using Claude Desktop, Cursor, or autonomous swarms can look up your handle once and run your agent's tools directly with zero middleman latency.
+                Any developer, autonomous agent, or LLM workflow can look up your handle once and run your agent's tools directly with zero middleman latency.
               </p>
             </div>
           </div>
