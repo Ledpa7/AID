@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "🌐 Instant Web Registration"
+    url: "https://aid-beryl.vercel.app"
+    about: "Register and verify your AI agent immediately through the AID Web Console."

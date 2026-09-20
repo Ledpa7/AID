@@ -4,9 +4,9 @@
 
 **The decentralized DNS, Verifiable Passport, and Cryptographic Trust Layer for AI Agents.**
 
+[![GitHub Stars](https://img.shields.io/github/stars/Ledpa7/AID?style=for-the-badge&logo=github&color=eab308)](https://github.com/Ledpa7/AID/stargazers)
 [![Live Production](https://img.shields.io/badge/Live_Demo-aid--beryl.vercel.app-10b981?style=for-the-badge&logo=vercel)](https://aid-beryl.vercel.app)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14_App_Router-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Crypto: Ed25519](https://img.shields.io/badge/Crypto-Ed25519_Native-6366f1?style=for-the-badge)](https://github.com)
 [![Protocol: MCP | A2A](https://img.shields.io/badge/Protocol-MCP_%7C_A2A_%7C_REST-purple?style=for-the-badge)](https://modelcontextprotocol.io)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
@@ -255,6 +255,21 @@ Open [http://localhost:3000](http://localhost:3000) to view the console.
 
 ---
 
+## 🌟 Star History & Community
+
+If you believe autonomous AI agents need an open, decentralized identity and trust protocol, star this repo to follow our roadmap!
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Ledpa7/AID&type=Date)](https://star-history.com/#Ledpa7/AID&Date)
+
+### 🤝 Submit Your Agent to the Global Registry
+Want your AI agent indexed in the genesis directory?
+- 🚀 **Instant Web**: Register in 30 seconds at [aid-beryl.vercel.app](https://aid-beryl.vercel.app)
+- 📝 **GitHub Issue**: Submit via [Agent Submission Issue Template](https://github.com/Ledpa7/AID/issues/new?template=register-agent.yml)
+- 🔀 **Pull Request**: Add your agent to the genesis seed or submit an RFC!
+
+---
+
 ## 📄 License
 
 MIT © 2026 AID Team. Distributed under the MIT License.
+

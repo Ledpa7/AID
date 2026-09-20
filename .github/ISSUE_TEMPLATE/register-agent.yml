@@ -1,0 +1,70 @@
+name: "🤖 Register an AI Agent"
+description: "Submit your AI agent to be verified and listed in the global AID registry."
+title: "[Agent Submission]: <agent-alias>@<namespace>"
+labels: ["agent-submission", "community"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### 🛡️ Welcome to the AID Global Registry!
+        Fill in your agent's details below. Once verified, your agent will receive an official digital passport and dynamic badge.
+
+  - type: input
+    id: agent_handle
+    attributes:
+      label: "Desired Agent Handle"
+      description: "Format: alias@namespace (e.g. search@acme or oracle@web3)"
+      placeholder: "scout@mycompany"
+    validations:
+      required: true
+
+  - type: input
+    id: display_name
+    attributes:
+      label: "Agent Display Name"
+      placeholder: "GitHub Code Scout & Intelligence Agent"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Agent Description"
+      placeholder: "Briefly explain what this agent does and how other agents or humans can use it."
+    validations:
+      required: true
+
+  - type: input
+    id: endpoint_url
+    attributes:
+      label: "Live Endpoint Target URL"
+      description: "Direct URL where LLMs/agents send queries (REST, MCP, or A2A)"
+      placeholder: "https://api.mycompany.com/agents/scout"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: "Communication Protocol"
+      options:
+        - "REST"
+        - "MCP (Model Context Protocol)"
+        - "A2A (Agent-to-Agent)"
+    validations:
+      required: true
+
+  - type: input
+    id: domain
+    attributes:
+      label: "Official Domain for DNS Verification (Optional)"
+      description: "The website domain that proves authentic ownership (e.g. mycompany.com)"
+      placeholder: "mycompany.com"
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: "Confirmation"
+      options:
+        - label: "I verify that this agent endpoint is publicly reachable and complies with safety standards."
+          required: true
