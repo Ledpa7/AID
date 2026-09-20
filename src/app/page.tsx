@@ -367,7 +367,7 @@ export default function Home() {
                         className="w-full py-2 px-3 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-xs text-indigo-300 hover:text-indigo-200 flex items-center justify-center gap-1.5 transition font-medium"
                       >
                         <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>공식 웹 여권 열기 (Open Official Passport)</span>
+                        <span>Open Official Passport</span>
                         <ExternalLink className="w-3 h-3 ml-0.5" />
                       </Link>
                     </div>
@@ -458,7 +458,7 @@ export default function Home() {
                       href={`/${encodeURIComponent(agent.primaryAddress)}`}
                       className="px-2.5 py-1 text-xs font-medium text-indigo-300 hover:text-white bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-800/60 rounded-md transition flex items-center gap-1"
                     >
-                      <span>여권 보기</span>
+                      <span>View Passport</span>
                       <ExternalLink className="w-3 h-3" />
                     </Link>
                     <button

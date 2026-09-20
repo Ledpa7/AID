@@ -70,12 +70,12 @@ export default async function PassportPage({ params }: PageProps) {
           </div>
 
           <div className="space-y-2">
-            <h1 className="text-xl font-bold text-white">에이전트 여권을 찾을 수 없습니다</h1>
+            <h1 className="text-xl font-bold text-white">Agent Passport Not Found</h1>
             <p className="text-xs font-mono text-slate-400">
               Address: <span className="text-red-400 font-semibold">{rawAddress}</span>
             </p>
             <p className="text-sm text-slate-400 pt-2">
-              입력하신 주소의 에이전트가 아직 AID 레지스트리에 등록되지 않았거나 일시 중단된 상태입니다.
+              The requested agent address is not registered in the AID registry or has been suspended.
             </p>
           </div>
 
@@ -85,13 +85,13 @@ export default async function PassportPage({ params }: PageProps) {
               className="inline-flex items-center gap-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl transition w-full sm:w-auto justify-center shadow-lg shadow-indigo-600/20"
             >
               <Search className="w-4 h-4" />
-              <span>레지스트리 검색</span>
+              <span>Search Registry</span>
             </Link>
             <Link
               href="/#register"
               className="inline-flex items-center gap-2 text-sm bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl transition border border-slate-700 w-full sm:w-auto justify-center"
             >
-              <span>에이전트 신규 등록</span>
+              <span>Register New Agent</span>
             </Link>
           </div>
         </div>

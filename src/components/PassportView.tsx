@@ -81,7 +81,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
           className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-slate-200 transition-colors bg-slate-900/80 border border-slate-800 px-3.5 py-1.5 rounded-lg backdrop-blur"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>레지스트리 탐색기 홈으로</span>
+          <span>Back to Registry Explorer</span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -92,12 +92,12 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
             {copiedKey === "url" ? (
               <>
                 <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400">링크 복사됨</span>
+                <span className="text-emerald-400">Link Copied!</span>
               </>
             ) : (
               <>
                 <Share2 className="w-3.5 h-3.5" />
-                <span>여권 공유하기</span>
+                <span>Share Passport</span>
               </>
             )}
           </button>
@@ -154,7 +154,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   <button
                     onClick={() => copyToClipboard(agent.primaryAddress, "address")}
                     className="text-slate-500 hover:text-slate-300 transition"
-                    title="주소 복사"
+                    title="Copy Address"
                   >
                     {copiedKey === "address" ? (
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -170,7 +170,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   <button
                     onClick={() => copyToClipboard(agent.id, "aid")}
                     className="text-slate-500 hover:text-slate-300 transition"
-                    title="AID ID 복사"
+                    title="Copy AID"
                   >
                     {copiedKey === "aid" ? (
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -235,8 +235,8 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 </div>
                 <div className="text-[11px] text-slate-500 mt-1">
                   {resolution.verification.domain
-                    ? "DNS TXT 레코드를 통해 소유권이 수학적으로 검증되었습니다."
-                    : "도메인 DNS 인증이 아직 완료되지 않았습니다."}
+                    ? "Domain ownership mathematically verified via DNS TXT record."
+                    : "Domain DNS verification is not yet completed."}
                 </div>
               </div>
 
@@ -266,13 +266,13 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 </div>
                 <div className="text-xs font-mono text-slate-300 truncate bg-slate-950/80 px-2 py-1 rounded border border-slate-800/80 flex items-center justify-between">
                   <span className="truncate">
-                    {resolution.publicKey || "공개키 미등록"}
+                    {resolution.publicKey || "No Public Key Registered"}
                   </span>
                   {resolution.publicKey && (
                     <button
                       onClick={() => copyToClipboard(resolution.publicKey || "", "pubkey")}
                       className="ml-1 text-slate-500 hover:text-slate-200"
-                      title="공개키 복사"
+                      title="Copy Public Key"
                     >
                       {copiedKey === "pubkey" ? (
                         <Check className="w-3 h-3 text-emerald-400" />
@@ -283,7 +283,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   )}
                 </div>
                 <div className="text-[11px] text-slate-500 mt-1">
-                  에이전트의 메시지 위변조 방지 전자서명에 사용되는 공개키입니다.
+                  Public key used to verify message integrity and prevent tampering.
                 </div>
               </div>
 
@@ -304,7 +304,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                     : `@${resolution.namespace.slug}`}
                 </div>
                 <div className="text-[11px] text-slate-500 mt-1">
-                  공식 네임스페이스 울타리 내에서 격리되어 관리됩니다.
+                  Maintained and isolated within official namespace boundaries.
                 </div>
               </div>
             </div>
@@ -338,7 +338,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   <button
                     onClick={() => copyToClipboard(ep.url, `ep_${idx}`)}
                     className="text-slate-500 hover:text-slate-300 ml-2 p-1"
-                    title="URL 복사"
+                    title="Copy URL"
                   >
                     {copiedKey === `ep_${idx}` ? (
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -412,7 +412,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <span>
-                      Cursor나 Claude Desktop의 <code className="text-indigo-300">claude_desktop_config.json</code>에 추가하세요:
+                      Add to <code className="text-indigo-300">claude_desktop_config.json</code> in Cursor or Claude Desktop:
                     </span>
                     <button
                       onClick={() => copyToClipboard(mcpConfig, "mcp_code")}
@@ -421,12 +421,12 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                       {copiedKey === "mcp_code" ? (
                         <>
                           <Check className="w-3.5 h-3.5" />
-                          <span>복사됨!</span>
+                          <span>Copied!</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          <span>JSON 복사</span>
+                          <span>Copy JSON</span>
                         </>
                       )}
                     </button>
@@ -440,7 +440,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               {activeTab === "curl" && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>터미널에서 직접 에이전트 여권 정보를 조회합니다:</span>
+                    <span>Query agent passport directly from your terminal:</span>
                     <button
                       onClick={() => copyToClipboard(curlCommand, "curl_code")}
                       className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300"
@@ -448,12 +448,12 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                       {copiedKey === "curl_code" ? (
                         <>
                           <Check className="w-3.5 h-3.5" />
-                          <span>복사됨!</span>
+                          <span>Copied!</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          <span>명령어 복사</span>
+                          <span>Copy Command</span>
                         </>
                       )}
                     </button>
@@ -467,7 +467,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               {activeTab === "sdk" && (
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>클라이언트 사이드 또는 백엔드에서 주소를 동적으로 해석합니다:</span>
+                    <span>Resolve agent address dynamically in your client or backend:</span>
                     <button
                       onClick={() => copyToClipboard(sdkCode, "sdk_code")}
                       className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300"
@@ -475,12 +475,12 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                       {copiedKey === "sdk_code" ? (
                         <>
                           <Check className="w-3.5 h-3.5" />
-                          <span>복사됨!</span>
+                          <span>Copied!</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          <span>코드 복사</span>
+                          <span>Copy Code</span>
                         </>
                       )}
                     </button>
@@ -494,7 +494,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               {activeTab === "badge" && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>GitHub README.md에 붙여넣어 검증 뱃지를 표시하세요:</span>
+                    <span>Embed live trust badge into your GitHub README.md:</span>
                     <button
                       onClick={() => copyToClipboard(badgeMarkdown, "badge_code")}
                       className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300"
@@ -502,18 +502,18 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                       {copiedKey === "badge_code" ? (
                         <>
                           <Check className="w-3.5 h-3.5" />
-                          <span>복사됨!</span>
+                          <span>Copied!</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          <span>마크다운 복사</span>
+                          <span>Copy Markdown</span>
                         </>
                       )}
                     </button>
                   </div>
                   <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center gap-3">
-                    <span className="text-xs text-slate-500 font-mono">미리보기:</span>
+                    <span className="text-xs text-slate-500 font-mono">Preview:</span>
                     <img
                       src={`/api/v1/badge/${encodeURIComponent(agent.primaryAddress)}`}
                       alt="AID Badge"
@@ -542,7 +542,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               href="/#verify"
               className="text-slate-400 hover:text-slate-200 transition underline underline-offset-4"
             >
-              전자서명 검증기
+              Signature Verifier
             </Link>
             <span>•</span>
             <Link
