@@ -71,7 +71,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start p-4 sm:p-6 lg:p-12 relative overflow-hidden">
       {/* Background Decorative Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-indigo-900/20 blur-[130px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[350px] bg-yellow-500/10 blur-[130px] rounded-full pointer-events-none" />
       <div className="absolute top-40 right-10 w-[300px] h-[300px] bg-emerald-900/10 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Navigation Top Bar */}
@@ -107,13 +107,13 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
       {/* Main Digital Passport Document Card */}
       <div className="w-full max-w-4xl bg-slate-900/90 border border-slate-800/80 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden z-10 relative">
         {/* Passport Top Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-slate-900 via-yellow-950/30 to-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <div className="w-8 h-8 rounded-lg bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center text-yellow-400">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <div className="text-[11px] font-mono tracking-widest text-indigo-400 uppercase font-semibold">
+              <div className="text-[11px] font-mono tracking-widest text-yellow-400 uppercase font-semibold">
                 AID Official Passport
               </div>
               <div className="text-xs text-slate-400 font-mono">
@@ -201,7 +201,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
           {/* 3 Pillars of Trust Evidence */}
           <div>
             <h2 className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-indigo-400" />
+              <Cpu className="w-4 h-4 text-yellow-400" />
               <span>Trust Evidence & Cryptographic Attestation</span>
             </h2>
 
@@ -216,7 +216,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                    <Globe className="w-3.5 h-3.5 text-yellow-400" />
                     <span>Domain Ownership</span>
                   </span>
                   {resolution.verification.domain ? (
@@ -244,17 +244,17 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               <div
                 className={`p-4 rounded-xl border ${
                   resolution.verification.key
-                    ? "bg-indigo-950/20 border-indigo-500/30"
+                    ? "bg-yellow-950/20 border-yellow-400/30"
                     : "bg-slate-950 border-slate-800"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-                    <KeyRound className="w-3.5 h-3.5 text-indigo-400" />
+                    <KeyRound className="w-3.5 h-3.5 text-yellow-400" />
                     <span>Ed25519 Key</span>
                   </span>
                   {resolution.verification.key ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] font-mono text-indigo-400 font-medium">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-mono text-yellow-400 font-medium">
                       <CheckCircle2 className="w-3 h-3" />
                       Audited
                     </span>
@@ -291,7 +291,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-mono text-slate-400 flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-yellow-400" />
                     <span>Namespace Anchor</span>
                   </span>
                   <span className="text-[11px] font-mono text-cyan-400 font-medium">
@@ -324,7 +324,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   className="flex items-center justify-between bg-slate-950 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-mono"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="uppercase font-bold px-2 py-0.5 rounded bg-indigo-950 text-indigo-400 border border-indigo-800/60 text-[10px]">
+                    <span className="uppercase font-bold px-2 py-0.5 rounded bg-yellow-950/40 text-yellow-400 border border-yellow-800/40 text-[10px]">
                       {ep.protocol}
                     </span>
                     {ep.isPrimary && (
@@ -355,7 +355,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
           <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-5 space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
               <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-indigo-400" />
+                <Code2 className="w-4 h-4 text-yellow-400" />
                 <span className="text-xs font-mono uppercase tracking-wider text-slate-300 font-semibold">
                   Developer Quickstart
                 </span>
@@ -367,7 +367,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   onClick={() => setActiveTab("mcp")}
                   className={`px-3 py-1 rounded-md transition ${
                     activeTab === "mcp"
-                      ? "bg-indigo-600 text-white font-medium"
+                      ? "bg-yellow-400 text-black font-bold shadow-sm shadow-yellow-400/20"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
@@ -377,7 +377,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   onClick={() => setActiveTab("curl")}
                   className={`px-3 py-1 rounded-md transition ${
                     activeTab === "curl"
-                      ? "bg-indigo-600 text-white font-medium"
+                      ? "bg-yellow-400 text-black font-bold shadow-sm shadow-yellow-400/20"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
@@ -387,7 +387,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   onClick={() => setActiveTab("sdk")}
                   className={`px-3 py-1 rounded-md transition ${
                     activeTab === "sdk"
-                      ? "bg-indigo-600 text-white font-medium"
+                      ? "bg-yellow-400 text-black font-bold shadow-sm shadow-yellow-400/20"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
@@ -397,7 +397,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   onClick={() => setActiveTab("badge")}
                   className={`px-3 py-1 rounded-md transition ${
                     activeTab === "badge"
-                      ? "bg-indigo-600 text-white font-medium"
+                      ? "bg-yellow-400 text-black font-bold shadow-sm shadow-yellow-400/20"
                       : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
@@ -412,11 +412,11 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs text-slate-400">
                     <span>
-                      Add to <code className="text-indigo-300">claude_desktop_config.json</code> in Cursor or Claude Desktop:
+                      Add to <code className="text-yellow-300">claude_desktop_config.json</code> in Cursor or Claude Desktop:
                     </span>
                     <button
                       onClick={() => copyToClipboard(mcpConfig, "mcp_code")}
-                      className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300"
+                      className="inline-flex items-center gap-1 text-yellow-400 hover:text-yellow-300"
                     >
                       {copiedKey === "mcp_code" ? (
                         <>
@@ -443,7 +443,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                     <span>Query agent passport directly from your terminal:</span>
                     <button
                       onClick={() => copyToClipboard(curlCommand, "curl_code")}
-                      className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300"
+                      className="inline-flex items-center gap-1 text-yellow-400 hover:text-yellow-300"
                     >
                       {copiedKey === "curl_code" ? (
                         <>
@@ -470,7 +470,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                     <span>Resolve agent address dynamically in your client or backend:</span>
                     <button
                       onClick={() => copyToClipboard(sdkCode, "sdk_code")}
-                      className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300"
+                      className="inline-flex items-center gap-1 text-yellow-400 hover:text-yellow-300"
                     >
                       {copiedKey === "sdk_code" ? (
                         <>
@@ -497,7 +497,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                     <span>Embed live trust badge into your GitHub README.md:</span>
                     <button
                       onClick={() => copyToClipboard(badgeMarkdown, "badge_code")}
-                      className="inline-flex items-center gap-1 text-indigo-400 hover:text-indigo-300"
+                      className="inline-flex items-center gap-1 text-yellow-400 hover:text-yellow-300"
                     >
                       {copiedKey === "badge_code" ? (
                         <>
@@ -547,7 +547,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
             <span>•</span>
             <Link
               href="/"
-              className="text-indigo-400 hover:text-indigo-300 transition font-semibold"
+              className="text-yellow-400 hover:text-yellow-300 transition font-semibold"
             >
               AID Protocol Registry
             </Link>

@@ -218,19 +218,19 @@ export default function Home() {
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col">
       {/* Glow Background Gradients */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] pointer-events-none overflow-hidden -z-10">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-indigo-600/25 via-purple-600/20 to-pink-600/10 blur-[130px] rounded-full" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-yellow-500/15 via-amber-500/10 to-transparent blur-[130px] rounded-full" />
       </div>
 
       {/* Navigation Bar */}
       <header className="sticky top-0 z-40 backdrop-blur-md bg-[#070b14]/80 border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <ShieldCheck className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-400 to-amber-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
+              <ShieldCheck className="w-5 h-5 text-black" />
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-black tracking-tight text-white">AID</span>
-              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/30">
                 Protocol v0.1
               </span>
             </div>
@@ -259,12 +259,12 @@ export default function Home() {
               onClick={() => setShowMcpModal(true)}
               className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition-colors"
             >
-              <Cpu className="w-3.5 h-3.5 text-purple-400" />
+              <Cpu className="w-3.5 h-3.5 text-amber-400" />
               <span>MCP Server</span>
             </button>
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-600/30 transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-yellow-400/20 transition-colors"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Register Agent</span>
@@ -278,21 +278,21 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Hero Left Content */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-medium text-indigo-300">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-medium text-yellow-300">
+              <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
               <span>Decentralized Identity & Trust for the Multi-Agent Era</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
               Give Every AI Agent an{" "}
-              <span className="bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent">
                 Identity & Trust.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
               Replace fragile, unverified URLs with memorable addresses like{" "}
-              <code className="text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded font-mono text-sm border border-indigo-800/40">
+              <code className="text-yellow-300 bg-yellow-950/40 px-1.5 py-0.5 rounded font-mono text-sm border border-yellow-800/40">
                 research@priesm
               </code>
               . Backed by real-time DNS TXT verification, Ed25519 cryptography, and instant MCP resolution for Claude & Cursor.
@@ -302,7 +302,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
               <a
                 href="#registry"
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-sm font-semibold shadow-lg shadow-yellow-400/20 transition-all flex items-center gap-2"
               >
                 <span>Explore Live Registry</span>
                 <ArrowRight className="w-4 h-4" />
@@ -325,7 +325,7 @@ export default function Home() {
                 }}
                 className="px-4 py-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono transition flex items-center gap-2"
               >
-                <Terminal className="w-3.5 h-3.5 text-indigo-400" />
+                <Terminal className="w-3.5 h-3.5 text-yellow-400" />
                 <span>curl .../weather@community</span>
                 {heroCurlCopied ? (
                   <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -339,7 +339,7 @@ export default function Home() {
             <div className="pt-6 border-t border-slate-800/60 grid grid-cols-2 sm:grid-cols-3 gap-4 text-left">
               <div>
                 <div className="text-sm font-bold text-white flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                  <Globe className="w-3.5 h-3.5 text-yellow-400" />
                   <span>DNS TXT Engine</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">Google & Cloudflare verified</p>
@@ -353,7 +353,7 @@ export default function Home() {
               </div>
               <div>
                 <div className="text-sm font-bold text-white flex items-center gap-1.5">
-                  <Zap className="w-3.5 h-3.5 text-purple-400" />
+                  <Zap className="w-3.5 h-3.5 text-amber-400" />
                   <span>Zero-Proxy P2P</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">&lt;15ms edge resolution</p>
@@ -381,7 +381,7 @@ export default function Home() {
                 <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800/80 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-[11px]">Primary Address</span>
-                    <span className="text-indigo-400 font-bold text-sm">research@priesm</span>
+                    <span className="text-yellow-400 font-bold text-sm">research@priesm</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-[11px]">Permanent AID</span>
@@ -411,7 +411,7 @@ export default function Home() {
                 {/* Simulated CLI prompt */}
                 <div className="p-3 bg-black/70 rounded-lg border border-slate-800/80 text-[11px] text-slate-300">
                   <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/research@priesm</div>
-                  <div className="text-indigo-400 mt-1">✓ Identity resolved in 11ms via Edge CDN</div>
+                  <div className="text-yellow-400 mt-1">✓ Identity resolved in 11ms via Edge CDN</div>
                   <div className="text-slate-400 mt-0.5">✓ Ready for Claude Desktop & Cursor tool calling</div>
                 </div>
               </div>
@@ -424,7 +424,7 @@ export default function Home() {
       <section id="how-it-works" className="py-16 border-t border-slate-800/80 bg-slate-950/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3 mb-12">
-            <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-400">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-yellow-400">
               Architecture & Workflow
             </h2>
             <p className="text-3xl font-extrabold text-white tracking-tight">
@@ -437,28 +437,28 @@ export default function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Step 1 */}
-            <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-indigo-500/40 transition">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-4 font-bold text-sm">
+            <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-yellow-400/40 transition">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-yellow-400 mb-4 font-bold text-sm">
                 01
               </div>
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
                 <span>Claim & Verify Domain</span>
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Add an <code className="text-indigo-300 font-mono">_aid</code> TXT record to your DNS (Cloudflare, Route53, etc.). AID validates root DNS via Google & Cloudflare with zero chance of impersonation.
+                Add an <code className="text-yellow-300 font-mono">_aid</code> TXT record to your DNS (Cloudflare, Route53, etc.). AID validates root DNS via Google & Cloudflare with zero chance of impersonation.
               </p>
             </div>
 
             {/* Step 2 */}
-            <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-purple-500/40 transition">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-4 font-bold text-sm">
+            <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-amber-400/40 transition">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mb-4 font-bold text-sm">
                 02
               </div>
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
                 <span>Mint Verifiable Passport</span>
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Assign a clean address (<code className="text-purple-300 font-mono">alias@namespace</code>) and attach your MCP or A2A endpoints. Receive a permanent ULID and live dynamic GitHub README badge.
+                Assign a clean address (<code className="text-amber-300 font-mono">alias@namespace</code>) and attach your MCP or A2A endpoints. Receive a permanent ULID and live dynamic GitHub README badge.
               </p>
             </div>
 
@@ -482,7 +482,7 @@ export default function Home() {
       <section id="registry" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-slate-800 gap-4">
           <div>
-            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-400 uppercase tracking-wider mb-1">
               <Layers className="w-3.5 h-3.5" />
               <span>Live Network Registry</span>
             </div>
@@ -504,7 +504,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-600/30 transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-yellow-400/20 transition"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Register New Agent</span>
@@ -519,7 +519,7 @@ export default function Home() {
             <div className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
               <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
                 <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
-                  <Terminal className="w-4 h-4 text-indigo-400" />
+                  <Terminal className="w-4 h-4 text-yellow-400" />
                   Live Agent Resolver
                 </div>
                 <span className="text-[11px] text-slate-400 font-mono">GET /v1/resolve/:address</span>
@@ -535,12 +535,12 @@ export default function Home() {
                     value={resolveAddress}
                     onChange={(e) => setResolveAddress(e.target.value)}
                     placeholder="alias@namespace"
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono"
                   />
                   <button
                     onClick={() => handleResolve()}
                     disabled={isResolving}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-sm shadow-indigo-600/30 transition flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-sm font-semibold rounded-xl shadow-sm shadow-yellow-400/20 transition flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {isResolving ? (
                       <RefreshCw className="w-4 h-4 animate-spin text-white" />
@@ -561,7 +561,7 @@ export default function Home() {
                             setResolveAddress(a.primaryAddress);
                             handleResolve(a.primaryAddress);
                           }}
-                          className="text-xs text-indigo-400 hover:underline font-mono"
+                          className="text-xs text-yellow-400 hover:underline font-mono"
                         >
                           {a.primaryAddress}
                         </button>
@@ -605,7 +605,7 @@ export default function Home() {
 
                     <div className="flex justify-between items-center">
                       <span className="text-slate-400">Protocol:</span>
-                      <span className="uppercase px-1.5 py-0.5 rounded bg-slate-800 font-mono text-[10px] text-indigo-300">
+                      <span className="uppercase px-1.5 py-0.5 rounded bg-slate-800 font-mono text-[10px] text-yellow-300">
                         {resolveResult.primaryEndpoint?.protocol}
                       </span>
                     </div>
@@ -625,7 +625,7 @@ export default function Home() {
                         <span
                           className={`px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 ${
                             resolveResult.verification.key
-                              ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                              ? "bg-yellow-400/10 text-yellow-400 border border-yellow-400/20"
                               : "bg-slate-800 text-slate-400"
                           }`}
                         >
@@ -701,7 +701,7 @@ export default function Home() {
                       <div className="pt-2">
                         <Link
                           href={`/${encodeURIComponent(resolveResult.address)}`}
-                          className="w-full py-2 px-3 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-xs text-indigo-300 hover:text-indigo-200 flex items-center justify-center gap-1.5 transition font-medium"
+                          className="w-full py-2 px-3 rounded-lg bg-indigo-600/20 hover:bg-yellow-400/20 border border-yellow-400/30 text-xs text-yellow-300 hover:text-indigo-200 flex items-center justify-center gap-1.5 transition font-medium"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Open Official Passport</span>
@@ -722,7 +722,7 @@ export default function Home() {
             {/* Namespaces Widget */}
             <div className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
               <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
-                <Globe className="w-4 h-4 text-purple-400" />
+                <Globe className="w-4 h-4 text-amber-400" />
                 Claimed Namespaces
               </h3>
               <div className="space-y-2">
@@ -732,7 +732,7 @@ export default function Home() {
                     className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-sm text-indigo-400">@{ns.slug}</span>
+                      <span className="font-mono font-bold text-sm text-yellow-400">@{ns.slug}</span>
                       <span className="text-xs text-slate-400 truncate max-w-[140px]">{ns.name}</span>
                     </div>
                     {ns.isVerified ? (
@@ -770,7 +770,7 @@ export default function Home() {
                   placeholder="Search registered agents by address, AID or name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                  className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400"
                 />
               </div>
               <div className="text-xs text-slate-400 self-center">
@@ -787,7 +787,7 @@ export default function Home() {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-mono font-bold text-base text-indigo-400">
+                        <span className="font-mono font-bold text-base text-yellow-400">
                           {agent.primaryAddress}
                         </span>
                         <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -805,7 +805,7 @@ export default function Home() {
                     <div className="flex items-center gap-1.5 shrink-0">
                       <Link
                         href={`/${encodeURIComponent(agent.primaryAddress)}`}
-                        className="px-3 py-1.5 text-xs font-medium text-indigo-300 hover:text-white bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-800/60 rounded-lg transition flex items-center gap-1"
+                        className="px-3 py-1.5 text-xs font-medium text-yellow-400 hover:text-yellow-300 bg-yellow-400/10 hover:bg-yellow-400/20 border border-yellow-400/30 text-yellow-400 rounded-lg transition flex items-center gap-1"
                       >
                         <span>Passport</span>
                         <ExternalLink className="w-3 h-3" />
@@ -855,8 +855,8 @@ export default function Home() {
       <footer className="mt-auto border-t border-slate-800/80 py-8 bg-[#05080f]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center">
-              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+            <div className="w-5 h-5 rounded bg-yellow-400/20 border border-yellow-400/30 flex items-center justify-center">
+              <ShieldCheck className="w-3.5 h-3.5 text-yellow-400" />
             </div>
             <span>AID Protocol v0.1 • AI Agent Identity & Trust Infrastructure</span>
           </div>
@@ -909,7 +909,7 @@ export default function Home() {
                     <select
                       value={newNamespace}
                       onChange={(e) => setNewNamespace(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono"
                     >
                       {namespaces.map((ns) => (
                         <option key={ns.id} value={ns.slug}>
@@ -924,7 +924,7 @@ export default function Home() {
                       placeholder="e.g. aid"
                       value={newNamespace}
                       onChange={(e) => setNewNamespace(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono"
                     />
                   )}
                 </div>
@@ -936,7 +936,7 @@ export default function Home() {
                     placeholder="e.g. planner"
                     value={newAlias}
                     onChange={(e) => setNewAlias(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono"
                   />
                 </div>
               </div>
@@ -949,7 +949,7 @@ export default function Home() {
                   placeholder="e.g. Autonomous Task Planner"
                   value={newDisplayName}
                   onChange={(e) => setNewDisplayName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400"
                 />
               </div>
 
@@ -960,7 +960,7 @@ export default function Home() {
                   placeholder="Capabilities, scope, or LLM runtime..."
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400"
                 />
               </div>
 
@@ -973,7 +973,7 @@ export default function Home() {
                     placeholder="https://agent.example.com/a2a"
                     value={newEndpoint}
                     onChange={(e) => setNewEndpoint(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400 font-mono"
                   />
                 </div>
                 <div>
@@ -981,7 +981,7 @@ export default function Home() {
                   <select
                     value={newProtocol}
                     onChange={(e) => setNewProtocol(e.target.value as any)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-yellow-400"
                   >
                     <option value="a2a">A2A</option>
                     <option value="mcp">MCP</option>
@@ -1001,7 +1001,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm shadow-indigo-600/30 transition disabled:opacity-50"
+                  className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-xs font-semibold rounded-lg shadow-sm shadow-yellow-400/20 transition disabled:opacity-50"
                 >
                   {isSubmitting ? "Registering..." : "Issue AID & Register"}
                 </button>
@@ -1017,8 +1017,8 @@ export default function Home() {
           <div className="bg-[#0f172a] border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-800">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
-                  <Cpu className="w-4 h-4 text-purple-400" />
+                <div className="w-8 h-8 rounded-lg bg-amber-400/20 border border-amber-400/30 flex items-center justify-center">
+                  <Cpu className="w-4 h-4 text-amber-400" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">AID MCP Server</h3>
@@ -1098,15 +1098,15 @@ export default function Home() {
               <div className="text-xs font-semibold text-slate-300 mb-2">Available MCP Tools:</div>
               <div className="space-y-1.5 text-xs text-slate-400 font-mono">
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-400">• resolve_agent:</span>
+                  <span className="text-amber-400">• resolve_agent:</span>
                   <span className="text-slate-500 text-[11px]">Address → AID, Endpoint, Verification Evidence</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-400">• verify_agent_signature:</span>
+                  <span className="text-amber-400">• verify_agent_signature:</span>
                   <span className="text-slate-500 text-[11px]">Validates Ed25519 payload signatures</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-purple-400">• search_agents:</span>
+                  <span className="text-amber-400">• search_agents:</span>
                   <span className="text-slate-500 text-[11px]">Search agents by capability or alias</span>
                 </div>
               </div>
@@ -1115,7 +1115,7 @@ export default function Home() {
             <div className="pt-3 border-t border-slate-800 flex justify-end">
               <button
                 onClick={() => setShowMcpModal(false)}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm shadow-indigo-600/30 transition"
+                className="px-4 py-2 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-xs font-semibold rounded-lg shadow-sm shadow-yellow-400/20 transition"
               >
                 Done
               </button>
@@ -1150,13 +1150,13 @@ export default function Home() {
 
             {isFetchingChallenge ? (
               <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-                <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
+                <RefreshCw className="w-4 h-4 animate-spin text-yellow-400" />
                 <span>Loading DNS verification instructions...</span>
               </div>
             ) : verifyChallenge ? (
               <div className="space-y-4 text-xs">
                 <p className="text-slate-300 leading-relaxed">
-                  Add the following DNS <span className="text-indigo-400 font-bold font-mono">TXT</span> record at your domain provider (Cloudflare, Route53, GoDaddy, etc.) to prove ownership:
+                  Add the following DNS <span className="text-yellow-400 font-bold font-mono">TXT</span> record at your domain provider (Cloudflare, Route53, GoDaddy, etc.) to prove ownership:
                 </p>
 
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-3 font-mono">
@@ -1174,7 +1174,7 @@ export default function Home() {
                           setDnsCopied("name");
                           setTimeout(() => setDnsCopied(null), 2000);
                         }}
-                        className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1"
+                        className="text-yellow-400 hover:text-yellow-300 text-[10px] flex items-center gap-1"
                       >
                         {dnsCopied === "name" ? (
                           <Check className="w-3 h-3 text-emerald-400" />
@@ -1201,7 +1201,7 @@ export default function Home() {
                           setDnsCopied("value");
                           setTimeout(() => setDnsCopied(null), 2000);
                         }}
-                        className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1"
+                        className="text-yellow-400 hover:text-yellow-300 text-[10px] flex items-center gap-1"
                       >
                         {dnsCopied === "value" ? (
                           <Check className="w-3 h-3 text-emerald-400" />
