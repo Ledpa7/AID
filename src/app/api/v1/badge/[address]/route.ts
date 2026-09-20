@@ -23,7 +23,7 @@ export async function GET(
         statusColor = "#10b981"; // emerald
       } else {
         statusText = "registered";
-        statusColor = "#6366f1"; // indigo
+        statusColor = "#facc15"; // neon yellow
       }
     }
 

@@ -82,7 +82,7 @@ export default async function PassportPage({ params }: PageProps) {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/"
-              className="inline-flex items-center gap-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-4 py-2 rounded-xl transition w-full sm:w-auto justify-center shadow-lg shadow-indigo-600/20"
+              className="inline-flex items-center gap-2 text-sm bg-yellow-400 hover:bg-yellow-300 text-black font-bold px-4 py-2 rounded-xl transition w-full sm:w-auto justify-center shadow-lg shadow-yellow-400/20"
             >
               <Search className="w-4 h-4" />
               <span>Search Registry</span>

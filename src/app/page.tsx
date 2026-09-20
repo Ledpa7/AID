@@ -264,7 +264,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-yellow-400/20 transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-black bg-yellow-400 hover:bg-yellow-300 rounded-lg shadow-sm shadow-yellow-400/20 transition-colors"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>Register Agent</span>
@@ -278,7 +278,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Hero Left Content */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-medium text-yellow-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-xs font-medium text-yellow-300">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
               <span>Decentralized Identity & Trust for the Multi-Agent Era</span>
             </div>
@@ -438,7 +438,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Step 1 */}
             <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-yellow-400/40 transition">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-yellow-400 mb-4 font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center text-yellow-400 mb-4 font-bold text-sm">
                 01
               </div>
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
@@ -504,7 +504,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-yellow-400/20 transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-black bg-yellow-400 hover:bg-yellow-300 rounded-lg shadow-sm shadow-yellow-400/20 transition"
             >
               <PlusCircle className="w-4 h-4" />
               <span>Register New Agent</span>
@@ -701,7 +701,7 @@ export default function Home() {
                       <div className="pt-2">
                         <Link
                           href={`/${encodeURIComponent(resolveResult.address)}`}
-                          className="w-full py-2 px-3 rounded-lg bg-indigo-600/20 hover:bg-yellow-400/20 border border-yellow-400/30 text-xs text-yellow-300 hover:text-indigo-200 flex items-center justify-center gap-1.5 transition font-medium"
+                          className="w-full py-2 px-3 rounded-lg bg-yellow-400/10 hover:bg-yellow-400/20 border border-yellow-400/30 text-xs text-yellow-400 hover:text-yellow-300 flex items-center justify-center gap-1.5 transition font-semibold"
                         >
                           <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Open Official Passport</span>
