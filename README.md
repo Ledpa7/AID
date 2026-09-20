@@ -2,9 +2,9 @@
 
 # 🛡️ AID — AI Agent Identity & Trust Infrastructure
 
-**Give every AI agent a verifiable identity, an address, and cryptographic trust.**
+**The decentralized DNS, Verifiable Passport, and Cryptographic Trust Layer for AI Agents.**
 
-[![AID Badge](https://img.shields.io/badge/aid-verified_infrastructure-10b981?style=for-the-badge&logo=shield)](https://github.com)
+[![Live Production](https://img.shields.io/badge/Live_Demo-aid--beryl.vercel.app-10b981?style=for-the-badge&logo=vercel)](https://aid-beryl.vercel.app)
 [![Next.js 14](https://img.shields.io/badge/Next.js-14_App_Router-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=for-the-badge&logo=supabase)](https://supabase.com)
 [![Crypto: Ed25519](https://img.shields.io/badge/Crypto-Ed25519_Native-6366f1?style=for-the-badge)](https://github.com)
@@ -13,42 +13,66 @@
 
 <br />
 
-[Features](#-features) • [Terminal Quickstart](#-terminal-quickstart) • [Viral README Badge](#-add-aid-badge-to-your-repo) • [MCP Integration](#-mcp-integration) • [API Docs](#-api-reference)
+[What is AID?](#-what-is-aid-in-30-seconds) • [3-Minute User Guides](#-3-minute-user-guides) • [Architecture](#-architecture-dns-vs-proxy) • [MCP Setup](#-guide-3-use-with-claude-desktop--cursor-mcp) • [API Reference](#-api-reference)
 
 </div>
 
 ---
 
-## 💡 The Problem & The Solution
+## 💡 What is AID in 30 Seconds?
 
-In the multi-agent economy, agents need to discover and talk to each other. But today:
+In the emerging multi-agent economy, autonomous agents need to discover, authenticate, and communicate with each other. Today, that process is broken:
 - **No Identity**: Agents only have transient URLs or random IDs like `agent_82fa7139`.
-- **Impersonation**: Anyone can spin up an agent and claim to be `support@samsung.com`.
-- **Protocol Fragmentation**: Some use MCP, some A2A, some REST.
+- **Impersonation**: Anyone can spin up an agent and claim to be `support@samsung.com` or `tax@intuit.com`.
+- **Protocol Fragmentation**: Some use Model Context Protocol (MCP), some use A2A, others use raw REST endpoints.
 
-**AID solves this by serving as the DNS + Registry + Cryptographic Trust Layer for AI Agents:**
+**AID solves this by serving as the DNS and Passport Bureau for AI Agents:**
+1. **Readable Addresses**: Replace raw URLs with clean, memorable identities like `weather@community` or `research@jidoo`.
+2. **Cryptographic Proof of Ownership**: Verified via native DNS TXT records (`_aid.yourdomain.com`) and Ed25519 public key signatures.
+3. **Open Resolution**: Any agent, LLM, or user can resolve an agent's endpoint and trust profile in a single, edge-cached lookup.
 
-```text
-               "Can I verify this agent is who it claims to be?"
-                                      │
-  Agent A ────────────── GET /v1/resolve/research@jidoo ─────────────► AID
-    (Caller)                                                            │
-       ◄────────────── Endpoint + Ed25519 Key + Evidence ──────────────┘
-       │
-  [ Cryptographic Handshake & Direct Communication via MCP / A2A ]
+---
+
+## 🚀 3-Minute User Guides
+
+Depending on what you want to do, choose one of the three paths below:
+
+```
+                  ┌──────────────────────────────────────────────┐
+                  │              HOW TO USE AID                  │
+                  └───────┬──────────────┬──────────────┬────────┘
+                          │              │              │
+             ┌────────────▼───┐   ┌──────▼───────┐   ┌──▼──────────────┐
+             │ 1. EXPLORER    │   │ 2. BUILDER   │   │ 3. CONSUMER     │
+             │ Inspect & verify│  │ Register &   │   │ Plug into       │
+             │ any AI Agent   │   │ certify your │   │ Claude / Cursor │
+             │ via Web / CLI  │   │ own AI agent │   │ via MCP tools   │
+             └────────────────┘   └──────────────┘   └─────────────────┘
 ```
 
 ---
 
-## ⚡ Terminal Quickstart
+### 📖 Guide 1: Inspect & Verify Any AI Agent (For Everyone)
 
-Inspect any agent directly in your command line with zero installation:
+Want to check if an agent on the internet is authentic, who owns it, and what capabilities it offers?
+
+#### Option A: View the Official Web Passport
+Visit any agent's public passport page directly in your browser:
+```text
+https://aid-beryl.vercel.app/research@jidoo
+```
+* Shows verified badges for domain ownership and cryptographic signature capability.
+* Displays registered endpoints (`MCP`, `A2A`, `REST`).
+* Provides one-click copyable configuration snippets for Claude Desktop and Cursor.
+
+#### Option B: Terminal Lookup (Zero Installation)
+Inspect any agent passport instantly using standard `curl`:
 
 ```bash
-# Instant Agent Passport Lookup in your terminal
 curl -sL https://aid-beryl.vercel.app/research@jidoo
 ```
 
+**Terminal Output:**
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │  AID AGENT PASSPORT — Verifiable AI Identity                           │
@@ -70,24 +94,49 @@ curl -sL https://aid-beryl.vercel.app/research@jidoo
 
 ---
 
-## 🏷️ Add AID Badge to Your Agent's GitHub Repo
+### 🛠️ Guide 2: Register & Certify Your Own Agent (For Developers)
 
-If you build an AI agent, add a dynamic, real-time verified badge to your repo's `README.md`:
+Give your AI agent a verified identity that anyone can trust and query.
+
+#### Step 1: Claim Your Domain Namespace
+1. Open the [AID Console](https://aid-beryl.vercel.app).
+2. Under **Namespaces**, enter your domain name (e.g., `acme.corp` or `jidoo.net`) and an owner email.
+3. Click **Register Namespace**.
+
+#### Step 2: Verify Real-Time Domain Ownership (DNS TXT)
+To prevent impersonation, prove you own the domain:
+1. Click the **Verify DNS** button next to your namespace.
+2. Add a DNS `TXT` record at your domain registrar (Cloudflare, Namecheap, Route53, etc.):
+   * **Host / Name**: `_aid` (or `_aid.yourdomain.com`)
+   * **Type**: `TXT`
+   * **Value**: `aid-verification=<YOUR_TOKEN>`
+3. Click **Execute DNS Check**. AID queries Google & Cloudflare DNS in real-time. Once detected, your namespace immediately receives a green `Verified` badge!
+
+#### Step 3: Register Your Agent Address
+1. Go to the **Agents** tab in the console.
+2. Choose your namespace and alias (e.g., `support@acme.corp`).
+3. Fill in your agent's live endpoint (e.g., `https://api.acme.corp/mcp`) and your agent's Ed25519 public key.
+4. Submit to mint a permanent, immutable **AID ULID** (e.g., `aid_01K72M8KQ4A7F901`).
+
+#### Step 4: Embed the Live Verified Badge on GitHub
+Add this snippet to your agent's GitHub `README.md` to display your live trust status:
 
 ```markdown
-[![AID Verified](https://aid-beryl.vercel.app/api/v1/badge/research@jidoo)](https://aid-beryl.vercel.app/research@jidoo)
+[![AID Verified](https://aid-beryl.vercel.app/api/v1/badge/support@acme.corp)](https://aid-beryl.vercel.app/support@acme.corp)
 ```
 
-Renders live based on domain and key verification:
-> `[ aid : research@jidoo | verified ]`
+Renders as:
+> `[ aid : support@acme.corp | verified ]`
 
 ---
 
-## 🔌 MCP (Model Context Protocol) Integration
+### 🔌 Guide 3: Use with Claude Desktop & Cursor (For AI Assistants)
 
-Plug AID directly into **Claude Desktop**, **Cursor**, or any MCP-compatible client to let your LLM resolve and connect to agents across the web.
+Connect your favorite LLM assistant directly to the global AID network so it can discover and use external AI agents on demand.
 
-Add to your `claude_desktop_config.json`:
+#### 1. Configure MCP (Model Context Protocol)
+
+Add the AID MCP server to your `claude_desktop_config.json` (or Cursor MCP settings):
 
 ```json
 {
@@ -97,79 +146,116 @@ Add to your `claude_desktop_config.json`:
       "args": ["-y", "aid-mcp", "--registry", "https://aid-beryl.vercel.app"]
     }
   }
-}
 ```
 
-Now your AI assistant can invoke:
-```text
-use_tool("resolve_agent", { "address": "research@jidoo" })
-```
+#### 2. Ask Your Assistant in Natural Language
+
+Once configured, your AI assistant gains the `resolve_agent` tool. You can simply prompt it:
+
+> *"Check the identity of `research@jidoo` on AID, verify its domain, and connect to its MCP endpoint to fetch the latest paper on agent architectures."*
+
+Your assistant will:
+1. Call AID's resolution API to get the endpoint and trust status.
+2. Confirm that the agent is DNS-verified.
+3. Directly communicate with the remote agent's tool server.
 
 ---
 
-## 🔐 Cryptographic Verification (Ed25519)
+## 🏛️ Architecture: DNS vs Proxy
 
-AID never stores private keys. Private keys stay inside your agent runtime.
+A common question is: **"Does all agent-to-agent communication route through AID servers?"**
 
-### 1. Challenge Request
-```bash
-curl -X POST https://aid-beryl.vercel.app/api/v1/verify/challenge \
-  -H "Content-Type: application/json" \
-  -d '{"subject": "research@jidoo"}'
+**No.** AID operates strictly as a **DNS Directory and Trust Registry**, not a centralized proxy or data relay:
+
+```text
+[ Client Agent / LLM ]
+       │
+       ├─ (1) Resolve Address (One-time, <1KB JSON) ──► [ AID Edge Registry ]
+       │      "Where is weather@community?"                    │
+       │      "Here is the verified URL and public key." ◄─────┘
+       │
+       └─ (2) Direct Execution (P2P / MCP / REST) ────► [ Target Agent Server ]
+              "Stream weather data for Seoul..."               │
+              "Here is the complete forecast payload." ◄───────┘
 ```
 
-### 2. Verify Signature
-When receiving a request from an agent, verify its identity in 1 line:
-```bash
-curl -X POST https://aid-beryl.vercel.app/api/v1/verify/signature \
-  -H "Content-Type: application/json" \
-  -d '{
-    "address": "research@jidoo",
-    "message": "AID-AUTH:research@jidoo:nonce_abc123",
-    "signature": "3a8f94d..."
-  }'
+### Why this design matters:
+* **Zero Latency & Privacy**: Heavy LLM tokens, sensitive user data, and streaming responses never pass through AID. They travel directly between client and target.
+* **Global Edge Caching**: Resolution results are cached on Vercel's global CDN (`s-maxage=300`), returning addresses in **under 15ms** worldwide with near-zero server load.
+* **High Reliability**: Even if the registry undergoes maintenance, clients can cache known agent addresses locally.
+
+---
+
+## 🔐 Cryptographic Authentication (Ed25519)
+
+AID supports end-to-end cryptographic challenge-response authentication. **AID never stores private keys.**
+
+```text
+Caller                                               AID Registry / Target Agent
+  │                                                               │
+  ├─ (1) POST /api/v1/verify/challenge { address } ──────────────►│ (Issues nonce)
+  │◄──────────────── Nonce String ("AID-AUTH:...") ───────────────┤
+  │                                                               │
+  ├─ (2) Sign nonce using Agent's local Private Key               │
+  │                                                               │
+  ├─ (3) POST /api/v1/verify/signature { address, signature } ───►│ (Verifies with
+  │                                                               │  registered public key)
+  │◄──────────────── { "verified": true } ────────────────────────┤
 ```
 
 ---
 
 ## 📡 REST API Reference
 
+All endpoints return standard JSON and support CORS.
+
 | Endpoint | Method | Description |
 | :--- | :--- | :--- |
-| `/:address` | `GET` | Terminal card (curl) or Web redirect (browser) |
-| `/api/v1/resolve/:address` | `GET` | Resolve address to AID, endpoint, and trust evidence |
+| `/:address` | `GET` | Smart Route: ASCII passport for `curl`, Web passport for browsers |
+| `/api/v1/resolve/:address` | `GET` | Resolve address to AID, endpoint, and trust verification state |
 | `/api/v1/badge/:address` | `GET` | Dynamic SVG status badge for GitHub READMEs |
-| `/api/v1/agents` | `POST` | Register a new agent and issue permanent AID (ULID) |
+| `/api/v1/namespaces` | `POST` | Register a new domain namespace |
+| `/api/v1/namespaces/:slug/verify` | `GET` | Get DNS TXT challenge instructions for domain |
+| `/api/v1/namespaces/:slug/verify` | `POST` | Execute live DNS TXT record check via 8.8.8.8 and 1.1.1.1 |
+| `/api/v1/agents` | `POST` | Register a new agent and issue a permanent ULID |
 | `/api/v1/agents/inspect` | `POST` | SSRF-protected Agent Card (`/.well-known/agent-card.json`) inspector |
 | `/api/v1/verify/challenge` | `POST` | Issue cryptographic challenge nonce |
-| `/api/v1/verify/signature` | `POST` | Verify Ed25519 signature against registered agent key |
+| `/api/v1/verify/signature` | `POST` | Verify Ed25519 signature against registered agent public key |
 
 ---
 
-## 🚀 Self-Hosting
+## 💻 Local Development & Self-Hosting
+
+### Prerequisites
+- Node.js 18+
+- A free [Supabase](https://supabase.com) PostgreSQL database
 
 ### 1. Clone & Install
 ```bash
-git clone https://github.com/your-org/aid.git
-cd aid
+git clone https://github.com/Ledpa7/AID.git
+cd AID
 npm install
 ```
 
-### 2. Configure Environment
+### 2. Configure Environment Variables
+Create `.env.local`:
 ```bash
-cp .env.example .env.local
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 ```
 
-### 3. Setup Database (Supabase)
-Run the SQL schema in `supabase/schema.sql` on your Supabase project.
+### 3. Initialize Database
+Execute the SQL schema in `supabase/schema.sql` inside your Supabase SQL Editor.
 
-### 4. Run Locally
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
-Open `http://localhost:3000` to access the AID Web Console.
+Open [http://localhost:3000](http://localhost:3000) to view the console.
 
 ---
 
 ## 📄 License
-MIT © 2026 AID Team.
+
+MIT © 2026 AID Team. Distributed under the MIT License.
