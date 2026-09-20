@@ -44,6 +44,60 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
+  // Domain Verification Modal State
+  const [showVerifyModal, setShowVerifyModal] = useState(false);
+  const [verifyingNs, setVerifyingNs] = useState<Namespace | null>(null);
+  const [verifyChallenge, setVerifyChallenge] = useState<any>(null);
+  const [isFetchingChallenge, setIsFetchingChallenge] = useState(false);
+  const [isVerifyingDns, setIsVerifyingDns] = useState(false);
+  const [verifyError, setVerifyError] = useState("");
+  const [verifySuccess, setVerifySuccess] = useState("");
+  const [dnsCopied, setDnsCopied] = useState<string | null>(null);
+
+  const handleOpenVerifyModal = async (ns: Namespace) => {
+    setVerifyingNs(ns);
+    setShowVerifyModal(true);
+    setVerifyError("");
+    setVerifySuccess("");
+    setIsFetchingChallenge(true);
+    try {
+      const res = await fetch(`/api/v1/namespaces/${ns.slug}/verify`);
+      const data = await res.json();
+      if (!res.ok) {
+        setVerifyError(data.error || "Failed to load verification challenge.");
+      } else {
+        setVerifyChallenge(data);
+      }
+    } catch (err: any) {
+      setVerifyError(err.message || "Network error fetching challenge.");
+    } finally {
+      setIsFetchingChallenge(false);
+    }
+  };
+
+  const handleRunDnsVerification = async () => {
+    if (!verifyingNs) return;
+    setIsVerifyingDns(true);
+    setVerifyError("");
+    setVerifySuccess("");
+    try {
+      const res = await fetch(`/api/v1/namespaces/${verifyingNs.slug}/verify`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setVerifyError(data.error || "DNS verification failed.");
+      } else {
+        setVerifySuccess(data.message || "Domain successfully verified!");
+        fetchData();
+      }
+    } catch (err: any) {
+      setVerifyError(err.message || "Error running DNS verification.");
+    } finally {
+      setIsVerifyingDns(false);
+    }
+  };
+
   const fetchData = async () => {
     try {
       const [resAgents, resNs] = await Promise.all([
@@ -398,10 +452,20 @@ export default function Home() {
                     <span className="font-mono font-bold text-sm text-indigo-400">@{ns.slug}</span>
                     <span className="text-xs text-slate-400 truncate max-w-[140px]">{ns.name}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                    <CheckCircle2 className="w-3 h-3" />
-                    Verified
-                  </div>
+                  {ns.isVerified ? (
+                    <div className="flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Verified
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleOpenVerifyModal(ns)}
+                      className="flex items-center gap-1 text-[11px] text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 transition cursor-pointer"
+                    >
+                      <AlertCircle className="w-3 h-3" />
+                      Verify DNS
+                    </button>
+                  )}
                 </div>
               ))}
               {namespaces.length === 0 && (
@@ -732,6 +796,137 @@ export default function Home() {
                 Done
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Domain Verification Modal */}
+      {showVerifyModal && verifyingNs && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[#0f172a] border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
+                  <Globe className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Domain DNS Verification</h3>
+                  <p className="text-xs text-slate-400 font-mono">@{verifyingNs.slug} • {verifyingNs.domain || "No domain set"}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowVerifyModal(false)}
+                className="text-slate-400 hover:text-white text-xs p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {isFetchingChallenge ? (
+              <div className="py-8 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
+                <span>Loading DNS verification instructions...</span>
+              </div>
+            ) : verifyChallenge ? (
+              <div className="space-y-4 text-xs">
+                <p className="text-slate-300 leading-relaxed">
+                  Add the following DNS <span className="text-indigo-400 font-bold font-mono">TXT</span> record at your domain provider (Cloudflare, Route53, GoDaddy, etc.) to prove ownership:
+                </p>
+
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-3 font-mono">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 text-[11px]">Record Type:</span>
+                    <span className="text-slate-200 font-bold bg-slate-800 px-2 py-0.5 rounded text-[11px]">TXT</span>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-slate-500 text-[11px]">Host / Name:</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(verifyChallenge.instructions.name);
+                          setDnsCopied("name");
+                          setTimeout(() => setDnsCopied(null), 2000);
+                        }}
+                        className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1"
+                      >
+                        {dnsCopied === "name" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {dnsCopied === "name" ? "Copied" : "Copy"}
+                      </button>
+                    </div>
+                    <div className="bg-slate-950 p-2 rounded text-slate-300 select-all border border-slate-800/80">
+                      {verifyChallenge.instructions.name} <span className="text-slate-500 text-[10px]">({verifyChallenge.instructions.host})</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-slate-500 text-[11px]">TXT Value:</span>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(verifyChallenge.instructions.value);
+                          setDnsCopied("value");
+                          setTimeout(() => setDnsCopied(null), 2000);
+                        }}
+                        className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1"
+                      >
+                        {dnsCopied === "value" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {dnsCopied === "value" ? "Copied" : "Copy"}
+                      </button>
+                    </div>
+                    <div className="bg-slate-950 p-2 rounded text-emerald-400 select-all border border-slate-800/80 break-all text-[11px]">
+                      {verifyChallenge.instructions.value}
+                    </div>
+                  </div>
+                </div>
+
+                {verifySuccess && (
+                  <div className="p-3 bg-emerald-950/40 border border-emerald-800/50 rounded-lg flex items-center gap-2 text-emerald-300 text-xs">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>{verifySuccess}</span>
+                  </div>
+                )}
+
+                {verifyError && (
+                  <div className="p-3 bg-red-950/40 border border-red-800/50 rounded-lg flex items-start gap-2 text-red-300 text-xs">
+                    <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <div>{verifyError}</div>
+                      <p className="text-[11px] text-slate-400">DNS changes can take 1-5 minutes to propagate globally.</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+                  <div className="text-[11px] text-slate-500">
+                    Queries Google (8.8.8.8) & Cloudflare (1.1.1.1)
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowVerifyModal(false)}
+                      className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white"
+                    >
+                      Close
+                    </button>
+
+                    <button
+                      onClick={handleRunDnsVerification}
+                      disabled={isVerifyingDns}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow-sm shadow-emerald-600/30 transition flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isVerifyingDns && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                      <span>{isVerifyingDns ? "Querying DNS..." : "Check DNS Record Now"}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="py-4 text-center text-xs text-red-400">
+                {verifyError || "Unable to load verification details."}
+              </div>
+            )}
           </div>
         </div>
       )}

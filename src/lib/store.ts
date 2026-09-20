@@ -7,6 +7,11 @@ import {
   generateKeyId,
 } from "./ulid";
 import crypto from "crypto";
+import {
+  verifyDnsTxtRecord,
+  generateDomainChallengeToken,
+  sanitizeDomain,
+} from "./dns";
 
 // Pure, clean fallback store (empty by default)
 const globalStore: {
@@ -131,6 +136,147 @@ export class AIDStore {
     }
 
     return newNs;
+  }
+
+  // --- Domain Verification ---
+  static async getDomainChallenge(slug: string) {
+    const ns = await this.findNamespaceBySlug(slug);
+    if (!ns) {
+      throw new Error(`Namespace @${slug} not found.`);
+    }
+
+    if (!ns.domain) {
+      throw new Error(`Namespace @${slug} does not have an associated domain.`);
+    }
+
+    const cleanDomain = sanitizeDomain(ns.domain);
+    const expectedToken = generateDomainChallengeToken(ns.slug, cleanDomain);
+
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      // Check existing verification record
+      const { data: existing } = await supabase
+        .from("aid_domain_verifications")
+        .select("*")
+        .eq("namespace_id", ns.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!existing) {
+        // Create verification challenge record
+        await supabase.from("aid_domain_verifications").insert({
+          id: `dver_${ns.id.replace(/^ns_/, "")}`,
+          namespace_id: ns.id,
+          domain: cleanDomain,
+          challenge_token: expectedToken,
+          status: ns.isVerified ? "VERIFIED" : "PENDING",
+          verified_at: ns.verifiedAt || null,
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
+
+    return {
+      slug: ns.slug,
+      name: ns.name,
+      domain: cleanDomain,
+      isVerified: ns.isVerified,
+      verifiedAt: ns.verifiedAt,
+      challengeToken: expectedToken,
+      dnsRecord: {
+        type: "TXT",
+        host: `_aid.${cleanDomain}`,
+        name: "_aid",
+        value: expectedToken,
+        rootHost: cleanDomain,
+      },
+    };
+  }
+
+  static async verifyDomain(slug: string) {
+    const challenge = await this.getDomainChallenge(slug);
+
+    if (challenge.isVerified) {
+      return {
+        success: true,
+        alreadyVerified: true,
+        message: `Domain '${challenge.domain}' is already verified for namespace @${challenge.slug}.`,
+        domain: challenge.domain,
+        verifiedAt: challenge.verifiedAt,
+      };
+    }
+
+    // Run real-time DNS TXT query via Google / Cloudflare
+    const dnsResult = await verifyDnsTxtRecord(challenge.domain, challenge.challengeToken);
+
+    if (!dnsResult.success) {
+      return {
+        success: false,
+        error: dnsResult.error,
+        domain: challenge.domain,
+        queriedHosts: dnsResult.queriedHosts,
+        recordsFound: dnsResult.recordsFound,
+      };
+    }
+
+    // Update database states
+    const now = new Date().toISOString();
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      const ns = await this.findNamespaceBySlug(slug);
+      if (ns) {
+        // 1. Update aid_namespaces
+        await supabase
+          .from("aid_namespaces")
+          .update({
+            is_verified: true,
+            verified_at: now,
+            updated_at: now,
+          })
+          .eq("id", ns.id);
+
+        // 2. Update aid_domain_verifications
+        await supabase
+          .from("aid_domain_verifications")
+          .update({
+            status: "VERIFIED",
+            verified_at: now,
+          })
+          .eq("namespace_id", ns.id);
+
+        // 3. Append to Audit log
+        const eventHash = crypto
+          .createHash("sha256")
+          .update(`${ns.id}:DOMAIN_VERIFIED:${now}`)
+          .digest("hex");
+
+        await supabase.from("aid_identity_events").insert({
+          agent_id: ns.id,
+          event_type: "DOMAIN_VERIFIED",
+          payload: {
+            slug: ns.slug,
+            domain: challenge.domain,
+            matchedRecord: dnsResult.matchedRecord,
+          },
+          event_hash: eventHash,
+        });
+      }
+    } else {
+      // In-memory fallback
+      const localNs = globalStore.namespaces.find((n) => n.slug === challenge.slug);
+      if (localNs) {
+        localNs.isVerified = true;
+        localNs.verifiedAt = now;
+      }
+    }
+
+    return {
+      success: true,
+      domain: challenge.domain,
+      matchedRecord: dnsResult.matchedRecord,
+      verifiedAt: now,
+    };
   }
 
   // --- Agents ---
