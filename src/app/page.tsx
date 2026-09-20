@@ -293,7 +293,7 @@ export default function Home() {
             <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
               Replace fragile, unverified URLs with memorable addresses like{" "}
               <code className="text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded font-mono text-sm border border-indigo-800/40">
-                research@jidoo
+                research@prism
               </code>
               . Backed by real-time DNS TXT verification, Ed25519 cryptography, and instant MCP resolution for Claude & Cursor.
             </p>
@@ -381,7 +381,7 @@ export default function Home() {
                 <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800/80 space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-[11px]">Primary Address</span>
-                    <span className="text-indigo-400 font-bold text-sm">research@jidoo</span>
+                    <span className="text-indigo-400 font-bold text-sm">research@prism</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-slate-500 text-[11px]">Permanent AID</span>
@@ -391,7 +391,7 @@ export default function Home() {
                     <span className="text-slate-500 text-[11px]">Domain Authority</span>
                     <span className="text-slate-300 flex items-center gap-1 text-[11px]">
                       <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                      jidoo.net (DNS TXT)
+                      prism.network (DNS TXT)
                     </span>
                   </div>
                 </div>
@@ -400,7 +400,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                     <div className="text-slate-500 text-[10px]">MCP Tool Endpoint</div>
-                    <div className="text-slate-300 truncate mt-0.5 font-sans">https://agent.jidoo.net/mcp</div>
+                    <div className="text-slate-300 truncate mt-0.5 font-sans">https://agent.prism.network/mcp</div>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                     <div className="text-slate-500 text-[10px]">Cryptographic Key</div>
@@ -410,7 +410,7 @@ export default function Home() {
 
                 {/* Simulated CLI prompt */}
                 <div className="p-3 bg-black/70 rounded-lg border border-slate-800/80 text-[11px] text-slate-300">
-                  <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/research@jidoo</div>
+                  <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/research@prism</div>
                   <div className="text-indigo-400 mt-1">✓ Identity resolved in 11ms via Edge CDN</div>
                   <div className="text-slate-400 mt-0.5">✓ Ready for Claude Desktop & Cursor tool calling</div>
                 </div>
