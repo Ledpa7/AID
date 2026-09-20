@@ -241,8 +241,8 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-xl font-black tracking-tight text-white">AID</span>
-              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/30">
-                Protocol v0.1
+              <span className="px-2.5 py-0.5 text-[11px] font-medium rounded-full bg-slate-900/90 text-slate-300 border border-slate-800">
+                Agent Identity Directory
               </span>
             </div>
           </Link>
@@ -719,7 +719,7 @@ export default function Home() {
             <div className="w-5 h-5 rounded bg-yellow-400/20 border border-yellow-400/30 flex items-center justify-center">
               <ShieldCheck className="w-3.5 h-3.5 text-yellow-400" />
             </div>
-            <span>AID Protocol v0.1 • AI Agent Identity & Trust Infrastructure</span>
+            <span>AID • Agent Identity Directory & Trust Infrastructure</span>
           </div>
 
           <div className="flex items-center gap-6">
