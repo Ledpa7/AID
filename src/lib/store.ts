@@ -458,6 +458,9 @@ export class AIDStore {
   }
 
   static async findAgentByAID(aid: string): Promise<Agent | null> {
+    const trimmed = (aid || "").trim();
+    if (!trimmed) return null;
+
     const supabase = this.getSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -470,8 +473,8 @@ export class AIDStore {
           aid_agent_keys(*)
         `
         )
-        .eq("id", aid)
-        .single();
+        .ilike("id", trimmed)
+        .maybeSingle();
 
       if (error || !data) return null;
 
@@ -508,75 +511,14 @@ export class AIDStore {
         updatedAt: data.updated_at,
       };
     }
-    return globalStore.agents.find((a) => a.id === aid) || null;
+    return (
+      globalStore.agents.find(
+        (a) => a.id.toLowerCase() === trimmed.toLowerCase()
+      ) || null
+    );
   }
 
-  static async resolveAddress(address: string): Promise<ResolutionResponse | null> {
-    const raw = address.toLowerCase().trim();
-    const [aliasPart, namespacePart] = raw.split("@");
-    if (!aliasPart || !namespacePart) return null;
-
-    const supabase = this.getSupabaseClient();
-    if (supabase) {
-      // 1. Check aid_agent_aliases table
-      const { data: aliasData } = await supabase
-        .from("aid_agent_aliases")
-        .select("agent_id")
-        .eq("full_address", `${aliasPart}@${namespacePart}`)
-        .eq("is_active", true)
-        .single();
-
-      const targetAgentId = aliasData?.agent_id;
-      if (targetAgentId) {
-        const agent = await this.findAgentByAID(targetAgentId);
-        if (agent) {
-          const ns = await this.findNamespaceBySlug(agent.namespaceSlug);
-          const primaryEndpoint =
-            agent.endpoints.find((ep) => ep.isPrimary) || agent.endpoints[0];
-
-          return {
-            aid: agent.id,
-            address: `${aliasPart}@${namespacePart}`,
-            status: agent.status,
-            visibility: agent.visibility,
-            namespace: {
-              slug: agent.namespaceSlug,
-              domain: ns?.domain,
-              isVerified: !!ns?.isVerified,
-            },
-            endpoints: agent.endpoints.map((ep) => ({
-              protocol: ep.protocol,
-              url: ep.url,
-              isPrimary: ep.isPrimary,
-            })),
-            primaryEndpoint: primaryEndpoint
-              ? { protocol: primaryEndpoint.protocol, url: primaryEndpoint.url }
-              : undefined,
-            verification: {
-              domain: agent.isDomainVerified,
-              key: agent.isKeyVerified,
-              card: false,
-            },
-            capabilities: ["web.search", "a2a.query"],
-            publicKey: agent.publicKey,
-            resolvedAt: new Date().toISOString(),
-          };
-        }
-      }
-      // If Supabase is connected and address not found in DB, return null
-      return null;
-    }
-
-    // In-memory fallback (only when offline / no Supabase env)
-    const agent = globalStore.agents.find(
-      (a) =>
-        a.primaryAddress.toLowerCase() === `${aliasPart}@${namespacePart}` ||
-        (a.defaultAlias.toLowerCase() === aliasPart &&
-          a.namespaceSlug.toLowerCase() === namespacePart)
-    );
-
-    if (!agent) return null;
-
+  private static async buildResolutionResponse(agent: Agent): Promise<ResolutionResponse> {
     const ns = await this.findNamespaceBySlug(agent.namespaceSlug);
     const primaryEndpoint =
       agent.endpoints.find((ep) => ep.isPrimary) || agent.endpoints[0];
@@ -597,10 +539,7 @@ export class AIDStore {
         isPrimary: ep.isPrimary,
       })),
       primaryEndpoint: primaryEndpoint
-        ? {
-            protocol: primaryEndpoint.protocol,
-            url: primaryEndpoint.url,
-          }
+        ? { protocol: primaryEndpoint.protocol, url: primaryEndpoint.url }
         : undefined,
       verification: {
         domain: agent.isDomainVerified,
@@ -614,6 +553,58 @@ export class AIDStore {
       publicKey: agent.publicKey,
       resolvedAt: new Date().toISOString(),
     };
+  }
+
+  static async resolveAddress(address: string): Promise<ResolutionResponse | null> {
+    const trimmed = (address || "").trim();
+    if (!trimmed) return null;
+
+    // 1. Direct AID Reverse Lookup (e.g. aid_01M30DW5MS43TTBR0BBS3KRSZ4)
+    if (trimmed.toLowerCase().startsWith("aid_")) {
+      const agent = await this.findAgentByAID(trimmed);
+      if (agent) {
+        return this.buildResolutionResponse(agent);
+      }
+      return null;
+    }
+
+    // 2. Handle Lookup (e.g. scout@github)
+    const raw = trimmed.toLowerCase();
+    const [aliasPart, namespacePart] = raw.split("@");
+    if (!aliasPart || !namespacePart) return null;
+
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      // 1. Check aid_agent_aliases table
+      const { data: aliasData } = await supabase
+        .from("aid_agent_aliases")
+        .select("agent_id")
+        .eq("full_address", `${aliasPart}@${namespacePart}`)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      const targetAgentId = aliasData?.agent_id;
+      if (targetAgentId) {
+        const agent = await this.findAgentByAID(targetAgentId);
+        if (agent) {
+          return this.buildResolutionResponse(agent);
+        }
+      }
+      // If Supabase is connected and address not found in DB, return null
+      return null;
+    }
+
+    // In-memory fallback (only when offline / no Supabase env)
+    const agent = globalStore.agents.find(
+      (a) =>
+        a.primaryAddress.toLowerCase() === `${aliasPart}@${namespacePart}` ||
+        (a.defaultAlias.toLowerCase() === aliasPart &&
+          a.namespaceSlug.toLowerCase() === namespacePart)
+    );
+
+    if (!agent) return null;
+
+    return this.buildResolutionResponse(agent);
   }
 
   static async registerAgent(params: {

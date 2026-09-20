@@ -12,13 +12,13 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const rawAddress = decodeURIComponent(params.address || "").toLowerCase().trim();
+  const rawAddress = decodeURIComponent(params.address || "").trim();
   const resolution = await AIDStore.resolveAddress(rawAddress);
 
   if (!resolution) {
     return {
       title: `Agent Not Found — AID Protocol`,
-      description: `The requested agent address '${rawAddress}' was not found in the AID registry.`,
+      description: `The requested agent identifier '${rawAddress}' was not found in the AID registry.`,
     };
   }
 
@@ -58,7 +58,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function PassportPage({ params }: PageProps) {
-  const rawAddress = decodeURIComponent(params.address || "").toLowerCase().trim();
+  const rawAddress = decodeURIComponent(params.address || "").trim();
   const resolution = await AIDStore.resolveAddress(rawAddress);
 
   if (!resolution) {
@@ -72,10 +72,10 @@ export default async function PassportPage({ params }: PageProps) {
           <div className="space-y-2">
             <h1 className="text-xl font-bold text-white">Agent Passport Not Found</h1>
             <p className="text-xs font-mono text-slate-400">
-              Address: <span className="text-red-400 font-semibold">{rawAddress}</span>
+              Identifier: <span className="text-red-400 font-semibold">{rawAddress}</span>
             </p>
             <p className="text-sm text-slate-400 pt-2">
-              The requested agent address is not registered in the AID registry or has been suspended.
+              The requested agent handle or permanent AID is not registered in the AID registry or has been suspended.
             </p>
           </div>
 

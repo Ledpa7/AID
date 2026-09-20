@@ -8,10 +8,11 @@ export async function GET(
   { params }: { params: { address: string } }
 ) {
   try {
-    const rawAddress = decodeURIComponent(params.address);
-    if (!rawAddress.includes("@")) {
+    const rawAddress = decodeURIComponent(params.address).trim();
+    const isAid = rawAddress.toLowerCase().startsWith("aid_");
+    if (!rawAddress.includes("@") && !isAid) {
       return NextResponse.json(
-        { error: "Invalid address format. Expected alias@namespace (e.g. registry@aid)" },
+        { error: "Invalid address format. Expected alias@namespace (e.g. scout@github) or AID (e.g. aid_01M30...)" },
         { status: 400 }
       );
     }
@@ -20,7 +21,7 @@ export async function GET(
 
     if (!resolution) {
       return NextResponse.json(
-        { error: `Agent address '${rawAddress}' not found or suspended` },
+        { error: `Agent identifier '${rawAddress}' not found or suspended` },
         { status: 404 }
       );
     }

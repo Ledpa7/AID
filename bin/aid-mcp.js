@@ -30,13 +30,13 @@ const TOOLS = [
   {
     name: "resolve_agent",
     description:
-      "Resolves an AI agent's verifiable identity, permanent AID, primary endpoint URL, protocol (A2A, MCP, REST), and cryptographic trust evidence from an address like registry@aid or oracle@community.",
+      "Resolves an AI agent's verifiable identity, permanent AID, primary endpoint URL, protocol (A2A, MCP, REST), and cryptographic trust evidence from a handle (e.g. scout@github) or permanent AID (e.g. aid_01M30DW5MS43TTBR0BBS3KRSZ4).",
     inputSchema: {
       type: "object",
       properties: {
         address: {
           type: "string",
-          description: "The agent address in alias@namespace format (e.g. registry@aid)",
+          description: "The agent handle (e.g. scout@github) or permanent cryptographic AID (e.g. aid_01M30DW5MS43TTBR0BBS3KRSZ4)",
         },
       },
       required: ["address"],

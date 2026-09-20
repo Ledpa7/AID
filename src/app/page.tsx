@@ -33,6 +33,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNamespace, setSelectedNamespace] = useState<string>("all");
   const [copiedHandle, setCopiedHandle] = useState<string | null>(null);
+  const [copiedAid, setCopiedAid] = useState<string | null>(null);
   const [resolveAddress, setResolveAddress] = useState("");
   const [resolveResult, setResolveResult] = useState<ResolutionResponse | null>(null);
   const [isResolving, setIsResolving] = useState(false);
@@ -510,13 +511,21 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             {/* Single Unified Search Bar */}
-            <div className="relative min-w-[280px]">
+            <div className="relative min-w-[300px] sm:min-w-[360px]">
               <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
               <input
                 type="text"
-                placeholder="Search by handle or keyword..."
+                placeholder="Search by handle (e.g. scout@github) or AID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && searchQuery.trim()) {
+                    const q = searchQuery.trim();
+                    if (q.startsWith("aid_") || q.includes("@")) {
+                      window.location.href = `/${encodeURIComponent(q)}`;
+                    }
+                  }
+                }}
                 className="w-full pl-9 pr-4 py-2 bg-slate-900/90 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400 transition"
               />
             </div>
@@ -585,6 +594,38 @@ export default function Home() {
                   </span>
                 </div>
 
+                {/* Permanent AID Identifier Chip with 1-Click Copy */}
+                <div className="flex items-center justify-between bg-slate-950/70 border border-slate-800/80 rounded-lg px-2.5 py-1.5 mb-3 font-mono text-[11px]">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-slate-500 text-[10px] shrink-0">AID:</span>
+                    <Link
+                      href={`/${encodeURIComponent(agent.id)}`}
+                      className="text-emerald-400/90 hover:text-emerald-300 hover:underline font-medium truncate"
+                      title={`Direct AID: ${agent.id} (Click to open passport)`}
+                    >
+                      {agent.id}
+                    </Link>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      navigator.clipboard.writeText(agent.id);
+                      setCopiedAid(agent.id);
+                      setTimeout(() => setCopiedAid(null), 2000);
+                    }}
+                    className="text-slate-500 hover:text-slate-200 transition p-1 shrink-0 ml-1.5 rounded"
+                    title="Copy AID"
+                  >
+                    {copiedAid === agent.id ? (
+                      <Check className="w-3 h-3 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-slate-400 hover:text-slate-200" />
+                    )}
+                  </button>
+                </div>
+
                 <h3 className="text-sm font-bold text-white mb-2 group-hover:text-yellow-300 transition-colors">
                   {agent.displayName}
                 </h3>
@@ -634,7 +675,7 @@ export default function Home() {
           <div className="text-center py-16 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
             <Cpu className="w-8 h-8 text-slate-600 mx-auto mb-3" />
             <p className="text-sm font-semibold text-slate-300">No agents match your query</p>
-            <p className="text-xs text-slate-500 mt-1">Try searching for 'github', 'registry', or 'oracle'</p>
+            <p className="text-xs text-slate-500 mt-1">Try searching for 'scout@github', 'aid_01M30...', or 'registry'</p>
           </div>
         )}
 
