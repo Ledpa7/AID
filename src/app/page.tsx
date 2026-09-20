@@ -280,22 +280,22 @@ export default function Home() {
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-xs font-medium text-yellow-300">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
-              <span>Decentralized Identity & Trust for the Multi-Agent Era</span>
+              <span>The Universal Directory & Verified Passports for AI Agents</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
-              Give Every AI Agent an{" "}
+              The Verified Address Book for{" "}
               <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent">
-                Identity & Trust.
+                Autonomous AI Agents.
               </span>
             </h1>
 
             <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
-              Replace fragile, unverified URLs with memorable addresses like{" "}
+              Turn complex API links into clean, trusted handles like{" "}
               <code className="text-yellow-300 bg-yellow-950/40 px-1.5 py-0.5 rounded font-mono text-sm border border-yellow-800/40">
                 research@priesm
               </code>
-              . Backed by real-time DNS TXT verification, Ed25519 cryptography, and instant MCP resolution for Claude & Cursor.
+              . Stop fake bots with domain verification, and plug directly into Claude Desktop or Cursor with zero configuration.
             </p>
 
             {/* CTAs */}
@@ -340,23 +340,23 @@ export default function Home() {
               <div>
                 <div className="text-sm font-bold text-white flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-yellow-400" />
-                  <span>DNS TXT Engine</span>
+                  <span>Zero Fake Bots</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">Google & Cloudflare verified</p>
+                <p className="text-xs text-slate-500 mt-0.5">Verified via real website domains</p>
               </div>
               <div>
                 <div className="text-sm font-bold text-white flex items-center gap-1.5">
                   <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Ed25519 Native</span>
+                  <span>100% Private & Direct</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">Private keys never leave agent</p>
+                <p className="text-xs text-slate-500 mt-0.5">We never touch your data or keys</p>
               </div>
               <div>
                 <div className="text-sm font-bold text-white flex items-center gap-1.5">
                   <Zap className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Zero-Proxy P2P</span>
+                  <span>Works with Claude & Cursor</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">&lt;15ms edge resolution</p>
+                <p className="text-xs text-slate-500 mt-0.5">Plug & play tools in 1 click</p>
               </div>
             </div>
           </div>
@@ -425,13 +425,13 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto space-y-3 mb-12">
             <h2 className="text-xs font-bold uppercase tracking-widest text-yellow-400">
-              Architecture & Workflow
+              Simple 3-Step Setup
             </h2>
             <p className="text-3xl font-extrabold text-white tracking-tight">
-              How AID Powers Autonomous Agent Trust
+              How AID Works in 3 Simple Steps
             </p>
             <p className="text-sm text-slate-400">
-              Unlike centralized proxies, AID functions as the internet's root DNS for AI agents. Heavy LLM traffic and sensitive keys remain strictly peer-to-peer.
+              Like a global phonebook for AI, AID helps people and assistants find who an agent belongs to and connect directly with total confidence.
             </p>
           </div>
 
@@ -442,23 +442,23 @@ export default function Home() {
                 01
               </div>
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                <span>Claim & Verify Domain</span>
+                <span>Pick a Clean Handle</span>
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Add an <code className="text-yellow-300 font-mono">_aid</code> TXT record to your DNS (Cloudflare, Route53, etc.). AID validates root DNS via Google & Cloudflare with zero chance of impersonation.
+                Give your agent a memorable, email-like address like <code className="text-yellow-300 font-mono">bot@yourbrand</code> instead of a fragile, confusing URL that breaks easily.
               </p>
             </div>
 
             {/* Step 2 */}
             <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-amber-400/40 transition">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mb-4 font-bold text-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mb-4 font-bold text-sm">
                 02
               </div>
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                <span>Mint Verifiable Passport</span>
+                <span>Prove You're the Real Owner</span>
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Assign a clean address (<code className="text-amber-300 font-mono">alias@namespace</code>) and attach your MCP or A2A endpoints. Receive a permanent ULID and live dynamic GitHub README badge.
+                Add one simple DNS record to your website. Visitors and AI assistants instantly see an official <span className="text-emerald-400 font-medium">Verified</span> badge, stopping impersonators cold.
               </p>
             </div>
 
@@ -468,10 +468,10 @@ export default function Home() {
                 03
               </div>
               <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                <span>Zero-Proxy P2P Execution</span>
+                <span>Plug & Play in Claude & Cursor</span>
               </h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Claude Desktop, Cursor, and swarms query AID once to resolve addresses (&lt;1KB metadata, edge cached). Subsequent tool executions happen directly between agents with zero relay lag.
+                Anyone using Claude Desktop, Cursor, or autonomous swarms can look up your handle once and run your agent's tools directly with zero middleman latency.
               </p>
             </div>
           </div>
@@ -484,13 +484,13 @@ export default function Home() {
           <div>
             <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-yellow-400 uppercase tracking-wider mb-1">
               <Layers className="w-3.5 h-3.5" />
-              <span>Live Network Registry</span>
+              <span>Live Agent Directory</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-              Agent Registry & Resolution Console
+              Explore Verified AI Agents
             </h2>
             <p className="text-sm text-slate-400 mt-1">
-              Test live resolution queries, inspect agent trust evidence, or register new endpoints.
+              Search official agent handles, inspect verified domain passports, or register your own agent in seconds.
             </p>
           </div>
 
@@ -520,14 +520,14 @@ export default function Home() {
               <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
                 <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
                   <Terminal className="w-4 h-4 text-yellow-400" />
-                  Live Agent Resolver
+                  Instant Agent Lookup
                 </div>
                 <span className="text-[11px] text-slate-400 font-mono">GET /v1/resolve/:address</span>
               </div>
 
               <div className="mt-4">
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                  Enter Agent Address (e.g. weather@community)
+                  Look up any agent handle (e.g. weather@community)
                 </label>
                 <div className="flex gap-2">
                   <input
