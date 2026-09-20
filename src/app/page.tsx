@@ -17,6 +17,13 @@ import {
   Terminal,
   Copy,
   Check,
+  ArrowRight,
+  Sparkles,
+  Lock,
+  Zap,
+  Layers,
+  Code2,
+  ChevronRight,
 } from "lucide-react";
 import { Agent, Namespace, ResolutionResponse } from "@/lib/types";
 
@@ -30,10 +37,11 @@ export default function Home() {
   const [resolveError, setResolveError] = useState("");
   const [badgeCopied, setBadgeCopied] = useState(false);
   const [curlCopied, setCurlCopied] = useState(false);
+  const [heroCurlCopied, setHeroCurlCopied] = useState(false);
   const [showMcpModal, setShowMcpModal] = useState(false);
   const [mcpCopied, setMcpCopied] = useState(false);
 
-  // Modal State
+  // Modal State for Agent Registration
   const [showModal, setShowModal] = useState(false);
   const [newNamespace, setNewNamespace] = useState("");
   const [newAlias, setNewAlias] = useState("");
@@ -156,15 +164,9 @@ export default function Home() {
     setFormError("");
 
     try {
-      const selectedNs = (newNamespace || "aid").toLowerCase().replace(/^@/, "");
-      // If namespace doesn't exist yet, auto-create it
-      const nsExists = namespaces.some((ns) => ns.slug.toLowerCase() === selectedNs);
-      if (!nsExists) {
-        await fetch("/api/v1/namespaces", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ slug: selectedNs, name: `${selectedNs} Namespace` }),
-        });
+      const selectedNs = newNamespace || (namespaces[0] && namespaces[0].slug);
+      if (!selectedNs) {
+        throw new Error("Please select or specify a namespace");
       }
 
       const res = await fetch("/api/v1/agents", {
@@ -175,8 +177,13 @@ export default function Home() {
           alias: newAlias,
           displayName: newDisplayName,
           description: newDescription,
-          endpointUrl: newEndpoint,
-          protocol: newProtocol,
+          endpoints: [
+            {
+              url: newEndpoint,
+              protocol: newProtocol,
+              isPrimary: true,
+            },
+          ],
         }),
       });
 
@@ -190,7 +197,6 @@ export default function Home() {
         setNewDescription("");
         setNewEndpoint("");
         fetchData();
-        // Automatically resolve the newly registered agent
         setResolveAddress(`${newAlias}@${selectedNs}`);
         handleResolve(`${newAlias}@${selectedNs}`);
       }
@@ -209,365 +215,678 @@ export default function Home() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <header className="flex flex-col md:flex-row md:items-center md:justify-between pb-8 border-b border-slate-800 gap-4">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold tracking-tight text-white">AID</h1>
-                <span className="px-2 py-0.5 text-xs font-semibold rounded bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
-                  v0.1 MVP
-                </span>
-              </div>
-              <p className="text-sm text-slate-400">AI Agent Identity & Trust Infrastructure</p>
-            </div>
-          </div>
-        </div>
+    <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col">
+      {/* Glow Background Gradients */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[500px] pointer-events-none overflow-hidden -z-10">
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-indigo-600/25 via-purple-600/20 to-pink-600/10 blur-[130px] rounded-full" />
+      </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowMcpModal(true)}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-medium text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition-colors"
-          >
-            <Cpu className="w-4 h-4 text-purple-400" />
-            MCP Server
-          </button>
-          <button
-            onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-600/30 transition-colors"
-          >
-            <PlusCircle className="w-4 h-4" />
-            Register Agent
-          </button>
+      {/* Navigation Bar */}
+      <header className="sticky top-0 z-40 backdrop-blur-md bg-[#070b14]/80 border-b border-slate-800/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/25">
+              <ShieldCheck className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-black tracking-tight text-white">AID</span>
+              <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
+                Protocol v0.1
+              </span>
+            </div>
+          </Link>
+
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-400">
+            <a href="#how-it-works" className="hover:text-white transition-colors">
+              How It Works
+            </a>
+            <a href="#registry" className="hover:text-white transition-colors">
+              Agent Registry
+            </a>
+            <a
+              href="https://github.com/Ledpa7/AID"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-white transition-colors flex items-center gap-1"
+            >
+              <span>Documentation</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </nav>
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={() => setShowMcpModal(true)}
+              className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-slate-200 bg-slate-900/90 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition-colors"
+            >
+              <Cpu className="w-3.5 h-3.5 text-purple-400" />
+              <span>MCP Server</span>
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-600/30 transition-colors"
+            >
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>Register Agent</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-8">
-        {/* Left Column: Live Resolver Console (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <div className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 rounded-xl p-5 shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
-              <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
-                <Terminal className="w-4 h-4 text-indigo-400" />
-                Live Agent Resolver
-              </div>
-              <span className="text-[11px] text-slate-400 font-mono">GET /v1/resolve/:address</span>
+      {/* Hero Section */}
+      <section className="relative pt-16 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full text-center lg:text-left">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          {/* Hero Left Content */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs font-medium text-indigo-300">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Decentralized Identity & Trust for the Multi-Agent Era</span>
             </div>
 
-            <div className="mt-4">
-              <label className="block text-xs font-medium text-slate-400 mb-1">
-                Enter Agent Address (e.g. registry@aid)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={resolveAddress}
-                  onChange={(e) => setResolveAddress(e.target.value)}
-                  placeholder="alias@namespace"
-                  className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
-                />
-                <button
-                  onClick={() => handleResolve()}
-                  disabled={isResolving}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-lg border border-slate-700 transition flex items-center gap-1.5"
-                >
-                  {isResolving ? (
-                    <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
-                  ) : (
-                    "Resolve"
-                  )}
-                </button>
-              </div>
-              {agents.length > 0 ? (
-                <div className="flex gap-2 mt-2 items-center flex-wrap">
-                  <span className="text-xs text-slate-500">Quick tests:</span>
-                  {agents.slice(0, 3).map((a, idx) => (
-                    <span key={a.id} className="inline-flex items-center gap-2">
-                      {idx > 0 && <span className="text-xs text-slate-600">|</span>}
-                      <button
-                        onClick={() => {
-                          setResolveAddress(a.primaryAddress);
-                          handleResolve(a.primaryAddress);
-                        }}
-                        className="text-xs text-indigo-400 hover:underline font-mono"
-                      >
-                        {a.primaryAddress}
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[11px] text-slate-500 mt-2">
-                  No agents registered yet. Register your first agent to begin!
-                </p>
-              )}
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+              Give Every AI Agent an{" "}
+              <span className="bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                Identity & Trust.
+              </span>
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
+              Replace fragile, unverified URLs with memorable addresses like{" "}
+              <code className="text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded font-mono text-sm border border-indigo-800/40">
+                research@jidoo
+              </code>
+              . Backed by real-time DNS TXT verification, Ed25519 cryptography, and instant MCP resolution for Claude & Cursor.
+            </p>
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
+              <a
+                href="#registry"
+                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
+              >
+                <span>Explore Live Registry</span>
+                <ArrowRight className="w-4 h-4" />
+              </a>
+
+              <button
+                onClick={() => setShowModal(true)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white text-sm font-medium transition flex items-center gap-2"
+              >
+                <PlusCircle className="w-4 h-4 text-slate-400" />
+                <span>Register Agent</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  const cmd = "curl -sL https://aid-beryl.vercel.app/weather@community";
+                  navigator.clipboard.writeText(cmd);
+                  setHeroCurlCopied(true);
+                  setTimeout(() => setHeroCurlCopied(false), 2000);
+                }}
+                className="px-4 py-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono transition flex items-center gap-2"
+              >
+                <Terminal className="w-3.5 h-3.5 text-indigo-400" />
+                <span>curl .../weather@community</span>
+                {heroCurlCopied ? (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Copy className="w-3.5 h-3.5 text-slate-500" />
+                )}
+              </button>
             </div>
 
-            {/* Resolve Result View */}
-            {resolveError && (
-              <div className="mt-4 p-3 rounded-lg bg-red-950/40 border border-red-800/50 flex items-start gap-2 text-red-300 text-xs">
-                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                <div>{resolveError}</div>
-              </div>
-            )}
-
-            {!resolveResult && !resolveError && !isResolving && (
-              <div className="mt-4 p-6 rounded-lg bg-slate-900/40 border border-dashed border-slate-800 text-center text-xs text-slate-500">
-                Enter an address above or select an agent from the catalog to resolve its verifiable identity passport.
-              </div>
-            )}
-
-            {resolveResult && (
-              <div className="mt-4 space-y-3">
-                <div className="p-3 bg-slate-900/90 rounded-lg border border-slate-800 text-xs space-y-2">
-                  <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                    <span className="text-slate-400">Permanent AID:</span>
-                    <span className="font-mono font-medium text-emerald-400">{resolveResult.aid}</span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Primary Endpoint:</span>
-                    <span className="font-mono text-slate-300 truncate max-w-[200px]" title={resolveResult.primaryEndpoint?.url}>
-                      {resolveResult.primaryEndpoint?.url}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Protocol:</span>
-                    <span className="uppercase px-1.5 py-0.5 rounded bg-slate-800 font-mono text-[10px] text-indigo-300">
-                      {resolveResult.primaryEndpoint?.protocol}
-                    </span>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-400">Trust Evidence:</span>
-                    <div className="flex gap-1.5">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 ${resolveResult.verification.domain ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-slate-800 text-slate-400"}`}>
-                        Domain {resolveResult.verification.domain ? "✓" : "✗"}
-                      </span>
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 ${resolveResult.verification.key ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20" : "bg-slate-800 text-slate-400"}`}>
-                        Ed25519 {resolveResult.verification.key ? "✓" : "✗"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Dynamic Badge Preview & Copy Actions */}
-                  <div className="pt-2 border-t border-slate-800/80 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">GitHub Badge:</span>
-                      <img
-                        src={`/api/v1/badge/${encodeURIComponent(resolveResult.address)}`}
-                        alt="AID Badge"
-                        className="h-5"
-                      />
-                    </div>
-                    <div className="flex gap-2 pt-1">
-                      <button
-                        onClick={() => {
-                          const origin = typeof window !== "undefined" ? window.location.origin : "https://aid.dev";
-                          const badgeMd = `[![AID Verified](${origin}/api/v1/badge/${resolveResult.address})](${origin}/${resolveResult.address})`;
-                          navigator.clipboard.writeText(badgeMd);
-                          setBadgeCopied(true);
-                          setTimeout(() => setBadgeCopied(false), 2000);
-                        }}
-                        className="flex-1 py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition"
-                      >
-                        {badgeCopied ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-400" />
-                            <span className="text-emerald-400">Badge Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3 text-slate-400" />
-                            <span>Copy Badge Markdown</span>
-                          </>
-                        )}
-                      </button>
-
-                      <button
-                        onClick={() => {
-                          const origin = typeof window !== "undefined" ? window.location.origin : "https://aid.dev";
-                          const cmd = `curl -sL ${origin}/${resolveResult.address}`;
-                          navigator.clipboard.writeText(cmd);
-                          setCurlCopied(true);
-                          setTimeout(() => setCurlCopied(false), 2000);
-                        }}
-                        className="flex-1 py-1.5 px-2 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition"
-                      >
-                        {curlCopied ? (
-                          <>
-                            <Check className="w-3 h-3 text-emerald-400" />
-                            <span className="text-emerald-400">cURL Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Terminal className="w-3 h-3 text-slate-400" />
-                            <span>Copy cURL</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="pt-2">
-                      <Link
-                        href={`/${encodeURIComponent(resolveResult.address)}`}
-                        className="w-full py-2 px-3 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-xs text-indigo-300 hover:text-indigo-200 flex items-center justify-center gap-1.5 transition font-medium"
-                      >
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Open Official Passport</span>
-                        <ExternalLink className="w-3 h-3 ml-0.5" />
-                      </Link>
-                    </div>
-                  </div>
+            {/* Value Props Pills */}
+            <div className="pt-6 border-t border-slate-800/60 grid grid-cols-2 sm:grid-cols-3 gap-4 text-left">
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <Globe className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>DNS TXT Engine</span>
                 </div>
-
-                {/* Raw JSON */}
-                <div className="p-3 bg-slate-950 rounded-lg border border-slate-900 overflow-x-auto max-h-56 text-[11px] font-mono text-slate-300">
-                  <pre>{JSON.stringify(resolveResult, null, 2)}</pre>
-                </div>
+                <p className="text-xs text-slate-500 mt-0.5">Google & Cloudflare verified</p>
               </div>
-            )}
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Ed25519 Native</span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">Private keys never leave agent</p>
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Zero-Proxy P2P</span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">&lt;15ms edge resolution</p>
+              </div>
+            </div>
           </div>
 
-          {/* Namespaces Widget */}
-          <div className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 rounded-xl p-5 shadow-xl">
-            <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-purple-400" />
-              Claimed Namespaces
-            </h3>
-            <div className="space-y-2">
-              {namespaces.map((ns) => (
-                <div
-                  key={ns.id}
-                  className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/60 border border-slate-800/80"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-sm text-indigo-400">@{ns.slug}</span>
-                    <span className="text-xs text-slate-400 truncate max-w-[140px]">{ns.name}</span>
+          {/* Hero Right Visual: Interactive Live Card Preview */}
+          <div className="lg:col-span-5 w-full">
+            <div className="relative rounded-2xl bg-gradient-to-b from-slate-800/60 to-[#0f172a] border border-slate-800 p-5 shadow-2xl backdrop-blur-xl">
+              <div className="flex items-center justify-between pb-3.5 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                  <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                  <span className="text-xs font-mono text-slate-400 ml-2">aid-protocol // live passport</span>
+                </div>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  ACTIVE
+                </span>
+              </div>
+
+              {/* Passport Header Preview */}
+              <div className="mt-4 space-y-3 font-mono text-xs">
+                <div className="p-3 bg-slate-950/80 rounded-lg border border-slate-800/80 space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[11px]">Primary Address</span>
+                    <span className="text-indigo-400 font-bold text-sm">research@jidoo</span>
                   </div>
-                  {ns.isVerified ? (
-                    <div className="flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Verified
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => handleOpenVerifyModal(ns)}
-                      className="flex items-center gap-1 text-[11px] text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 transition cursor-pointer"
-                    >
-                      <AlertCircle className="w-3 h-3" />
-                      Verify DNS
-                    </button>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[11px]">Permanent AID</span>
+                    <span className="text-emerald-400 text-[11px]">aid_01K72M8KQ4A7F901</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-500 text-[11px]">Domain Authority</span>
+                    <span className="text-slate-300 flex items-center gap-1 text-[11px]">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      jidoo.net (DNS TXT)
+                    </span>
+                  </div>
                 </div>
-              ))}
-              {namespaces.length === 0 && (
-                <div className="py-4 text-center text-xs text-slate-500">
-                  No claimed namespaces yet.
+
+                {/* Evidence tags */}
+                <div className="grid grid-cols-2 gap-2 text-[11px]">
+                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <div className="text-slate-500 text-[10px]">MCP Tool Endpoint</div>
+                    <div className="text-slate-300 truncate mt-0.5 font-sans">https://agent.jidoo.net/mcp</div>
+                  </div>
+                  <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
+                    <div className="text-slate-500 text-[10px]">Cryptographic Key</div>
+                    <div className="text-slate-300 truncate mt-0.5">Ed25519 (Verified)</div>
+                  </div>
                 </div>
-              )}
+
+                {/* Simulated CLI prompt */}
+                <div className="p-3 bg-black/70 rounded-lg border border-slate-800/80 text-[11px] text-slate-300">
+                  <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/research@jidoo</div>
+                  <div className="text-indigo-400 mt-1">✓ Identity resolved in 11ms via Edge CDN</div>
+                  <div className="text-slate-400 mt-0.5">✓ Ready for Claude Desktop & Cursor tool calling</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* Right Column: Agent Registry Catalog (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-              <input
-                type="text"
-                placeholder="Search registered agents by address, AID or name..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-              />
-            </div>
-            <div className="text-xs text-slate-400 self-center">
-              Total Agents: <span className="font-bold text-white">{filteredAgents.length}</span>
-            </div>
+      {/* How It Works Section */}
+      <section id="how-it-works" className="py-16 border-t border-slate-800/80 bg-slate-950/40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto space-y-3 mb-12">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-indigo-400">
+              Architecture & Workflow
+            </h2>
+            <p className="text-3xl font-extrabold text-white tracking-tight">
+              How AID Powers Autonomous Agent Trust
+            </p>
+            <p className="text-sm text-slate-400">
+              Unlike centralized proxies, AID functions as the internet's root DNS for AI agents. Heavy LLM traffic and sensitive keys remain strictly peer-to-peer.
+            </p>
           </div>
 
-          <div className="space-y-3">
-            {filteredAgents.map((agent) => (
-              <div
-                key={agent.id}
-                className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 hover:border-slate-700 rounded-xl p-5 shadow-lg transition"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-base text-indigo-400">
-                        {agent.primaryAddress}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Step 1 */}
+            <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-indigo-500/40 transition">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-4 font-bold text-sm">
+                01
+              </div>
+              <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <span>Claim & Verify Domain</span>
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Add an <code className="text-indigo-300 font-mono">_aid</code> TXT record to your DNS (Cloudflare, Route53, etc.). AID validates root DNS via Google & Cloudflare with zero chance of impersonation.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-purple-500/40 transition">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-4 font-bold text-sm">
+                02
+              </div>
+              <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <span>Mint Verifiable Passport</span>
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Assign a clean address (<code className="text-purple-300 font-mono">alias@namespace</code>) and attach your MCP or A2A endpoints. Receive a permanent ULID and live dynamic GitHub README badge.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="p-6 rounded-2xl bg-[#0f172a]/70 border border-slate-800 backdrop-blur-sm relative overflow-hidden group hover:border-emerald-500/40 transition">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 font-bold text-sm">
+                03
+              </div>
+              <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
+                <span>Zero-Proxy P2P Execution</span>
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Claude Desktop, Cursor, and swarms query AID once to resolve addresses (&lt;1KB metadata, edge cached). Subsequent tool executions happen directly between agents with zero relay lag.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Interactive Network Sandbox & Catalog Section */}
+      <section id="registry" className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-6 border-b border-slate-800 gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
+              <Layers className="w-3.5 h-3.5" />
+              <span>Live Network Registry</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+              Agent Registry & Resolution Console
+            </h2>
+            <p className="text-sm text-slate-400 mt-1">
+              Test live resolution queries, inspect agent trust evidence, or register new endpoints.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchData()}
+              className="p-2 text-slate-400 hover:text-white bg-slate-900 border border-slate-800 rounded-lg hover:bg-slate-800 transition"
+              title="Refresh Registry Data"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setShowModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-500 rounded-lg shadow-sm shadow-indigo-600/30 transition"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Register New Agent</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Dashboard Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column: Live Resolver Console & Namespaces (5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800/80">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-200">
+                  <Terminal className="w-4 h-4 text-indigo-400" />
+                  Live Agent Resolver
+                </div>
+                <span className="text-[11px] text-slate-400 font-mono">GET /v1/resolve/:address</span>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-xs font-medium text-slate-400 mb-1.5">
+                  Enter Agent Address (e.g. weather@community)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={resolveAddress}
+                    onChange={(e) => setResolveAddress(e.target.value)}
+                    placeholder="alias@namespace"
+                    className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 font-mono"
+                  />
+                  <button
+                    onClick={() => handleResolve()}
+                    disabled={isResolving}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold rounded-xl shadow-sm shadow-indigo-600/30 transition flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isResolving ? (
+                      <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                    ) : (
+                      "Resolve"
+                    )}
+                  </button>
+                </div>
+
+                {agents.length > 0 && (
+                  <div className="flex gap-2 mt-3 items-center flex-wrap">
+                    <span className="text-xs text-slate-500">Quick tests:</span>
+                    {agents.slice(0, 3).map((a, idx) => (
+                      <span key={a.id} className="inline-flex items-center gap-2">
+                        {idx > 0 && <span className="text-xs text-slate-600">|</span>}
+                        <button
+                          onClick={() => {
+                            setResolveAddress(a.primaryAddress);
+                            handleResolve(a.primaryAddress);
+                          }}
+                          className="text-xs text-indigo-400 hover:underline font-mono"
+                        >
+                          {a.primaryAddress}
+                        </button>
                       </span>
-                      <span className="px-2 py-0.5 text-[10px] font-semibold rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        {agent.status}
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Resolve Result View */}
+              {resolveError && (
+                <div className="mt-4 p-3 rounded-xl bg-red-950/40 border border-red-800/50 flex items-start gap-2 text-red-300 text-xs">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <div>{resolveError}</div>
+                </div>
+              )}
+
+              {!resolveResult && !resolveError && !isResolving && (
+                <div className="mt-4 p-6 rounded-xl bg-slate-900/40 border border-dashed border-slate-800 text-center text-xs text-slate-500">
+                  Enter an address above or select an agent from the catalog to resolve its verifiable identity passport.
+                </div>
+              )}
+
+              {resolveResult && (
+                <div className="mt-4 space-y-3">
+                  <div className="p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 text-xs space-y-2.5">
+                    <div className="flex justify-between items-center pb-2 border-b border-slate-800">
+                      <span className="text-slate-400">Permanent AID:</span>
+                      <span className="font-mono font-medium text-emerald-400">{resolveResult.aid}</span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Primary Endpoint:</span>
+                      <span
+                        className="font-mono text-slate-300 truncate max-w-[200px]"
+                        title={resolveResult.primaryEndpoint?.url}
+                      >
+                        {resolveResult.primaryEndpoint?.url}
                       </span>
                     </div>
-                    <h4 className="text-sm font-semibold text-slate-200 mt-1">{agent.displayName}</h4>
-                    {agent.description && (
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-2">{agent.description}</p>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Protocol:</span>
+                      <span className="uppercase px-1.5 py-0.5 rounded bg-slate-800 font-mono text-[10px] text-indigo-300">
+                        {resolveResult.primaryEndpoint?.protocol}
+                      </span>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-400">Trust Evidence:</span>
+                      <div className="flex gap-1.5">
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 ${
+                            resolveResult.verification.domain
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-slate-800 text-slate-400"
+                          }`}
+                        >
+                          Domain {resolveResult.verification.domain ? "✓" : "✗"}
+                        </span>
+                        <span
+                          className={`px-1.5 py-0.5 rounded text-[10px] flex items-center gap-1 ${
+                            resolveResult.verification.key
+                              ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                              : "bg-slate-800 text-slate-400"
+                          }`}
+                        >
+                          Ed25519 {resolveResult.verification.key ? "✓" : "✗"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Dynamic Badge Preview & Copy Actions */}
+                    <div className="pt-2 border-t border-slate-800/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-400">GitHub Badge:</span>
+                        <img
+                          src={`/api/v1/badge/${encodeURIComponent(resolveResult.address)}`}
+                          alt="AID Badge"
+                          className="h-5"
+                        />
+                      </div>
+                      <div className="flex gap-2 pt-1">
+                        <button
+                          onClick={() => {
+                            const origin =
+                              typeof window !== "undefined"
+                                ? window.location.origin
+                                : "https://aid.dev";
+                            const badgeMd = `[![AID Verified](${origin}/api/v1/badge/${resolveResult.address})](${origin}/${resolveResult.address})`;
+                            navigator.clipboard.writeText(badgeMd);
+                            setBadgeCopied(true);
+                            setTimeout(() => setBadgeCopied(false), 2000);
+                          }}
+                          className="flex-1 py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition"
+                        >
+                          {badgeCopied ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span className="text-emerald-400">Badge Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3 text-slate-400" />
+                              <span>Copy Badge Markdown</span>
+                            </>
+                          )}
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            const origin =
+                              typeof window !== "undefined"
+                                ? window.location.origin
+                                : "https://aid.dev";
+                            const cmd = `curl -sL ${origin}/${resolveResult.address}`;
+                            navigator.clipboard.writeText(cmd);
+                            setCurlCopied(true);
+                            setTimeout(() => setCurlCopied(false), 2000);
+                          }}
+                          className="flex-1 py-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[10px] text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition"
+                        >
+                          {curlCopied ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span className="text-emerald-400">cURL Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Terminal className="w-3 h-3 text-slate-400" />
+                              <span>Copy cURL</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="pt-2">
+                        <Link
+                          href={`/${encodeURIComponent(resolveResult.address)}`}
+                          className="w-full py-2 px-3 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-xs text-indigo-300 hover:text-indigo-200 flex items-center justify-center gap-1.5 transition font-medium"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Open Official Passport</span>
+                          <ExternalLink className="w-3 h-3 ml-0.5" />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Raw JSON Preview */}
+                  <div className="p-3 bg-slate-950 rounded-xl border border-slate-900 overflow-x-auto max-h-56 text-[11px] font-mono text-slate-300">
+                    <pre>{JSON.stringify(resolveResult, null, 2)}</pre>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Namespaces Widget */}
+            <div className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 rounded-2xl p-5 shadow-xl">
+              <h3 className="text-sm font-semibold text-slate-200 mb-3 flex items-center gap-2">
+                <Globe className="w-4 h-4 text-purple-400" />
+                Claimed Namespaces
+              </h3>
+              <div className="space-y-2">
+                {namespaces.map((ns) => (
+                  <div
+                    key={ns.id}
+                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/60 border border-slate-800/80"
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono font-bold text-sm text-indigo-400">@{ns.slug}</span>
+                      <span className="text-xs text-slate-400 truncate max-w-[140px]">{ns.name}</span>
+                    </div>
+                    {ns.isVerified ? (
+                      <div className="flex items-center gap-1 text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Verified
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleOpenVerifyModal(ns)}
+                        className="flex items-center gap-1 text-[11px] text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30 transition cursor-pointer"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        Verify DNS
+                      </button>
                     )}
                   </div>
+                ))}
+                {namespaces.length === 0 && (
+                  <div className="py-4 text-center text-xs text-slate-500">
+                    No claimed namespaces yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Link
-                      href={`/${encodeURIComponent(agent.primaryAddress)}`}
-                      className="px-2.5 py-1 text-xs font-medium text-indigo-300 hover:text-white bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-800/60 rounded-md transition flex items-center gap-1"
-                    >
-                      <span>View Passport</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setResolveAddress(agent.primaryAddress);
-                        handleResolve(agent.primaryAddress);
-                      }}
-                      className="px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-md border border-slate-700 transition"
-                    >
-                      Resolve
-                    </button>
+          {/* Right Column: Agent Registry Catalog (7 cols) */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="relative flex-1">
+                <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+                <input
+                  type="text"
+                  placeholder="Search registered agents by address, AID or name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div className="text-xs text-slate-400 self-center">
+                Total Agents: <span className="font-bold text-white">{filteredAgents.length}</span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {filteredAgents.map((agent) => (
+                <div
+                  key={agent.id}
+                  className="bg-[#0f172a]/70 backdrop-blur border border-slate-800 hover:border-slate-700 rounded-2xl p-5 shadow-lg transition"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-base text-indigo-400">
+                          {agent.primaryAddress}
+                        </span>
+                        <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          {agent.status}
+                        </span>
+                      </div>
+                      <h4 className="text-sm font-semibold text-slate-200 mt-1.5">{agent.displayName}</h4>
+                      {agent.description && (
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                          {agent.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <Link
+                        href={`/${encodeURIComponent(agent.primaryAddress)}`}
+                        className="px-3 py-1.5 text-xs font-medium text-indigo-300 hover:text-white bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-800/60 rounded-lg transition flex items-center gap-1"
+                      >
+                        <span>Passport</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setResolveAddress(agent.primaryAddress);
+                          handleResolve(agent.primaryAddress);
+                        }}
+                        className="px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg border border-slate-700 transition"
+                      >
+                        Resolve
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-1.5 text-slate-400">
+                      <Server className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <span className="text-slate-500">AID:</span>
+                      <span className="font-mono text-slate-300 text-[11px] truncate">{agent.id}</span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-slate-400">
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <span className="text-slate-500">Endpoint:</span>
+                      <span className="font-mono text-slate-300 text-[11px] truncate max-w-[180px]">
+                        {agent.endpoints[0]?.url || "N/A"}
+                      </span>
+                    </div>
                   </div>
                 </div>
+              ))}
 
-                <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                  <div className="flex items-center gap-1.5 text-slate-400">
-                    <Server className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="text-slate-500">AID:</span>
-                    <span className="font-mono text-slate-300 text-[11px] truncate">{agent.id}</span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 text-slate-400">
-                    <ExternalLink className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                    <span className="text-slate-500">Endpoint:</span>
-                    <span className="font-mono text-slate-300 text-[11px] truncate max-w-[180px]">
-                      {agent.endpoints[0]?.url || "N/A"}
-                    </span>
-                  </div>
+              {filteredAgents.length === 0 && (
+                <div className="text-center py-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
+                  <Cpu className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                  <p className="text-sm text-slate-400">No agents found matching your query.</p>
                 </div>
-              </div>
-            ))}
-
-            {filteredAgents.length === 0 && (
-              <div className="text-center py-12 bg-slate-900/40 border border-dashed border-slate-800 rounded-xl">
-                <Cpu className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                <p className="text-sm text-slate-400">No agents found matching your query.</p>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="mt-auto border-t border-slate-800/80 py-8 bg-[#05080f]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <div className="w-5 h-5 rounded bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center">
+              <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
+            </div>
+            <span>AID Protocol v0.1 • AI Agent Identity & Trust Infrastructure</span>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <a
+              href="https://github.com/Ledpa7/AID"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-slate-300 transition"
+            >
+              GitHub Repo
+            </a>
+            <a href="#how-it-works" className="hover:text-slate-300 transition">
+              Protocol Specs
+            </a>
+            <button
+              onClick={() => setShowMcpModal(true)}
+              className="hover:text-slate-300 transition"
+            >
+              MCP Setup
+            </button>
+            <span>MIT License</span>
+          </div>
+        </div>
+      </footer>
 
       {/* Registration Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#0f172a] border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
             <h3 className="text-lg font-bold text-white mb-1">Register New AI Agent</h3>
             <p className="text-xs text-slate-400 mb-4">
@@ -729,8 +1048,8 @@ export default function Home() {
 {`{
   "mcpServers": {
     "aid": {
-      "command": "node",
-      "args": ["${typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"}/bin/aid-mcp.js"]
+      "command": "npx",
+      "args": ["-y", "aid-mcp", "--registry", "${typeof window !== "undefined" ? window.location.origin : "https://aid-beryl.vercel.app"}"]
     }
   }
 }`}
@@ -742,7 +1061,12 @@ export default function Home() {
                         mcpServers: {
                           aid: {
                             command: "npx",
-                            args: ["-y", "aid-mcp", "--registry", window.location.origin],
+                            args: [
+                              "-y",
+                              "aid-mcp",
+                              "--registry",
+                              typeof window !== "undefined" ? window.location.origin : "https://aid-beryl.vercel.app",
+                            ],
                           },
                         },
                       },
@@ -811,7 +1135,9 @@ export default function Home() {
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white">Domain DNS Verification</h3>
-                  <p className="text-xs text-slate-400 font-mono">@{verifyingNs.slug} • {verifyingNs.domain || "No domain set"}</p>
+                  <p className="text-xs text-slate-400 font-mono">
+                    @{verifyingNs.slug} • {verifyingNs.domain || "No domain set"}
+                  </p>
                 </div>
               </div>
               <button
@@ -850,12 +1176,19 @@ export default function Home() {
                         }}
                         className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1"
                       >
-                        {dnsCopied === "name" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {dnsCopied === "name" ? (
+                          <Check className="w-3 h-3 text-emerald-400" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
                         {dnsCopied === "name" ? "Copied" : "Copy"}
                       </button>
                     </div>
                     <div className="bg-slate-950 p-2 rounded text-slate-300 select-all border border-slate-800/80">
-                      {verifyChallenge.instructions.name} <span className="text-slate-500 text-[10px]">({verifyChallenge.instructions.host})</span>
+                      {verifyChallenge.instructions.name}{" "}
+                      <span className="text-slate-500 text-[10px]">
+                        ({verifyChallenge.instructions.host})
+                      </span>
                     </div>
                   </div>
 
@@ -870,7 +1203,11 @@ export default function Home() {
                         }}
                         className="text-indigo-400 hover:text-indigo-300 text-[10px] flex items-center gap-1"
                       >
-                        {dnsCopied === "value" ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                        {dnsCopied === "value" ? (
+                          <Check className="w-3 h-3 text-emerald-400" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
                         {dnsCopied === "value" ? "Copied" : "Copy"}
                       </button>
                     </div>
@@ -892,7 +1229,9 @@ export default function Home() {
                     <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                     <div className="space-y-1">
                       <div>{verifyError}</div>
-                      <p className="text-[11px] text-slate-400">DNS changes can take 1-5 minutes to propagate globally.</p>
+                      <p className="text-[11px] text-slate-400">
+                        DNS changes can take 1-5 minutes to propagate globally.
+                      </p>
                     </div>
                   </div>
                 )}
