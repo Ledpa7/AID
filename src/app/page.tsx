@@ -303,7 +303,7 @@ export default function Home() {
 
         {/* Featured 3-Column Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {agents.slice(0, 3).map((agent) => (
+          {agents.slice(0, 6).map((agent) => (
             <AgentCard key={agent.id} agent={agent} />
           ))}
         </div>

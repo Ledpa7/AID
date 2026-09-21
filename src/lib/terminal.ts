@@ -9,10 +9,15 @@ export function formatTerminalCard(res: ResolutionResponse): string {
   const magenta = "\x1b[35m";
   const yellow = "\x1b[33m";
   const grey = "\x1b[90m";
+  const red = "\x1b[31m";
 
   const domainStatus = res.verification.domain ? `${green}✓ Verified${reset}` : `${grey}✗ Unverified${reset}`;
   const keyStatus = res.verification.key ? `${green}✓ Verified${reset}` : `${grey}✗ None${reset}`;
   const cardStatus = res.verification.card ? `${green}✓ Valid${reset}` : `${grey}✗ Not found${reset}`;
+
+  const limitedNotice = res.isLimited
+    ? `\n  ${bold}${red}⚠ [ NOTICE: Full Functionality Not Supported / Closed Ecosystem ]${reset}\n  ${red}${res.limitedReason || "External API/MCP invocation is currently unavailable."}${reset}\n`
+    : "";
 
   const endpointsList = res.endpoints.length > 0
     ? res.endpoints
@@ -31,7 +36,7 @@ ${bold}${magenta}│${reset}  ${bold}${cyan}AID AGENT PASSPORT${reset} ${grey}�
 ${bold}${magenta}├────────────────────────────────────────────────────────────────────────┤${reset}
   ${bold}Address:${reset}       ${bold}${green}${res.address}${reset}
   ${bold}Permanent AID:${reset} ${yellow}${res.aid}${reset}
-  ${bold}Status:${reset}        ${green}${res.status}${reset} (${res.visibility})
+  ${bold}Status:${reset}        ${green}${res.status}${reset} (${res.visibility})${limitedNotice}
 
   ${bold}${cyan}[ TRUST EVIDENCE ]${reset}
   • Domain (${res.namespace.domain || "N/A"}): ${domainStatus}

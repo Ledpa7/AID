@@ -31,21 +31,27 @@ export default function AgentCard({ agent }: AgentCardProps) {
   const primaryProtocol = agent.endpoints[0]?.protocol?.toUpperCase() || "REST";
 
   return (
-    <div className="group bg-[#0f172a]/70 hover:bg-[#0f172a] border border-slate-800 hover:border-yellow-400/40 rounded-2xl p-6 shadow-xl transition-all flex flex-col justify-between">
+    <div className={`group bg-[#0f172a]/70 hover:bg-[#0f172a] border ${agent.isLimited ? "border-red-900/40 hover:border-red-500/40" : "border-slate-800 hover:border-yellow-400/40"} rounded-2xl p-6 shadow-xl transition-all flex flex-col justify-between`}>
       <div>
         {/* Header: Handle, Verified Badge, Protocol */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-mono font-bold text-base text-yellow-400">
+            <span className={`font-mono font-bold text-base ${agent.isLimited ? "text-red-400" : "text-yellow-400"}`}>
               {agent.primaryAddress}
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <CheckCircle2 className="w-3 h-3" />
-              Verified
-            </span>
+            {agent.isLimited ? (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-red-500/10 text-red-400 border border-red-500/30">
+                기능 제한 (온전한 연동 불가)
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <CheckCircle2 className="w-3 h-3" />
+                Verified
+              </span>
+            )}
           </div>
-          <span className="uppercase text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-            {primaryProtocol}
+          <span className={`uppercase text-[10px] font-mono px-2 py-0.5 rounded border ${agent.isLimited ? "bg-red-950/40 text-red-300 border-red-800/40" : "bg-slate-800 text-slate-300 border-slate-700"}`}>
+            {agent.isLimited ? "Closed API" : primaryProtocol}
           </span>
         </div>
 
@@ -76,7 +82,7 @@ export default function AgentCard({ agent }: AgentCardProps) {
         </div>
 
         {/* Display Name & Description */}
-        <h3 className="text-sm font-bold text-white mb-2 group-hover:text-yellow-300 transition-colors">
+        <h3 className={`text-sm font-bold mb-2 transition-colors ${agent.isLimited ? "text-red-400 group-hover:text-red-300" : "text-white group-hover:text-yellow-300"}`}>
           {agent.displayName}
         </h3>
         <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed mb-6">

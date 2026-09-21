@@ -62,6 +62,8 @@ export interface Agent {
   cardSnapshot?: AgentCardSnapshot;
   isDomainVerified: boolean;
   isKeyVerified: boolean;
+  isLimited?: boolean;
+  limitedReason?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -71,6 +73,8 @@ export interface ResolutionResponse {
   address: string;
   status: AgentStatus;
   visibility: Visibility;
+  isLimited?: boolean;
+  limitedReason?: string;
   namespace: {
     slug: string;
     domain?: string;

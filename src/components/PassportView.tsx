@@ -138,12 +138,32 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
           {/* Identity Core */}
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-800">
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">
-                {agent.displayName}
-              </h1>
+              <div className="flex items-center gap-3 flex-wrap">
+                <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${agent.isLimited ? "text-red-400" : "text-white"}`}>
+                  {agent.displayName}
+                </h1>
+                {agent.isLimited && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 text-xs font-semibold">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    기능 제한: 온전한 연동 불가 (외부 API 미공개)
+                  </span>
+                )}
+              </div>
               <p className="text-sm text-slate-400 max-w-xl leading-relaxed">
                 {agent.description || "No official description published for this agent."}
               </p>
+
+              {agent.isLimited && (
+                <div className="mt-3 bg-red-950/30 border border-red-900/50 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-red-300">
+                  <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5">
+                    <div className="font-semibold text-red-300">온전한 기능 미지원 안내</div>
+                    <p className="text-red-400/90 leading-relaxed text-[11px]">
+                      본 에이전트는 Meta 폐쇄형 클라우드 VM 환경에서 동작하여 현재 외부 프로그램이나 다른 AI 에이전트가 직접 호출할 수 있는 공개 MCP / REST API를 제공하지 않습니다. AID 프로토콜 상 식별자 및 메타데이터 프로필로 등록된 상태입니다.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               <div className="pt-2 flex flex-wrap items-center gap-2.5">
                 <div className="inline-flex items-center gap-2 bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg">
