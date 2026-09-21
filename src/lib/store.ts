@@ -468,7 +468,7 @@ export class AIDStore {
         .select(
           `
           *,
-          aid_namespaces(slug, is_verified),
+          aid_namespaces(slug, domain, is_verified),
           aid_agent_endpoints(*),
           aid_agent_keys(*)
         `
@@ -497,6 +497,7 @@ export class AIDStore {
         id: data.id,
         namespaceId: data.namespace_id,
         namespaceSlug: nsSlug,
+        namespaceDomain: data.aid_namespaces?.domain,
         defaultAlias: data.default_alias,
         displayName: data.display_name,
         description: data.description,
@@ -519,7 +520,9 @@ export class AIDStore {
   }
 
   private static async buildResolutionResponse(agent: Agent): Promise<ResolutionResponse> {
-    const ns = await this.findNamespaceBySlug(agent.namespaceSlug);
+    const domain =
+      agent.namespaceDomain ||
+      (await this.findNamespaceBySlug(agent.namespaceSlug))?.domain;
     const primaryEndpoint =
       agent.endpoints.find((ep) => ep.isPrimary) || agent.endpoints[0];
 
@@ -530,8 +533,8 @@ export class AIDStore {
       visibility: agent.visibility,
       namespace: {
         slug: agent.namespaceSlug,
-        domain: ns?.domain,
-        isVerified: !!ns?.isVerified,
+        domain,
+        isVerified: agent.isDomainVerified,
       },
       endpoints: agent.endpoints.map((ep) => ({
         protocol: ep.protocol,
@@ -575,24 +578,62 @@ export class AIDStore {
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
-      // 1. Check aid_agent_aliases table
+      // Optimized 1-step join query: fetches alias + agent + namespace + endpoints + keys in a single round-trip
       const { data: aliasData } = await supabase
         .from("aid_agent_aliases")
-        .select("agent_id")
+        .select(`
+          full_address,
+          aid_agents (
+            *,
+            aid_namespaces (slug, domain, is_verified),
+            aid_agent_endpoints (*),
+            aid_agent_keys (*)
+          )
+        `)
         .eq("full_address", `${aliasPart}@${namespacePart}`)
         .eq("is_active", true)
         .maybeSingle();
 
-      const targetAgentId = aliasData?.agent_id;
-      if (targetAgentId) {
-        const agent = await this.findAgentByAID(targetAgentId);
-        if (agent) {
-          return this.buildResolutionResponse(agent);
-        }
+      if (!aliasData || !aliasData.aid_agents) {
+        return null;
       }
-      // If Supabase is connected and address not found in DB, return null
-      return null;
-    }
+
+      const agentData = aliasData.aid_agents as any;
+        const endpoints: AgentEndpoint[] = (agentData.aid_agent_endpoints || []).map(
+          (ep: any) => ({
+            id: ep.id,
+            agentId: ep.agent_id,
+            protocol: ep.protocol,
+            url: ep.url,
+            isPrimary: ep.is_primary,
+            isActive: ep.is_active,
+            createdAt: ep.created_at,
+          })
+        );
+        const primaryKey = (agentData.aid_agent_keys || []).find(
+          (k: any) => k.is_primary && !k.is_revoked
+        );
+        const nsSlug = agentData.aid_namespaces?.slug || agentData.namespace_id;
+        const agent: Agent = {
+          id: agentData.id,
+          namespaceId: agentData.namespace_id,
+          namespaceSlug: nsSlug,
+          namespaceDomain: agentData.aid_namespaces?.domain,
+          defaultAlias: agentData.default_alias,
+          displayName: agentData.display_name,
+          description: agentData.description,
+          visibility: agentData.visibility,
+          status: agentData.status,
+          primaryAddress: aliasData.full_address || `${agentData.default_alias}@${nsSlug}`,
+          endpoints,
+          publicKey: primaryKey?.public_key,
+          isDomainVerified: !!agentData.aid_namespaces?.is_verified,
+          isKeyVerified: !!primaryKey,
+          createdAt: agentData.created_at,
+          updatedAt: agentData.updated_at,
+        };
+        return this.buildResolutionResponse(agent);
+      }
 
     // In-memory fallback (only when offline / no Supabase env)
     const agent = globalStore.agents.find(

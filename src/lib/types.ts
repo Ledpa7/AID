@@ -50,6 +50,7 @@ export interface Agent {
   id: string; // Permanent AID e.g. 'aid_01K72M8KQ4A7F'
   namespaceId: string;
   namespaceSlug: string;
+  namespaceDomain?: string;
   defaultAlias: string;
   displayName: string;
   description?: string;
