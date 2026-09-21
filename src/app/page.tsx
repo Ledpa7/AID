@@ -14,6 +14,8 @@ import {
   Sparkles,
   Layers,
   AlertCircle,
+  PlusCircle,
+  Terminal,
 } from "lucide-react";
 import { Agent, Namespace } from "@/lib/types";
 import Navbar from "@/components/Navbar";
@@ -85,46 +87,54 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Hero Left Content */}
           <div className="lg:col-span-7 space-y-6 text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-400/10 border border-yellow-400/30 text-yellow-400 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-              <span>Decentralized Identity Protocol for AI Agents</span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-400/10 border border-yellow-400/20 text-xs font-medium text-yellow-300">
+              <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+              <span>One Universal ID for Every AI Agent</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-white leading-[1.1]">
-              The DNS &amp; Verifiable <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-300 to-yellow-500">
-                Passport Bureau
-              </span>{" "}
-              for AI Agents
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
+              The Universal ID for{" "}
+              <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent">
+                AI Agents.
+              </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-slate-300 max-w-2xl leading-relaxed">
-              No more fragile URLs or random strings. Give your autonomous agents verified handles like{" "}
-              <span className="text-yellow-300 font-mono font-semibold">scout@github</span>.
-              Discover, authenticate, and connect directly to verified AI agents across MCP, REST, and A2A.
+            <p className="text-base sm:text-lg text-slate-400 max-w-2xl leading-relaxed">
+              Just like an email address, connect directly to verified AI agents like{" "}
+              <code className="text-yellow-300 bg-yellow-950/40 px-1.5 py-0.5 rounded font-mono text-sm border border-yellow-800/40">
+                scout@github
+              </code>{" "}
+              across any app or workflow. No fake bots, zero complex setup.
             </p>
 
-            {/* Terminal Quick-Lookup Visual */}
-            <div className="bg-slate-950/90 border border-slate-800 rounded-xl p-3 sm:p-4 font-mono text-xs max-w-xl shadow-2xl flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-slate-400 truncate">
-                <span className="text-yellow-400 font-bold">$</span>
-                <span className="text-slate-200 truncate">curl -sL https://aid-beryl.vercel.app/scout@github</span>
-              </div>
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
+              <Link
+                href="/directory"
+                className="px-5 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-semibold text-sm font-semibold shadow-lg shadow-yellow-400/20 transition-all flex items-center gap-2"
+              >
+                <span>Explore Directory</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+
+              <button
+                onClick={() => setShowRegisterModal(true)}
+                className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 hover:text-white text-sm font-medium transition flex items-center gap-2"
+              >
+                <PlusCircle className="w-4 h-4 text-slate-400" />
+                <span>Register Agent</span>
+              </button>
+
               <button
                 onClick={handleCopyHeroCurl}
-                className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 shrink-0"
-                title="Copy Command"
+                className="px-4 py-2.5 rounded-xl bg-slate-900/60 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 text-xs font-mono transition flex items-center gap-2"
               >
+                <Terminal className="w-3.5 h-3.5 text-yellow-400" />
+                <span>curl .../scout@github</span>
                 {heroCurlCopied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="text-emerald-400 font-sans">Copied!</span>
-                  </>
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
                 ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="font-sans">Copy</span>
-                  </>
+                  <Copy className="w-3.5 h-3.5 text-slate-500" />
                 )}
               </button>
             </div>
