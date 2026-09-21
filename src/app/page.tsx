@@ -92,9 +92,10 @@ export default function Home() {
               <span>One Universal ID for Every AI Agent</span>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1]">
-              The Universal ID for{" "}
-              <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.15]">
+              The Universal ID <br className="hidden sm:inline" />
+              for{" "}
+              <span className="bg-gradient-to-r from-yellow-300 via-amber-200 to-yellow-500 bg-clip-text text-transparent whitespace-nowrap">
                 AI Agents.
               </span>
             </h1>
