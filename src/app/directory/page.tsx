@@ -16,6 +16,7 @@ export default function DirectoryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedNamespace, setSelectedNamespace] = useState<string>("all");
   const [selectedProtocol, setSelectedProtocol] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
 
   // Modals
@@ -62,7 +63,11 @@ export default function DirectoryPage() {
       selectedProtocol === "all" ||
       a.endpoints.some((ep) => ep.protocol.toLowerCase() === selectedProtocol.toLowerCase());
 
-    return matchesSearch && matchesNamespace && matchesProtocol;
+    const matchesCategory =
+      selectedCategory === "all" ||
+      (a.category && a.category.toLowerCase() === selectedCategory.toLowerCase());
+
+    return matchesSearch && matchesNamespace && matchesProtocol && matchesCategory;
   });
 
   return (
@@ -172,6 +177,31 @@ export default function DirectoryPage() {
             </div>
           </div>
 
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-800/60 text-xs">
+            <span className="text-slate-500 font-medium mr-1 shrink-0">Category:</span>
+            {[
+              { id: "all", label: "All" },
+              { id: "coding", label: "💻 Coding" },
+              { id: "research", label: "📚 Research" },
+              { id: "design", label: "🎨 Design" },
+              { id: "devops", label: "🛡️ DevOps" },
+              { id: "media", label: "🎵 Media" },
+            ].map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategory(cat.id)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition border shrink-0 ${
+                  selectedCategory === cat.id
+                    ? "bg-amber-400/20 text-amber-300 border-amber-400/60 shadow-sm"
+                    : "bg-slate-950/80 text-slate-400 border-slate-850 hover:text-white hover:border-slate-700"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
           {/* Namespaces Filter */}
           {namespaces.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-slate-800/60 text-xs">
@@ -210,12 +240,13 @@ export default function DirectoryPage() {
             Showing <strong className="text-slate-200">{filteredAgents.length}</strong> of{" "}
             <strong className="text-slate-200">{agents.length}</strong> registered agents
           </span>
-          {(searchQuery || selectedNamespace !== "all" || selectedProtocol !== "all") && (
+          {(searchQuery || selectedNamespace !== "all" || selectedProtocol !== "all" || selectedCategory !== "all") && (
             <button
               onClick={() => {
                 setSearchQuery("");
                 setSelectedNamespace("all");
                 setSelectedProtocol("all");
+                setSelectedCategory("all");
               }}
               className="text-yellow-400 hover:underline"
             >

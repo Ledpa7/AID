@@ -18,6 +18,12 @@ import {
   AlertTriangle,
   Code2,
   FileCode,
+  Users,
+  Zap,
+  Activity,
+  Play,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import { Agent, ResolutionResponse } from "@/lib/types";
 
@@ -27,9 +33,124 @@ interface PassportViewProps {
   domainUrl: string;
 }
 
+const sampleQueries: Record<string, string[]> = {
+  "scout@github": [
+    "trending_templates",
+    "vibe coding boilerplate",
+    "facebook/react",
+  ],
+  "composer@cursor": [
+    "Refactor multi-file state management with Zustand",
+    "Optimize database pool connection timeout",
+  ],
+  "search@perplexity": [
+    "Latest benchmark comparing Claude 3.7 vs OpenAI o3-mini",
+    "Next.js 15 App Router streaming architecture",
+  ],
+  "swe@devin": [
+    "Debug memory leak in Next.js edge runtime container",
+    "Write end-to-end Cypress test suite",
+  ],
+  "ui@v0": [
+    "Modern dark-mode dashboard hero component with Tailwind CSS",
+    "Pricing table card with toggle switch",
+  ],
+  "cli@claude": [
+    "Audit git diff for security vulnerabilities",
+    "Run static analysis and type check on workspace",
+  ],
+  "builder@lovable": [
+    "Build SaaS subscription portal with Supabase RLS",
+    "Create landing page with Stripe checkout",
+  ],
+  "stack@bolt": [
+    "Spin up Vite + React + Tailwind WebContainer",
+    "Install SQLite in-browser sandbox",
+  ],
+  "researcher@consensus": [
+    "Consensus on transformer context window scaling laws",
+    "Impact of reinforcement learning on reasoning models",
+  ],
+  "sentinel@cloudflare": [
+    "Inspect global edge latency and DDoS mitigation rules",
+    "Check TLS 1.3 compliance and edge worker status",
+  ],
+  "curator@spotify": [
+    "Deep focus coding session synthwave playlist",
+    "Lo-fi ambient background music for writing",
+  ],
+  "registry@aid": [
+    "Resolve cryptographic identity proof for scout@github",
+    "Audit root namespace verification status",
+  ],
+  "oracle@aid": [
+    "Verify zero-knowledge proof for domain DNS txt record",
+    "Validate agent public key revocation state",
+  ],
+};
+
 export default function PassportView({ agent, resolution, domainUrl }: PassportViewProps) {
   const [activeTab, setActiveTab] = useState<"mcp" | "curl" | "sdk" | "badge">("mcp");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  // Live Playground State
+  const [pingStatus, setPingStatus] = useState<"idle" | "loading" | "success" | "error" | "restricted">("idle");
+  const [pingResult, setPingResult] = useState<any>(null);
+
+  const agentSamples = sampleQueries[agent.primaryAddress] || [
+    "Ping and verify agent capability handshake",
+    "Inspect protocol specification",
+  ];
+  const [queryInput, setQueryInput] = useState<string>(agentSamples[0]);
+  const [isQueryRunning, setIsQueryRunning] = useState(false);
+  const [queryResult, setQueryResult] = useState<any>(null);
+  const [queryView, setQueryView] = useState<"markdown" | "json">("markdown");
+
+  const runPing = async () => {
+    setPingStatus("loading");
+    try {
+      const res = await fetch("/api/v1/agents/ping", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address: agent.primaryAddress }),
+      });
+      const data = await res.json();
+      setPingResult(data);
+      if (data.isLimited) {
+        setPingStatus("restricted");
+      } else if (data.success) {
+        setPingStatus("success");
+      } else {
+        setPingStatus("error");
+      }
+    } catch (e: any) {
+      setPingStatus("error");
+      setPingResult({ error: e.message || "Network error" });
+    }
+  };
+
+  const runQuery = async (queryText?: string) => {
+    const textToSend = (queryText !== undefined ? queryText : queryInput).trim();
+    if (!textToSend) return;
+    setIsQueryRunning(true);
+    setQueryResult(null);
+    try {
+      const res = await fetch("/api/v1/agents/query", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          address: agent.primaryAddress,
+          query: textToSend,
+        }),
+      });
+      const data = await res.json();
+      setQueryResult(data);
+    } catch (e: any) {
+      setQueryResult({ error: e.message || "Failed to execute query" });
+    } finally {
+      setIsQueryRunning(false);
+    }
+  };
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
@@ -123,12 +244,20 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-emerald-400">
+            {agent.registeredBy === "COMMUNITY" ? (
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full bg-purple-950/70 border border-purple-500/40 text-purple-300">
+                <Users className="w-3.5 h-3.5 text-purple-400" />
+                Community Listed
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-emerald-400">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                Official Owner
+              </span>
+            )}
+            <span className="inline-flex items-center gap-1.5 text-xs font-mono px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 text-slate-300">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               {agent.status}
-            </span>
-            <span className="text-xs font-mono px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300">
-              {agent.visibility}
             </span>
           </div>
         </div>
@@ -142,6 +271,17 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 <h1 className={`text-2xl sm:text-3xl font-bold tracking-tight ${agent.isLimited ? "text-red-400" : "text-white"}`}>
                   {agent.displayName}
                 </h1>
+                {agent.registeredBy === "COMMUNITY" ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30 text-xs font-semibold">
+                    <Users className="w-3 h-3 text-purple-400" />
+                    커뮤니티 제보 등록
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    공식 소유자 등록
+                  </span>
+                )}
                 {agent.isLimited && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 text-xs font-semibold">
                     <AlertTriangle className="w-3.5 h-3.5" />
@@ -152,6 +292,27 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               <p className="text-sm text-slate-400 max-w-xl leading-relaxed">
                 {agent.description || "No official description published for this agent."}
               </p>
+
+              {/* Claim Ownership Banner for Community Listed Agents */}
+              {agent.registeredBy === "COMMUNITY" && (
+                <div className="mt-3 bg-purple-950/20 border border-purple-900/40 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-start gap-2.5 text-purple-300">
+                    <Users className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-semibold text-purple-200">커뮤니티 제보로 등록된 에이전트입니다</div>
+                      <p className="text-purple-400/80 text-[11px] leading-relaxed">
+                        이 에이전트의 실제 제작자이신가요? 도메인 DNS TXT 인증을 완료하면 '공식 소유자' 뱃지로 승격됩니다.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    href={`/?verify=${agent.namespaceSlug}#verify`}
+                    className="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shrink-0 text-center transition shadow-sm shadow-purple-600/30"
+                  >
+                    소유권 인증하기
+                  </Link>
+                </div>
+              )}
 
               {agent.isLimited && (
                 <div className="mt-3 bg-red-950/30 border border-red-900/50 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-red-300">
@@ -368,6 +529,244 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* ⚡ Live Playground & Sandbox Console */}
+          <div className="bg-slate-950/90 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xl relative overflow-hidden">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-yellow-400/10 border border-yellow-400/30 flex items-center justify-center">
+                    <Zap className="w-4 h-4 text-yellow-400" />
+                  </div>
+                  <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    <span>Live Playground</span>
+                    <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-semibold">
+                      Interactive
+                    </span>
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  Test real-time latency handshake and prompt execution directly against this agent's AID endpoint.
+                </p>
+              </div>
+
+              {/* Ping Trigger Button */}
+              <button
+                onClick={runPing}
+                disabled={pingStatus === "loading"}
+                className="self-start sm:self-auto px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-700 hover:border-yellow-400/50 text-xs font-semibold text-white transition flex items-center gap-2 shrink-0 disabled:opacity-50"
+              >
+                <Activity className={`w-3.5 h-3.5 text-yellow-400 ${pingStatus === "loading" ? "animate-spin" : ""}`} />
+                <span>{pingStatus === "loading" ? "Measuring..." : "⚡ Run Ping Test"}</span>
+              </button>
+            </div>
+
+            {/* Ping & Diagnostics Status Bar */}
+            <div className={`p-3.5 rounded-xl border transition-all text-xs font-mono flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 ${
+              pingStatus === "success"
+                ? "bg-emerald-950/20 border-emerald-500/30 text-emerald-300"
+                : pingStatus === "restricted"
+                ? "bg-amber-950/20 border-amber-500/30 text-amber-300"
+                : pingStatus === "error"
+                ? "bg-red-950/20 border-red-500/30 text-red-300"
+                : "bg-slate-900/60 border-slate-800 text-slate-400"
+            }`}>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <div className={`w-2.5 h-2.5 rounded-full ${
+                  pingStatus === "success"
+                    ? "bg-emerald-400 animate-pulse"
+                    : pingStatus === "restricted"
+                    ? "bg-amber-400"
+                    : pingStatus === "error"
+                    ? "bg-red-400"
+                    : "bg-slate-600"
+                }`} />
+
+                <span className="font-semibold text-slate-200">
+                  {pingStatus === "idle" && "Ready for diagnostic ping check"}
+                  {pingStatus === "loading" && "Dispatching protocol handshake..."}
+                  {pingStatus === "success" && "Endpoint Online & Responsive"}
+                  {pingStatus === "restricted" && "Closed Ecosystem (Sandbox Mode)"}
+                  {pingStatus === "error" && "Ping Failed"}
+                </span>
+
+                {pingResult?.latencyMs !== undefined && (
+                  <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-yellow-400 font-bold text-[11px]">
+                    {pingResult.latencyMs}ms
+                  </span>
+                )}
+
+                {pingResult?.httpStatus && (
+                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                    pingResult.httpStatus === 200
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"
+                      : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                  }`}>
+                    HTTP {pingResult.httpStatus} {pingResult.statusText || ""}
+                  </span>
+                )}
+              </div>
+
+              <div className="text-[11px] text-slate-500 truncate max-w-xs">
+                {pingResult?.endpointUrl || primaryEndpoint?.url}
+              </div>
+            </div>
+
+            {/* Notice for Closed/Limited Ecosystems */}
+            {agent.isLimited && (
+              <div className="bg-red-950/20 border border-red-900/40 rounded-xl p-3.5 text-xs text-red-300 flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="text-red-200 font-semibold">폐쇄형 샌드박스 알림:</strong>{" "}
+                  {agent.limitedReason || "이 에이전트는 외부 API가 비공개된 폐쇄형 생태계입니다. 프로필 및 명세 조회가 제공되며, 라이브 다이렉트 프롬프트 전송은 제한됩니다."}
+                </div>
+              </div>
+            )}
+
+            {/* Interactive Query Runner */}
+            <div className="space-y-3">
+              {/* Quick Sample Chips */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-xs text-slate-500 font-mono mr-1">Quick Prompts:</span>
+                {agentSamples.map((sample, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setQueryInput(sample);
+                      runQuery(sample);
+                    }}
+                    className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-yellow-400/10 border border-slate-800 hover:border-yellow-400/40 text-[11px] text-slate-300 hover:text-yellow-300 transition truncate max-w-[280px]"
+                  >
+                    ⚡ {sample}
+                  </button>
+                ))}
+              </div>
+
+              {/* Input & Send Button */}
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <Terminal className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+                  <input
+                    type="text"
+                    value={queryInput}
+                    onChange={(e) => setQueryInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !isQueryRunning) {
+                        runQuery();
+                      }
+                    }}
+                    placeholder={`Send prompt to ${agent.primaryAddress}...`}
+                    className="w-full pl-9 pr-4 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-yellow-400 font-mono transition"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => runQuery()}
+                  disabled={isQueryRunning || !queryInput.trim()}
+                  className="px-4 py-2.5 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-black font-bold text-xs transition flex items-center gap-1.5 shadow-sm shadow-yellow-400/20 disabled:opacity-50 shrink-0"
+                >
+                  <Play className={`w-3.5 h-3.5 ${isQueryRunning ? "animate-pulse" : ""}`} />
+                  <span>{isQueryRunning ? "Running..." : "Run Query"}</span>
+                </button>
+              </div>
+
+              {/* Terminal Output Viewer */}
+              {(isQueryRunning || queryResult) && (
+                <div className="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden shadow-inner">
+                  {/* Terminal Header */}
+                  <div className="bg-slate-900/90 px-4 py-2 border-b border-slate-800/80 flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
+                      </div>
+                      <span className="text-slate-400 text-[11px] ml-1">
+                        aid-session://{agent.primaryAddress}
+                      </span>
+                    </div>
+
+                    {queryResult && (
+                      <div className="flex items-center gap-2">
+                        {queryResult.tokensUsed && (
+                          <span className="text-[10px] text-slate-400">
+                            Tokens: <strong className="text-slate-200">{queryResult.tokensUsed}</strong>
+                          </span>
+                        )}
+                        {queryResult.latencyMs && (
+                          <span className="text-[10px] text-yellow-400">
+                            {queryResult.latencyMs}ms
+                          </span>
+                        )}
+                        <div className="flex items-center border border-slate-800 rounded-md overflow-hidden text-[10px]">
+                          <button
+                            type="button"
+                            onClick={() => setQueryView("markdown")}
+                            className={`px-2 py-0.5 ${queryView === "markdown" ? "bg-slate-800 text-white font-bold" : "text-slate-500"}`}
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setQueryView("json")}
+                            className={`px-2 py-0.5 ${queryView === "json" ? "bg-slate-800 text-white font-bold" : "text-slate-500"}`}
+                          >
+                            JSON
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => copyToClipboard(JSON.stringify(queryResult, null, 2), "query_output")}
+                          className="text-slate-500 hover:text-slate-300 p-0.5"
+                          title="Copy Output"
+                        >
+                          {copiedKey === "query_output" ? (
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Terminal Body */}
+                  <div className="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-[350px] overflow-y-auto">
+                    {isQueryRunning ? (
+                      <div className="flex items-center gap-2 text-yellow-400/90 py-4">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Communicating with agent gateway & executing query...</span>
+                      </div>
+                    ) : queryResult?.error ? (
+                      <div className="text-red-400 py-2">
+                        ⚠️ Error: {queryResult.error}
+                      </div>
+                    ) : queryView === "json" ? (
+                      <pre className="text-emerald-400 text-[11px] whitespace-pre-wrap">
+                        {JSON.stringify(queryResult, null, 2)}
+                      </pre>
+                    ) : (
+                      <div className="space-y-3 leading-relaxed">
+                        {queryResult?.title && (
+                          <div className="text-sm font-bold text-white border-b border-slate-800 pb-1.5 flex items-center gap-2">
+                            <Sparkles className="w-3.5 h-3.5 text-yellow-400" />
+                            <span>{queryResult.title}</span>
+                          </div>
+                        )}
+                        <div className="text-slate-200 whitespace-pre-wrap text-[11px]">
+                          {typeof queryResult?.result === "string"
+                            ? queryResult.result
+                            : JSON.stringify(queryResult?.result, null, 2)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

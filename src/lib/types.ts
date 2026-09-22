@@ -2,6 +2,7 @@ export type Visibility = "PUBLIC" | "UNLISTED" | "PRIVATE";
 export type AgentStatus = "ACTIVE" | "SUSPENDED" | "COMPROMISED" | "REVOKED";
 export type NamespaceStatus = "AVAILABLE" | "CLAIMED" | "RESERVED" | "VERIFICATION_REQUIRED" | "SUSPENDED";
 export type ProtocolType = "a2a" | "mcp" | "rest";
+export type AgentCategory = "Coding" | "Research" | "Design" | "DevOps" | "Media" | "General";
 
 export interface Namespace {
   id: string;
@@ -54,6 +55,7 @@ export interface Agent {
   defaultAlias: string;
   displayName: string;
   description?: string;
+  category?: AgentCategory;
   visibility: Visibility;
   status: AgentStatus;
   primaryAddress: string; // e.g. 'registry@aid'
@@ -64,6 +66,7 @@ export interface Agent {
   isKeyVerified: boolean;
   isLimited?: boolean;
   limitedReason?: string;
+  registeredBy?: "OWNER" | "COMMUNITY";
   createdAt: string;
   updatedAt: string;
 }
@@ -73,8 +76,10 @@ export interface ResolutionResponse {
   address: string;
   status: AgentStatus;
   visibility: Visibility;
+  category?: AgentCategory;
   isLimited?: boolean;
   limitedReason?: string;
+  registeredBy?: "OWNER" | "COMMUNITY";
   namespace: {
     slug: string;
     domain?: string;

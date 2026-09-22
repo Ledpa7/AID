@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { Namespace, Agent, ResolutionResponse, AgentEndpoint } from "./types";
+import { Namespace, Agent, ResolutionResponse, AgentEndpoint, AgentCategory } from "./types";
 import {
   generateAID,
   generateEndpointId,
@@ -12,6 +12,25 @@ import {
   generateDomainChallengeToken,
   sanitizeDomain,
 } from "./dns";
+
+export function extractCategory(alias: string, desc?: string): AgentCategory {
+  if (desc) {
+    const match = desc.match(/\[CAT:([a-zA-Z]+)\]/i);
+    if (match) {
+      const cat = match[1].charAt(0).toUpperCase() + match[1].slice(1).toLowerCase();
+      if (["Coding", "Research", "Design", "DevOps", "Media", "General"].includes(cat)) {
+        return cat as AgentCategory;
+      }
+    }
+  }
+  const lowAlias = (alias || "").toLowerCase();
+  if (["scout", "composer", "swe", "cli", "stack"].includes(lowAlias)) return "Coding";
+  if (["search", "researcher"].includes(lowAlias)) return "Research";
+  if (["ui", "builder"].includes(lowAlias)) return "Design";
+  if (["sentinel", "registry", "oracle"].includes(lowAlias)) return "DevOps";
+  if (["curator"].includes(lowAlias)) return "Media";
+  return "General";
+}
 
 // Pure fallback store for offline/local development
 const globalStore: {
@@ -92,6 +111,7 @@ const globalStore: {
       isKeyVerified: false,
       isLimited: true,
       limitedReason: "외부 공개 API/MCP 미지원 (프로필만 등록됨)",
+      registeredBy: "COMMUNITY",
       createdAt: "2026-09-21T14:30:00.000Z",
       updatedAt: "2026-09-21T14:30:00.000Z",
     },
@@ -120,6 +140,7 @@ const globalStore: {
       publicKey: "ed25519:6c91a32b0f44e26f59c2598379c1d65dfc2d4b1fa3d677284addd200126d8888",
       isDomainVerified: true,
       isKeyVerified: true,
+      registeredBy: "OWNER",
       createdAt: "2026-09-20T22:09:35.385Z",
       updatedAt: "2026-09-20T22:09:35.385Z",
     },
@@ -147,6 +168,7 @@ const globalStore: {
       publicKey: "ed25519:7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069",
       isDomainVerified: true,
       isKeyVerified: true,
+      registeredBy: "OWNER",
       createdAt: "2026-09-19T08:09:48.303708+00:00",
       updatedAt: "2026-09-19T08:42:02.452686+00:00",
     },
@@ -174,6 +196,7 @@ const globalStore: {
       publicKey: "ed25519:8a93b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9123",
       isDomainVerified: true,
       isKeyVerified: true,
+      registeredBy: "OWNER",
       createdAt: "2026-09-19T08:09:48.303708+00:00",
       updatedAt: "2026-09-19T08:42:02.452686+00:00",
     },
@@ -475,6 +498,13 @@ export class AIDStore {
         );
         const nsSlug = d.aid_namespaces?.slug || d.namespace_id;
         const isDomainVerified = !!d.aid_namespaces?.is_verified;
+        const isCommunity = d.registered_by === "COMMUNITY" || (d.description && d.description.includes("[COMMUNITY_LISTED]")) || d.default_alias === "muse";
+        const isLimited = !!d.is_limited || (d.description && d.description.includes("[LIMITED]")) || d.default_alias === "muse";
+        const category = extractCategory(d.default_alias, d.description);
+        const cleanDesc = (d.description || "")
+          .replace(/\s*\[COMMUNITY_LISTED\]/g, "")
+          .replace(/\s*\[LIMITED\]/g, "")
+          .replace(/\s*\[CAT:[a-zA-Z]+\]/gi, "");
 
         return {
           id: d.id,
@@ -482,7 +512,8 @@ export class AIDStore {
           namespaceSlug: nsSlug,
           defaultAlias: d.default_alias,
           displayName: d.display_name,
-          description: d.description,
+          description: cleanDesc,
+          category,
           visibility: d.visibility,
           status: d.status,
           primaryAddress: `${d.default_alias}@${nsSlug}`,
@@ -490,6 +521,9 @@ export class AIDStore {
           publicKey: primaryKey?.public_key,
           isDomainVerified,
           isKeyVerified: !!primaryKey,
+          isLimited,
+          limitedReason: isLimited ? "외부 공개 API/MCP 미지원 (프로필만 등록됨)" : undefined,
+          registeredBy: isCommunity ? "COMMUNITY" : "OWNER",
           createdAt: d.created_at,
           updatedAt: d.updated_at,
         };
@@ -534,6 +568,14 @@ export class AIDStore {
         (k: any) => k.is_primary && !k.is_revoked
       );
       const nsSlug = data.aid_namespaces?.slug || data.namespace_id;
+      const isCommunity = data.registered_by === "COMMUNITY" || (data.description && data.description.includes("[COMMUNITY_LISTED]")) || data.default_alias === "muse";
+      const isLimited = !!data.is_limited || (data.description && data.description.includes("[LIMITED]")) || data.default_alias === "muse";
+      const category = extractCategory(data.default_alias, data.description);
+      const cleanDesc = (data.description || "")
+        .replace(/\s*\[COMMUNITY_LISTED\]/g, "")
+        .replace(/\s*\[LIMITED\]/g, "")
+        .replace(/\s*\[CAT:[a-zA-Z]+\]/gi, "");
+
       return {
         id: data.id,
         namespaceId: data.namespace_id,
@@ -541,7 +583,8 @@ export class AIDStore {
         namespaceDomain: data.aid_namespaces?.domain,
         defaultAlias: data.default_alias,
         displayName: data.display_name,
-        description: data.description,
+        description: cleanDesc,
+        category,
         visibility: data.visibility,
         status: data.status,
         primaryAddress: `${data.default_alias}@${nsSlug}`,
@@ -549,6 +592,9 @@ export class AIDStore {
         publicKey: primaryKey?.public_key,
         isDomainVerified: !!data.aid_namespaces?.is_verified,
         isKeyVerified: !!primaryKey,
+        isLimited,
+        limitedReason: isLimited ? "외부 공개 API/MCP 미지원 (프로필만 등록됨)" : undefined,
+        registeredBy: isCommunity ? "COMMUNITY" : "OWNER",
         createdAt: data.created_at,
         updatedAt: data.updated_at,
       };
@@ -572,8 +618,10 @@ export class AIDStore {
       address: agent.primaryAddress,
       status: agent.status,
       visibility: agent.visibility,
+      category: agent.category || extractCategory(agent.defaultAlias, agent.description),
       isLimited: agent.isLimited,
       limitedReason: agent.limitedReason,
+      registeredBy: agent.registeredBy || "OWNER",
       namespace: {
         slug: agent.namespaceSlug,
         domain,
@@ -657,6 +705,14 @@ export class AIDStore {
           (k: any) => k.is_primary && !k.is_revoked
         );
         const nsSlug = agentData.aid_namespaces?.slug || agentData.namespace_id;
+        const isComm = agentData.registered_by === "COMMUNITY" || (agentData.description && agentData.description.includes("[COMMUNITY_LISTED]")) || agentData.default_alias === "muse";
+        const isLim = !!agentData.is_limited || (agentData.description && agentData.description.includes("[LIMITED]")) || agentData.default_alias === "muse";
+        const category = extractCategory(agentData.default_alias, agentData.description);
+        const cleanDesc = (agentData.description || "")
+          .replace(/\s*\[COMMUNITY_LISTED\]/g, "")
+          .replace(/\s*\[LIMITED\]/g, "")
+          .replace(/\s*\[CAT:[a-zA-Z]+\]/gi, "");
+
         const agent: Agent = {
           id: agentData.id,
           namespaceId: agentData.namespace_id,
@@ -664,7 +720,8 @@ export class AIDStore {
           namespaceDomain: agentData.aid_namespaces?.domain,
           defaultAlias: agentData.default_alias,
           displayName: agentData.display_name,
-          description: agentData.description,
+          description: cleanDesc,
+          category,
           visibility: agentData.visibility,
           status: agentData.status,
           primaryAddress: aliasData.full_address || `${agentData.default_alias}@${nsSlug}`,
@@ -672,6 +729,9 @@ export class AIDStore {
           publicKey: primaryKey?.public_key,
           isDomainVerified: !!agentData.aid_namespaces?.is_verified,
           isKeyVerified: !!primaryKey,
+          isLimited: isLim,
+          limitedReason: isLim ? "외부 공개 API/MCP 미지원 (프로필만 등록됨)" : undefined,
+          registeredBy: isComm ? "COMMUNITY" : "OWNER",
           createdAt: agentData.created_at,
           updatedAt: agentData.updated_at,
         };
@@ -700,6 +760,8 @@ export class AIDStore {
     protocol?: "a2a" | "mcp" | "rest";
     publicKey?: string;
     cardSnapshot?: any;
+    registeredBy?: "OWNER" | "COMMUNITY";
+    category?: AgentCategory;
   }): Promise<Agent> {
     const ns = await this.findNamespaceBySlug(params.namespaceSlug);
     if (!ns) {
@@ -715,6 +777,7 @@ export class AIDStore {
     const aid = generateAID();
     const endpointId = generateEndpointId();
     const aliasId = `alias_${aid.replace("aid_", "")}`;
+    const category = params.category || extractCategory(params.alias, params.description);
 
     const newAgent: Agent = {
       id: aid,
@@ -723,6 +786,7 @@ export class AIDStore {
       defaultAlias: params.alias.toLowerCase(),
       displayName: params.displayName,
       description: params.description,
+      category,
       visibility: "PUBLIC",
       status: "ACTIVE",
       primaryAddress: fullAddress,
@@ -741,19 +805,29 @@ export class AIDStore {
       cardSnapshot: params.cardSnapshot,
       isDomainVerified: ns.isVerified,
       isKeyVerified: !!params.publicKey,
+      registeredBy: params.registeredBy || "OWNER",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
+      const isCommunityReg = (params.registeredBy || "OWNER") === "COMMUNITY";
+      let dbDescription = params.description || "";
+      if (params.category) {
+        dbDescription = `${dbDescription ? dbDescription + " " : ""}[CAT:${params.category}]`;
+      }
+      if (isCommunityReg) {
+        dbDescription = `${dbDescription ? dbDescription + " " : ""}[COMMUNITY_LISTED]`;
+      }
+
       // 1. Insert Agent
       const { error: agentErr } = await supabase.from("aid_agents").insert({
         id: newAgent.id,
         namespace_id: ns.id,
         default_alias: newAgent.defaultAlias,
         display_name: newAgent.displayName,
-        description: newAgent.description,
+        description: dbDescription,
         visibility: newAgent.visibility,
         status: newAgent.status,
         created_at: newAgent.createdAt,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, CheckCircle2, Copy, Check, ExternalLink } from "lucide-react";
+import { ShieldCheck, CheckCircle2, Copy, Check, ExternalLink, Users } from "lucide-react";
 import { Agent } from "@/lib/types";
 
 interface AgentCardProps {
@@ -29,28 +29,66 @@ export default function AgentCard({ agent }: AgentCardProps) {
   };
 
   const primaryProtocol = agent.endpoints[0]?.protocol?.toUpperCase() || "REST";
+  const isCommunity = agent.registeredBy === "COMMUNITY";
 
   return (
-    <div className={`group bg-[#0f172a]/70 hover:bg-[#0f172a] border ${agent.isLimited ? "border-red-900/40 hover:border-red-500/40" : "border-slate-800 hover:border-yellow-400/40"} rounded-2xl p-6 shadow-xl transition-all flex flex-col justify-between`}>
+    <div className={`group bg-[#0f172a]/70 hover:bg-[#0f172a] border ${agent.isLimited ? "border-red-900/40 hover:border-red-500/40" : isCommunity ? "border-purple-900/30 hover:border-purple-500/40" : "border-slate-800 hover:border-yellow-400/40"} rounded-2xl p-6 shadow-xl transition-all flex flex-col justify-between`}>
       <div>
-        {/* Header: Handle, Verified Badge, Protocol */}
+        {/* Header: Handle, Ownership Badge, Protocol */}
         <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <span className={`font-mono font-bold text-base ${agent.isLimited ? "text-red-400" : "text-yellow-400"}`}>
               {agent.primaryAddress}
             </span>
-            {agent.isLimited ? (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-red-500/10 text-red-400 border border-red-500/30">
-                기능 제한 (온전한 연동 불가)
+
+            {/* Registration Type Badge: Owner vs Community */}
+            {isCommunity ? (
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30"
+                title="커뮤니티 제보 등록 에이전트"
+              >
+                <Users className="w-3 h-3 text-purple-400" />
+                커뮤니티 등록
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <CheckCircle2 className="w-3 h-3" />
-                Verified
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                title="공식 제작자/소유자가 직접 등록한 에이전트"
+              >
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                공식 소유자
+              </span>
+            )}
+
+            {/* Category Badge */}
+            {agent.category && (
+              <span
+                className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full border ${
+                  agent.category === "Coding"
+                    ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                    : agent.category === "Research"
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                    : agent.category === "Design"
+                    ? "bg-pink-500/10 text-pink-400 border-pink-500/30"
+                    : agent.category === "DevOps"
+                    ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/30"
+                    : agent.category === "Media"
+                    ? "bg-violet-500/10 text-violet-400 border-violet-500/30"
+                    : "bg-slate-500/10 text-slate-400 border-slate-500/30"
+                }`}
+              >
+                {agent.category}
+              </span>
+            )}
+
+            {/* Limited Capability Badge */}
+            {agent.isLimited && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-red-500/10 text-red-400 border border-red-500/30">
+                기능 제한
               </span>
             )}
           </div>
-          <span className={`uppercase text-[10px] font-mono px-2 py-0.5 rounded border ${agent.isLimited ? "bg-red-950/40 text-red-300 border-red-800/40" : "bg-slate-800 text-slate-300 border-slate-700"}`}>
+          <span className={`uppercase text-[10px] font-mono px-2 py-0.5 rounded border shrink-0 ${agent.isLimited ? "bg-red-950/40 text-red-300 border-red-800/40" : "bg-slate-800 text-slate-300 border-slate-700"}`}>
             {agent.isLimited ? "Closed API" : primaryProtocol}
           </span>
         </div>

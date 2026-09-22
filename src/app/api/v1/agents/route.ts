@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { namespace, alias, displayName, description, endpointUrl, protocol, publicKey, cardSnapshot } = body;
+    const { namespace, alias, displayName, description, endpointUrl, protocol, publicKey, cardSnapshot, registeredBy } = body;
 
     if (!namespace || !alias || !displayName || !endpointUrl) {
       return NextResponse.json(
@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
       protocol: protocol || "a2a",
       publicKey,
       cardSnapshot,
+      registeredBy: registeredBy === "COMMUNITY" ? "COMMUNITY" : "OWNER",
     });
 
     return NextResponse.json(newAgent, { status: 201 });

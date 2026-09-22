@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Namespace } from "@/lib/types";
+import { ShieldCheck, Users } from "lucide-react";
 
 interface RegisterAgentModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export default function RegisterAgentModal({
   const [description, setDescription] = useState("");
   const [endpoint, setEndpoint] = useState("");
   const [protocol, setProtocol] = useState<"a2a" | "mcp" | "rest">("rest");
+  const [registeredBy, setRegisteredBy] = useState<"OWNER" | "COMMUNITY">("COMMUNITY");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -46,6 +48,7 @@ export default function RegisterAgentModal({
           alias,
           displayName,
           description,
+          registeredBy,
           endpoints: [
             {
               url: endpoint,
@@ -89,6 +92,50 @@ export default function RegisterAgentModal({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Registration Type Selector */}
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1.5">
+              등록자 구분 (Who are you?)
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setRegisteredBy("COMMUNITY")}
+                className={`p-2.5 rounded-xl border text-left transition flex flex-col gap-1 ${
+                  registeredBy === "COMMUNITY"
+                    ? "bg-purple-950/40 border-purple-500/50 text-purple-200"
+                    : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center gap-1.5 text-xs font-bold">
+                  <Users className="w-3.5 h-3.5 text-purple-400" />
+                  <span>추천 / 제보 등록</span>
+                </div>
+                <span className="text-[10px] text-slate-400 leading-tight">
+                  발견한 유용한 에이전트
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setRegisteredBy("OWNER")}
+                className={`p-2.5 rounded-xl border text-left transition flex flex-col gap-1 ${
+                  registeredBy === "OWNER"
+                    ? "bg-emerald-950/40 border-emerald-500/50 text-emerald-200"
+                    : "bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700"
+                }`}
+              >
+                <div className="flex items-center gap-1.5 text-xs font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>공식 소유자 등록</span>
+                </div>
+                <span className="text-[10px] text-slate-400 leading-tight">
+                  직접 만든 에이전트
+                </span>
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1">
