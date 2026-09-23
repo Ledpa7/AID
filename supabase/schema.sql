@@ -112,8 +112,27 @@ CREATE TABLE IF NOT EXISTS aid_api_keys (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 10. Enrollment Tokens (Agent-native Self-Enrollment & Quotas)
+CREATE TABLE IF NOT EXISTS aid_enrollment_tokens (
+    id TEXT PRIMARY KEY,                       -- e.g. 'tok_01M...'
+    namespace_id TEXT NOT NULL REFERENCES aid_namespaces(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,                         -- Human-readable name: 'Production Cluster Auto-Enroll'
+    token_hash TEXT NOT NULL,                   -- SHA-256 hash of plaintext token
+    token_prefix TEXT NOT NULL,                 -- e.g. 'aid_enroll_7a8b...' for dashboard display
+    scopes TEXT[] NOT NULL DEFAULT '{"agent:create"}',
+    max_agents INT NOT NULL DEFAULT 10,         -- Sybil defense quota
+    used_agents INT NOT NULL DEFAULT 0,         -- Current enrollment count
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    expires_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 -- Create Indexes for High-Performance Resolution
 CREATE INDEX IF NOT EXISTS idx_aid_agent_aliases_full_address ON aid_agent_aliases(full_address);
 CREATE INDEX IF NOT EXISTS idx_aid_agents_namespace ON aid_agents(namespace_id);
 CREATE INDEX IF NOT EXISTS idx_aid_endpoints_agent ON aid_agent_endpoints(agent_id);
 CREATE INDEX IF NOT EXISTS idx_aid_identity_events_agent ON aid_identity_events(agent_id);
+CREATE INDEX IF NOT EXISTS idx_aid_enrollment_tokens_hash ON aid_enrollment_tokens(token_hash);
+CREATE INDEX IF NOT EXISTS idx_aid_enrollment_tokens_ns ON aid_enrollment_tokens(namespace_id);
+

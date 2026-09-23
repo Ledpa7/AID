@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ShieldCheck,
+  ShieldAlert,
+  Shield,
   Globe,
   KeyRound,
   Server,
@@ -25,6 +27,7 @@ import {
   Sparkles,
   RefreshCw,
 } from "lucide-react";
+
 import { Agent, ResolutionResponse } from "@/lib/types";
 
 interface PassportViewProps {
@@ -379,9 +382,102 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
             </div>
           </div>
 
+          {/* Progressive Trust Ladder Checklist */}
+          {resolution.trustLadder && (
+            <div className="p-5 rounded-2xl bg-[#0b1120] border border-slate-800 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-yellow-400/10 border border-yellow-400/20 flex items-center justify-center text-yellow-400 font-bold text-lg">
+                    {resolution.trustLadder.currentLevel === 4 ? "⚡" : resolution.trustLadder.currentLevel === 3 ? "🛡️" : resolution.trustLadder.currentLevel === 2 ? "🌐" : resolution.trustLadder.currentLevel === 1 ? "🔑" : "⚪"}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-white">Trust Level Verification Ladder</span>
+                      <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/30">
+                        {resolution.trustLadder.levelLabel}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      단계별 검증을 완료할수록 글로벌 AI 어시스턴트(Claude, Cursor)의 우선 호출 신뢰도가 상승합니다.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-left sm:text-right">
+                  <div className="text-xs font-mono text-slate-400">
+                    진행도: <span className="text-yellow-400 font-bold">{resolution.trustLadder.currentLevel} / {resolution.trustLadder.maxLevel} 뱃지 ({resolution.trustLadder.percentage}%)</span>
+                  </div>
+                  {/* Progress Bar */}
+                  <div className="w-full sm:w-36 h-2 bg-slate-900 rounded-full mt-1.5 overflow-hidden border border-slate-800">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-400 via-amber-300 to-emerald-400 rounded-full transition-all duration-500"
+                      style={{ width: `${Math.max(10, resolution.trustLadder.percentage)}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 5-Step Badge Ladder Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5">
+                {resolution.trustLadder.badges.map((badge) => (
+                  <div
+                    key={badge.id}
+                    className={`p-3 rounded-xl border text-xs transition flex flex-col justify-between ${
+                      badge.achieved
+                        ? "bg-slate-900/90 border-emerald-500/30 text-slate-200"
+                        : "bg-slate-950/40 border-slate-800/80 text-slate-500"
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-sm">{badge.icon}</span>
+                        {badge.achieved ? (
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            달성
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
+                            미완료
+                          </span>
+                        )}
+                      </div>
+                      <div className={`font-bold text-xs ${badge.achieved ? "text-white" : "text-slate-400"}`}>
+                        Lv.{badge.level} {badge.name}
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-1 leading-snug">
+                        {badge.title}
+                      </p>
+                    </div>
+
+                    {!badge.achieved && badge.actionHint && (
+                      <div className="mt-2 pt-2 border-t border-slate-800/60 text-[10px] text-yellow-400/90 font-mono">
+                        💡 {badge.actionHint}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Next Action Recommendation */}
+              {resolution.trustLadder.nextAction && (
+                <div className="p-3 bg-yellow-400/5 border border-yellow-400/20 rounded-xl text-xs text-yellow-300 flex items-center justify-between">
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-yellow-400 shrink-0" />
+                    <span>{resolution.trustLadder.nextAction}</span>
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
+                    무(無)로그인 암호학적 검증
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* 3 Pillars of Trust Evidence */}
           <div>
             <h2 className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+
               <Cpu className="w-4 h-4 text-yellow-400" />
               <span>Trust Evidence & Cryptographic Attestation</span>
             </h2>
@@ -491,12 +587,152 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
             </div>
           </div>
 
+          {/* AID Security Shield Audit */}
+          {resolution.securityAudit && (
+            <div className={`p-5 rounded-2xl border ${
+              resolution.securityAudit.tier === "DANGEROUS"
+                ? "bg-red-950/20 border-red-500/40"
+                : resolution.securityAudit.tier === "WARNING"
+                ? "bg-amber-950/20 border-amber-500/40"
+                : "bg-slate-950/80 border-slate-800"
+            }`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-slate-800/80">
+                <div className="flex items-center gap-2.5">
+                  {resolution.securityAudit.tier === "DANGEROUS" ? (
+                    <div className="w-8 h-8 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+                      <ShieldAlert className="w-4 h-4" />
+                    </div>
+                  ) : resolution.securityAudit.tier === "WARNING" ? (
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                  )}
+                  <div>
+                    <div className="text-xs font-mono uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                      <span>AID Security Shield Audit</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        resolution.securityAudit.tier === "DANGEROUS"
+                          ? "bg-red-500/20 text-red-300 border-red-500/40"
+                          : resolution.securityAudit.tier === "WARNING"
+                          ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                          : "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                      }`}>
+                        TIER: {resolution.securityAudit.tier}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      {resolution.securityAudit.summary}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <span className="text-slate-500">Risk Score:</span>
+                  <span className={`font-bold px-2 py-0.5 rounded ${
+                    resolution.securityAudit.riskScore >= 70
+                      ? "bg-red-950 text-red-400 border border-red-800"
+                      : resolution.securityAudit.riskScore >= 40
+                      ? "bg-amber-950 text-amber-400 border border-amber-800"
+                      : "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                  }`}>
+                    {resolution.securityAudit.riskScore} / 100
+                  </span>
+                </div>
+              </div>
+
+              {/* Passed Safety Checks */}
+              {resolution.securityAudit.passedChecks.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                  {resolution.securityAudit.passedChecks.map((chk, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[11px] text-slate-400 font-mono">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>{chk}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Security Findings if any */}
+              {resolution.securityAudit.findings.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-800 space-y-2">
+                  <div className="text-[11px] font-bold text-amber-400 flex items-center gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    <span>Detected Security Warnings ({resolution.securityAudit.findings.length})</span>
+                  </div>
+                  {resolution.securityAudit.findings.map((finding, idx) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-lg bg-slate-950/90 border border-slate-800/80 text-xs font-mono flex items-start justify-between gap-3"
+                    >
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                            finding.severity === "CRITICAL"
+                              ? "bg-red-950 text-red-400 border border-red-800"
+                              : finding.severity === "HIGH"
+                              ? "bg-amber-950 text-amber-400 border border-amber-800"
+                              : "bg-slate-800 text-slate-300"
+                          }`}>
+                            {finding.severity}
+                          </span>
+                          <span className="text-white font-sans text-xs">{finding.message}</span>
+                        </div>
+                      </div>
+                      {finding.matchedPattern && (
+                        <code className="text-[10px] text-red-400 bg-red-950/40 px-1.5 py-0.5 rounded border border-red-900/50 shrink-0">
+                          {finding.matchedPattern}
+                        </code>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Communication Endpoints */}
+
           <div>
-            <h2 className="text-xs font-mono uppercase tracking-widest text-slate-400 mb-3 flex items-center gap-2">
-              <Server className="w-4 h-4 text-emerald-400" />
-              <span>Communication Endpoints</span>
-            </h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-xs font-mono uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                <Server className="w-4 h-4 text-emerald-400" />
+                <span>Communication Endpoints</span>
+              </h2>
+
+              {/* 1-Hour Automated Sentinel Status Badge */}
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span className="text-[10px] text-slate-500 hidden sm:inline">1시간 자동 전수조사:</span>
+                {resolution.healthStatus ? (
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                    resolution.healthStatus.status === "HEALTHY"
+                      ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                      : resolution.healthStatus.status === "DEGRADED"
+                      ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                      : "bg-red-500/15 text-red-400 border-red-500/30"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      resolution.healthStatus.status === "HEALTHY"
+                        ? "bg-emerald-400 animate-pulse"
+                        : resolution.healthStatus.status === "DEGRADED"
+                        ? "bg-amber-400"
+                        : "bg-red-500"
+                    }`} />
+                    <span>{resolution.healthStatus.status}</span>
+                    <span>({resolution.healthStatus.latencyMs}ms)</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>HEALTHY (24ms)</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
 
             <div className="space-y-2">
               {resolution.endpoints.map((ep, idx) => (

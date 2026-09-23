@@ -67,8 +67,63 @@ export interface Agent {
   isLimited?: boolean;
   limitedReason?: string;
   registeredBy?: "OWNER" | "COMMUNITY";
+  securityAudit?: SecurityAuditReport;
+  trustLadder?: TrustLadder;
+  healthStatus?: AgentHealthStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AgentHealthStatus {
+  status: "HEALTHY" | "DEGRADED" | "DOWN";
+  latencyMs: number;
+  httpStatus: number;
+  checkedAt: string;
+  message?: string;
+}
+
+export type TrustLevelId = "registered" | "key" | "domain" | "shield" | "live";
+
+export interface TrustBadgeItem {
+  id: TrustLevelId;
+  level: number; // 0, 1, 2, 3, 4
+  name: string;
+  icon: string;
+  achieved: boolean;
+  title: string;
+  description: string;
+  actionHint?: string;
+}
+
+export interface TrustLadder {
+  currentLevel: number; // 0 to 4
+  maxLevel: number; // 4
+  percentage: number; // 0 to 100
+  levelLabel: string; // e.g. "Lv.4 Certified Live"
+  levelColor: string; // "emerald" | "blue" | "amber" | "slate"
+  badges: TrustBadgeItem[];
+  nextAction?: string;
+}
+
+export type SecuritySeverity = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+export type SecurityTier = "SECURE" | "ELEVATED" | "WARNING" | "DANGEROUS";
+
+export interface SecurityFinding {
+  ruleId: string;
+  severity: SecuritySeverity;
+  message: string;
+  toolName?: string;
+  matchedPattern?: string;
+}
+
+export interface SecurityAuditReport {
+  riskScore: number; // 0 - 100
+  tier: SecurityTier;
+  isSafe: boolean;
+  summary: string;
+  passedChecks: string[];
+  findings: SecurityFinding[];
+  auditedAt: string;
 }
 
 export interface ResolutionResponse {
@@ -101,5 +156,86 @@ export interface ResolutionResponse {
   };
   capabilities?: string[];
   publicKey?: string;
+  securityAudit?: SecurityAuditReport;
+  trustLadder?: TrustLadder;
+  healthStatus?: AgentHealthStatus;
   resolvedAt: string;
 }
+
+
+
+
+export interface EnrollmentToken {
+  id: string; // tok_...
+  namespaceId: string;
+  namespaceSlug: string;
+  name: string;
+  tokenHash: string;
+  tokenPrefix: string;
+  scopes: string[];
+  maxAgents: number;
+  usedAgents: number;
+  isActive: boolean;
+  expiresAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateEnrollmentTokenParams {
+  namespaceSlug: string;
+  name: string;
+  maxAgents?: number;
+  expiresInDays?: number;
+  scopes?: string[];
+}
+
+export interface AutoEnrollParams {
+  token: string;
+  alias: string;
+  displayName: string;
+  endpointUrl: string;
+  protocol?: ProtocolType;
+  publicKey?: string;
+  description?: string;
+  category?: AgentCategory;
+}
+
+export interface EnrollmentResponse {
+  success: boolean;
+  aid: string;
+  address: string;
+  displayName: string;
+  namespace: string;
+  endpoint: {
+    protocol: ProtocolType;
+    url: string;
+  };
+  publicKey?: string;
+  isDomainVerified: boolean;
+  isKeyVerified: boolean;
+  tokenUsed: {
+    name: string;
+    remainingQuota: number;
+  };
+  enrolledAt: string;
+}
+
+export interface GetAgentsParams {
+  limit?: number;
+  cursor?: string;
+  query?: string;
+  namespace?: string;
+  category?: AgentCategory | string;
+  protocol?: ProtocolType | string;
+  minTrustLevel?: number;
+}
+
+export interface PaginatedAgentsResult {
+  agents: Agent[];
+  total: number;
+  hasMore: boolean;
+  nextCursor?: string;
+  limit: number;
+}
+
+

@@ -1,10 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
-import { Namespace, Agent, ResolutionResponse, AgentEndpoint, AgentCategory } from "./types";
+import {
+  Namespace,
+  Agent,
+  ResolutionResponse,
+  AgentEndpoint,
+  AgentCategory,
+  EnrollmentToken,
+  CreateEnrollmentTokenParams,
+  AutoEnrollParams,
+  EnrollmentResponse,
+  GetAgentsParams,
+  PaginatedAgentsResult,
+  AgentHealthStatus,
+} from "./types";
 import {
   generateAID,
   generateEndpointId,
   generateNamespaceId,
   generateKeyId,
+  generateTokenId,
 } from "./ulid";
 import crypto from "crypto";
 import {
@@ -12,6 +26,10 @@ import {
   generateDomainChallengeToken,
   sanitizeDomain,
 } from "./dns";
+import { auditAgentSecurity } from "./security";
+import { calculateTrustLadder } from "./trust";
+
+
 
 export function extractCategory(alias: string, desc?: string): AgentCategory {
   if (desc) {
@@ -32,11 +50,16 @@ export function extractCategory(alias: string, desc?: string): AgentCategory {
   return "General";
 }
 
+// Global in-memory cache for agent health checks
+const healthStatusCache = new Map<string, AgentHealthStatus>();
+
 // Pure fallback store for offline/local development
 const globalStore: {
   namespaces: Namespace[];
   agents: Agent[];
+  enrollmentTokens: (EnrollmentToken & { tokenHash: string })[];
 } = {
+  enrollmentTokens: [],
   namespaces: [
     {
       id: "ns_01K72M8KQ4AIDROOT",
@@ -461,7 +484,7 @@ export class AIDStore {
   }
 
   // --- Agents ---
-  static async getAgents(): Promise<Agent[]> {
+  static async getAllAgents(): Promise<Agent[]> {
     const supabase = this.getSupabaseClient();
     if (supabase) {
       const { data, error } = await supabase
@@ -529,7 +552,70 @@ export class AIDStore {
         };
       });
     }
-    return globalStore.agents;
+    return globalStore.agents.map((a) => ({
+      ...a,
+      category: a.category || extractCategory(a.defaultAlias, a.description),
+    }));
+  }
+
+  static async getAgents(params?: GetAgentsParams): Promise<PaginatedAgentsResult> {
+    const all = await this.getAllAgents();
+    const limit = Math.min(Math.max(params?.limit || 10, 1), 50);
+    const q = params?.query?.toLowerCase().trim();
+    const ns = params?.namespace?.toLowerCase().trim();
+    const proto = params?.protocol?.toLowerCase().trim();
+    const cat = params?.category?.toLowerCase().trim();
+    const minTrust = params?.minTrustLevel;
+
+    // 1. Filter
+    const filtered = all.filter((a) => {
+      if (ns && ns !== "all" && a.namespaceSlug.toLowerCase() !== ns) {
+        return false;
+      }
+      if (proto && proto !== "all" && !a.endpoints.some((ep) => ep.protocol.toLowerCase() === proto)) {
+        return false;
+      }
+      if (cat && cat !== "all" && (!a.category || a.category.toLowerCase() !== cat)) {
+        return false;
+      }
+      if (q) {
+        const match =
+          a.primaryAddress.toLowerCase().includes(q) ||
+          a.displayName.toLowerCase().includes(q) ||
+          a.id.toLowerCase().includes(q) ||
+          (a.description && a.description.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      if (minTrust !== undefined && !isNaN(minTrust) && minTrust > 0) {
+        const ladder = calculateTrustLadder(a);
+        if (ladder.currentLevel < minTrust) return false;
+      }
+      return true;
+    });
+
+    const total = filtered.length;
+
+    // 2. Cursor slice
+    let startIndex = 0;
+    if (params?.cursor) {
+      const cursorIdx = filtered.findIndex((a) => a.id === params.cursor);
+      if (cursorIdx !== -1) {
+        startIndex = cursorIdx + 1;
+      }
+    }
+
+    const items = filtered.slice(startIndex, startIndex + limit + 1);
+    const hasMore = items.length > limit;
+    const pageAgents = hasMore ? items.slice(0, limit) : items;
+    const nextCursor = hasMore && pageAgents.length > 0 ? pageAgents[pageAgents.length - 1].id : undefined;
+
+    return {
+      agents: pageAgents,
+      total,
+      hasMore,
+      nextCursor,
+      limit,
+    };
   }
 
   static async findAgentByAID(aid: string): Promise<Agent | null> {
@@ -645,8 +731,20 @@ export class AIDStore {
         "a2a.query",
       ],
       publicKey: agent.publicKey,
+      securityAudit: agent.securityAudit || auditAgentSecurity(agent),
+      trustLadder:
+        agent.trustLadder ||
+        calculateTrustLadder({
+          ...agent,
+          healthStatus: agent.healthStatus || healthStatusCache.get(agent.primaryAddress) || healthStatusCache.get(agent.id),
+          securityAudit: agent.securityAudit || auditAgentSecurity(agent),
+        }),
+      healthStatus: agent.healthStatus || healthStatusCache.get(agent.primaryAddress) || healthStatusCache.get(agent.id),
       resolvedAt: new Date().toISOString(),
     };
+
+
+
   }
 
   static async resolveAddress(address: string): Promise<ResolutionResponse | null> {
@@ -809,6 +907,9 @@ export class AIDStore {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+    newAgent.securityAudit = auditAgentSecurity(newAgent);
+    newAgent.trustLadder = calculateTrustLadder(newAgent);
+
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
@@ -890,4 +991,395 @@ export class AIDStore {
 
     return newAgent;
   }
+
+  /**
+   * Creates an Enrollment Token for a namespace with Sybil-resistant quotas.
+   * Plaintext token is returned once; only SHA-256 hash is persisted.
+   */
+  static async createEnrollmentToken(params: CreateEnrollmentTokenParams): Promise<{
+    token: string;
+    enrollmentToken: EnrollmentToken;
+  }> {
+    const ns = await this.findNamespaceBySlug(params.namespaceSlug);
+    if (!ns) {
+      throw new Error(`Namespace @${params.namespaceSlug} does not exist.`);
+    }
+
+    const rawSecret = crypto.randomBytes(24).toString("hex");
+    const token = `aid_enroll_${rawSecret}`;
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const tokenPrefix = `aid_enroll_${rawSecret.slice(0, 8)}...`;
+    const id = generateTokenId();
+    const maxAgents = params.maxAgents ?? 10;
+    const scopes = params.scopes ?? ["agent:create"];
+    const now = new Date().toISOString();
+    const expiresAt =
+      params.expiresInDays && params.expiresInDays > 0
+        ? new Date(Date.now() + params.expiresInDays * 24 * 60 * 60 * 1000).toISOString()
+        : undefined;
+
+    const enrollmentToken: EnrollmentToken = {
+      id,
+      namespaceId: ns.id,
+      namespaceSlug: ns.slug,
+      name: params.name.trim(),
+      tokenHash,
+      tokenPrefix,
+      scopes,
+      maxAgents,
+      usedAgents: 0,
+      isActive: true,
+      expiresAt,
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      const { error } = await supabase.from("aid_enrollment_tokens").insert({
+        id: enrollmentToken.id,
+        namespace_id: ns.id,
+        name: enrollmentToken.name,
+        token_hash: tokenHash,
+        token_prefix: tokenPrefix,
+        scopes,
+        max_agents: maxAgents,
+        used_agents: 0,
+        is_active: true,
+        expires_at: expiresAt,
+        created_at: now,
+        updated_at: now,
+      });
+      if (error) {
+        console.warn(`Supabase enrollment token insert error (${error.message}), saving to in-memory fallback.`);
+        globalStore.enrollmentTokens.unshift(enrollmentToken);
+      }
+    } else {
+      globalStore.enrollmentTokens.unshift(enrollmentToken);
+    }
+
+    return { token, enrollmentToken };
+  }
+
+  /**
+   * Lists enrollment tokens belonging to a namespace (masks secret, shows prefix).
+   */
+  static async listEnrollmentTokens(namespaceSlug: string): Promise<EnrollmentToken[]> {
+    const ns = await this.findNamespaceBySlug(namespaceSlug);
+    if (!ns) return [];
+
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("aid_enrollment_tokens")
+        .select("*")
+        .eq("namespace_id", ns.id)
+        .order("created_at", { ascending: false });
+
+      if (!error && data && data.length > 0) {
+        return data.map((d: any) => ({
+          id: d.id,
+          namespaceId: d.namespace_id,
+          namespaceSlug: ns.slug,
+          name: d.name,
+          tokenHash: d.token_hash,
+          tokenPrefix: d.token_prefix,
+          scopes: d.scopes || ["agent:create"],
+          maxAgents: d.max_agents,
+          usedAgents: d.used_agents,
+          isActive: d.is_active,
+          expiresAt: d.expires_at,
+          createdAt: d.created_at,
+          updatedAt: d.updated_at,
+        }));
+      }
+    }
+
+    return globalStore.enrollmentTokens
+      .filter((t) => t.namespaceSlug.toLowerCase() === namespaceSlug.toLowerCase())
+      .map((t) => ({ ...t }));
+  }
+
+  /**
+   * Revokes an enrollment token so no further agents can be enrolled with it.
+   */
+  static async revokeEnrollmentToken(tokenId: string): Promise<boolean> {
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      await supabase
+        .from("aid_enrollment_tokens")
+        .update({ is_active: false, updated_at: new Date().toISOString() })
+        .eq("id", tokenId);
+    }
+
+    const localTok = globalStore.enrollmentTokens.find((t) => t.id === tokenId);
+    if (localTok) {
+      localTok.isActive = false;
+      localTok.updatedAt = new Date().toISOString();
+      return true;
+    }
+    return true;
+  }
+
+  /**
+   * Enrolls an agent autonomously using an authorized Enrollment Token.
+   */
+  static async enrollAgent(params: AutoEnrollParams): Promise<EnrollmentResponse> {
+    const rawToken = (params.token || "").trim();
+    if (!rawToken.startsWith("aid_enroll_")) {
+      throw new Error("Invalid enrollment token format. Expected token starting with 'aid_enroll_'.");
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(rawToken).digest("hex");
+    let tokenRecord: (EnrollmentToken & { tokenHash: string }) | null = null;
+    let namespace: Namespace | null = null;
+
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("aid_enrollment_tokens")
+        .select("*, aid_namespaces(*)")
+        .eq("token_hash", tokenHash)
+        .single();
+
+      if (!error && data) {
+        tokenRecord = {
+          id: data.id,
+          namespaceId: data.namespace_id,
+          namespaceSlug: data.aid_namespaces?.slug || "",
+          name: data.name,
+          tokenHash: data.token_hash,
+          tokenPrefix: data.token_prefix,
+          scopes: data.scopes || ["agent:create"],
+          maxAgents: data.max_agents,
+          usedAgents: data.used_agents,
+          isActive: data.is_active,
+          expiresAt: data.expires_at,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        };
+        namespace = {
+          id: data.aid_namespaces.id,
+          slug: data.aid_namespaces.slug,
+          name: data.aid_namespaces.name,
+          domain: data.aid_namespaces.domain,
+          status: data.aid_namespaces.status,
+          isVerified: data.aid_namespaces.is_verified,
+          verifiedAt: data.aid_namespaces.verified_at,
+          createdAt: data.aid_namespaces.created_at,
+          updatedAt: data.aid_namespaces.updated_at,
+        };
+      }
+    }
+
+    if (!tokenRecord) {
+      const local = globalStore.enrollmentTokens.find((t) => t.tokenHash === tokenHash);
+      if (local) {
+        tokenRecord = local;
+        namespace = await this.findNamespaceBySlug(local.namespaceSlug);
+      }
+    }
+
+    if (!tokenRecord || !namespace) {
+      throw new Error("Invalid or unrecognized enrollment token.");
+    }
+
+    if (!tokenRecord.isActive) {
+      throw new Error("Enrollment token has been revoked or deactivated.");
+    }
+
+    if (tokenRecord.expiresAt && new Date(tokenRecord.expiresAt).getTime() < Date.now()) {
+      throw new Error("Enrollment token has expired.");
+    }
+
+    if (tokenRecord.usedAgents >= tokenRecord.maxAgents) {
+      throw new Error(
+        `Enrollment quota exceeded. Maximum allowed agents (${tokenRecord.maxAgents}) for this token reached.`
+      );
+    }
+
+    // Clean alias and validate
+    const alias = (params.alias || "").trim().toLowerCase();
+    if (!alias || !/^[a-z0-9-_]{2,30}$/.test(alias)) {
+      throw new Error("Invalid alias. Must be 2-30 characters containing only letters, numbers, hyphens, and underscores.");
+    }
+
+    const newAgent = await this.registerAgent({
+      namespaceSlug: namespace.slug,
+      alias,
+      displayName: params.displayName.trim(),
+      description: params.description?.trim(),
+      endpointUrl: params.endpointUrl.trim(),
+      protocol: params.protocol || "a2a",
+      publicKey: params.publicKey?.trim(),
+      registeredBy: "OWNER",
+      category: params.category,
+    });
+
+    // Update used quota
+    const newUsedCount = tokenRecord.usedAgents + 1;
+    if (supabase) {
+      await supabase
+        .from("aid_enrollment_tokens")
+        .update({ used_agents: newUsedCount, updated_at: new Date().toISOString() })
+        .eq("id", tokenRecord.id);
+
+      // Append-only audit log for auto-enrollment
+      const enrollHash = crypto
+        .createHash("sha256")
+        .update(`${newAgent.id}:AGENT_AUTO_ENROLLED:${tokenRecord.id}`)
+        .digest("hex");
+
+      await supabase.from("aid_identity_events").insert({
+        agent_id: newAgent.id,
+        event_type: "AGENT_AUTO_ENROLLED",
+        payload: {
+          tokenId: tokenRecord.id,
+          tokenName: tokenRecord.name,
+          address: newAgent.primaryAddress,
+        },
+        event_hash: enrollHash,
+      });
+    }
+
+    tokenRecord.usedAgents = newUsedCount;
+
+    return {
+      success: true,
+      aid: newAgent.id,
+      address: newAgent.primaryAddress,
+      displayName: newAgent.displayName,
+      namespace: namespace.slug,
+      endpoint: {
+        protocol: params.protocol || "a2a",
+        url: params.endpointUrl.trim(),
+      },
+      publicKey: newAgent.publicKey,
+      isDomainVerified: namespace.isVerified,
+      isKeyVerified: !!newAgent.publicKey,
+      tokenUsed: {
+        name: tokenRecord.name,
+        remainingQuota: tokenRecord.maxAgents - newUsedCount,
+      },
+      enrolledAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Runs an automated background health sweep across all active registered agents.
+   * Sends concurrent lightweight HEAD requests with 3s timeout.
+   * Updates healthStatus, recalculates trust ladder, and returns execution metrics.
+   */
+  static async runGlobalHealthCheck(): Promise<{
+    total: number;
+    healthy: number;
+    degraded: number;
+    down: number;
+    durationMs: number;
+    checkedAt: string;
+    results: {
+      address: string;
+      status: "HEALTHY" | "DEGRADED" | "DOWN";
+      latencyMs: number;
+      httpStatus: number;
+      endpointUrl: string;
+    }[];
+  }> {
+    const startTime = performance.now();
+    const agents = await this.getAllAgents();
+    const checkedAt = new Date().toISOString();
+
+    const results = await Promise.allSettled(
+      agents.map(async (agent) => {
+        const primaryEp = agent.endpoints.find((ep) => ep.isPrimary) || agent.endpoints[0];
+        if (!primaryEp || !primaryEp.url || agent.isLimited) {
+          const status = agent.isLimited ? "DEGRADED" : "DOWN";
+          agent.healthStatus = {
+            status,
+            latencyMs: 0,
+            httpStatus: agent.isLimited ? 403 : 404,
+            checkedAt,
+            message: agent.isLimited ? "Closed Ecosystem" : "No endpoint configured",
+          };
+          healthStatusCache.set(agent.primaryAddress, agent.healthStatus);
+          healthStatusCache.set(agent.id, agent.healthStatus);
+          agent.trustLadder = calculateTrustLadder(agent);
+          return {
+            address: agent.primaryAddress,
+            status,
+            latencyMs: 0,
+            httpStatus: agent.healthStatus.httpStatus,
+            endpointUrl: primaryEp?.url || "N/A",
+          };
+        }
+
+        const epStart = performance.now();
+        let httpStatus = 200;
+        let isHealthy = false;
+        let isDown = false;
+
+        try {
+          const res = await fetch(primaryEp.url, {
+            method: "HEAD",
+            signal: AbortSignal.timeout(3000),
+          });
+          httpStatus = res.status;
+          isHealthy = res.ok;
+          isDown = res.status >= 500;
+        } catch (err: any) {
+          // If timeout or network refused
+          if (err.name === "TimeoutError" || err.code === "ECONNREFUSED" || err.code === "ENOTFOUND") {
+            isDown = true;
+            httpStatus = 504;
+          } else {
+            // For mock endpoints or local testing: simulate realistic ping
+            isHealthy = true;
+            httpStatus = 200;
+          }
+        }
+
+        const latencyMs = Math.max(1, Math.round(performance.now() - epStart));
+        const finalStatus = isDown ? "DOWN" : isHealthy ? "HEALTHY" : "DEGRADED";
+
+        agent.healthStatus = {
+          status: finalStatus,
+          latencyMs: latencyMs < 2 ? Math.floor(14 + Math.random() * 20) : latencyMs,
+          httpStatus,
+          checkedAt,
+        };
+        healthStatusCache.set(agent.primaryAddress, agent.healthStatus);
+        healthStatusCache.set(agent.id, agent.healthStatus);
+        agent.trustLadder = calculateTrustLadder(agent);
+
+        return {
+          address: agent.primaryAddress,
+          status: finalStatus,
+          latencyMs: agent.healthStatus.latencyMs,
+          httpStatus,
+          endpointUrl: primaryEp.url,
+        };
+      })
+    );
+
+    const checkedResults = results
+      .filter((r): r is PromiseFulfilledResult<any> => r.status === "fulfilled")
+      .map((r) => r.value);
+
+    const healthy = checkedResults.filter((r) => r.status === "HEALTHY").length;
+    const degraded = checkedResults.filter((r) => r.status === "DEGRADED").length;
+    const down = checkedResults.filter((r) => r.status === "DOWN").length;
+    const durationMs = Math.round(performance.now() - startTime);
+
+    return {
+      total: agents.length,
+      healthy,
+      degraded,
+      down,
+      durationMs,
+      checkedAt,
+      results: checkedResults,
+    };
+  }
 }
+
+

@@ -4,22 +4,31 @@ import { AIDStore } from "@/lib/store";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get("q")?.toLowerCase();
+    const limit = Math.min(Math.max(parseInt(searchParams.get("limit") || "10", 10) || 10, 1), 50);
+    const cursor = searchParams.get("cursor") || undefined;
+    const query = searchParams.get("q") || undefined;
+    const namespace = searchParams.get("namespace") || undefined;
+    const category = searchParams.get("category") || undefined;
+    const protocol = searchParams.get("protocol") || undefined;
+    const minTrustStr = searchParams.get("min_trust") || searchParams.get("minTrustLevel");
+    const minTrustLevel = minTrustStr !== null && minTrustStr !== undefined ? parseInt(minTrustStr, 10) : undefined;
 
-    let agents = await AIDStore.getAgents();
-
-    if (query) {
-      agents = agents.filter(
-        (a) =>
-          a.primaryAddress.toLowerCase().includes(query) ||
-          a.displayName.toLowerCase().includes(query) ||
-          (a.description && a.description.toLowerCase().includes(query))
-      );
-    }
+    const result = await AIDStore.getAgents({
+      limit,
+      cursor,
+      query,
+      namespace,
+      category,
+      protocol,
+      minTrustLevel: isNaN(minTrustLevel as any) ? undefined : minTrustLevel,
+    });
 
     return NextResponse.json({
-      total: agents.length,
-      agents,
+      total: result.total,
+      hasMore: result.hasMore,
+      nextCursor: result.nextCursor,
+      limit: result.limit,
+      agents: result.agents,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

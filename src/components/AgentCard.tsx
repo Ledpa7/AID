@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, CheckCircle2, Copy, Check, ExternalLink, Users } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Shield, CheckCircle2, Copy, Check, ExternalLink, Users } from "lucide-react";
 import { Agent } from "@/lib/types";
+import { calculateTrustLadder } from "@/lib/trust";
+
 
 interface AgentCardProps {
   agent: Agent;
@@ -60,7 +62,61 @@ export default function AgentCard({ agent }: AgentCardProps) {
               </span>
             )}
 
+            {/* Security Shield Badge */}
+            {agent.securityAudit && (
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full border ${
+                  agent.securityAudit.tier === "DANGEROUS"
+                    ? "bg-red-500/15 text-red-400 border-red-500/30"
+                    : agent.securityAudit.tier === "WARNING"
+                    ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                }`}
+                title={`Security Shield: ${agent.securityAudit.summary} (Risk Score: ${agent.securityAudit.riskScore})`}
+              >
+                {agent.securityAudit.tier === "DANGEROUS" ? (
+                  <ShieldAlert className="w-3 h-3 text-red-400" />
+                ) : agent.securityAudit.tier === "WARNING" ? (
+                  <Shield className="w-3 h-3 text-amber-400" />
+                ) : (
+                  <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                )}
+                <span>
+                  {agent.securityAudit.tier === "DANGEROUS"
+                    ? "보안 위험"
+                    : agent.securityAudit.tier === "WARNING"
+                    ? "주의 필요"
+                    : "Shield Safe"}
+                </span>
+              </span>
+            )}
+
+            {/* Progressive Trust Ladder Level Pill */}
+            {(() => {
+              const ladder = agent.trustLadder || calculateTrustLadder(agent);
+              return (
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full border ${
+                    ladder.currentLevel === 4
+                      ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                      : ladder.currentLevel === 3
+                      ? "bg-blue-500/15 text-blue-300 border-blue-500/30"
+                      : ladder.currentLevel === 2
+                      ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                      : ladder.currentLevel === 1
+                      ? "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
+                      : "bg-slate-800 text-slate-400 border-slate-700"
+                  }`}
+                  title={`Trust Ladder: ${ladder.levelLabel} (${ladder.currentLevel}/4 뱃지 완료)`}
+                >
+                  <span className="text-[11px]">{ladder.badges[ladder.currentLevel]?.icon || "⚪"}</span>
+                  <span>{ladder.levelLabel}</span>
+                </span>
+              );
+            })()}
+
             {/* Category Badge */}
+
             {agent.category && (
               <span
                 className={`inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full border ${

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Search, PlusCircle, RefreshCw, Cpu, CheckCircle2 } from "lucide-react";
+import { Search, PlusCircle, RefreshCw, Cpu, CheckCircle2, ChevronDown } from "lucide-react";
 import { Agent, Namespace } from "@/lib/types";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -17,58 +17,100 @@ export default function DirectoryPage() {
   const [selectedNamespace, setSelectedNamespace] = useState<string>("all");
   const [selectedProtocol, setSelectedProtocol] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [selectedMinTrust, setSelectedMinTrust] = useState<string>("all");
+
+  // Pagination states
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Modals
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showMcpModal, setShowMcpModal] = useState(false);
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [resNs, resAgents] = await Promise.all([
-        fetch("/api/v1/namespaces"),
-        fetch("/api/v1/agents"),
-      ]);
-      const dataNs = await resNs.json();
-      const dataAgents = await resAgents.json();
+  // Initial load of namespaces
+  useEffect(() => {
+    fetch("/api/v1/namespaces")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.namespaces) setNamespaces(data.namespaces);
+      })
+      .catch((err) => console.error("Failed to load namespaces:", err));
+  }, []);
 
-      if (dataNs.namespaces) setNamespaces(dataNs.namespaces);
-      if (dataAgents.agents) setAgents(dataAgents.agents);
-    } catch (e) {
-      console.error("Failed to load directory data:", e);
-    } finally {
-      setIsLoading(false);
+  // Fetch agents with cursor & filters
+  const fetchAgents = useCallback(
+    async (cursor?: string | null, isAppend = false) => {
+      if (isAppend) {
+        setIsLoadingMore(true);
+      } else {
+        setIsLoading(true);
+      }
+
+      try {
+        const params = new URLSearchParams({ limit: "10" });
+        if (cursor) params.set("cursor", cursor);
+        if (searchQuery.trim()) params.set("q", searchQuery.trim());
+        if (selectedNamespace !== "all") params.set("namespace", selectedNamespace);
+        if (selectedProtocol !== "all") params.set("protocol", selectedProtocol);
+        if (selectedCategory !== "all") params.set("category", selectedCategory);
+        if (selectedMinTrust !== "all") params.set("min_trust", selectedMinTrust);
+
+        const res = await fetch(`/api/v1/agents?${params.toString()}`);
+        const data = await res.json();
+
+        if (isAppend) {
+          setAgents((prev) => [...prev, ...(data.agents || [])]);
+        } else {
+          setAgents(data.agents || []);
+        }
+
+        setTotalCount(data.total ?? 0);
+        setHasMore(!!data.hasMore);
+        setNextCursor(data.nextCursor || null);
+      } catch (e) {
+        console.error("Failed to load directory data:", e);
+      } finally {
+        if (isAppend) {
+          setIsLoadingMore(false);
+        } else {
+          setIsLoading(false);
+        }
+      }
+    },
+    [searchQuery, selectedNamespace, selectedProtocol, selectedCategory, selectedMinTrust]
+  );
+
+  // Trigger search with 300ms debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchAgents(null, false);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [fetchAgents]);
+
+  const handleLoadMore = () => {
+    if (nextCursor && !isLoadingMore) {
+      fetchAgents(nextCursor, true);
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setSelectedNamespace("all");
+    setSelectedProtocol("all");
+    setSelectedCategory("all");
+    setSelectedMinTrust("all");
+  };
 
-  const filteredAgents = agents.filter((a) => {
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      q === "" ||
-      a.primaryAddress.toLowerCase().includes(q) ||
-      a.displayName.toLowerCase().includes(q) ||
-      a.id.toLowerCase().includes(q) ||
-      (a.description && a.description.toLowerCase().includes(q));
-
-    const matchesNamespace =
-      selectedNamespace === "all" ||
-      a.namespaceSlug.toLowerCase() === selectedNamespace.toLowerCase();
-
-    const matchesProtocol =
-      selectedProtocol === "all" ||
-      a.endpoints.some((ep) => ep.protocol.toLowerCase() === selectedProtocol.toLowerCase());
-
-    const matchesCategory =
-      selectedCategory === "all" ||
-      (a.category && a.category.toLowerCase() === selectedCategory.toLowerCase());
-
-    return matchesSearch && matchesNamespace && matchesProtocol && matchesCategory;
-  });
+  const isFiltered =
+    searchQuery !== "" ||
+    selectedNamespace !== "all" ||
+    selectedProtocol !== "all" ||
+    selectedCategory !== "all" ||
+    selectedMinTrust !== "all";
 
   return (
     <div className="min-h-screen bg-[#070b14] text-slate-100 flex flex-col">
@@ -79,7 +121,7 @@ export default function DirectoryPage() {
 
       {/* Shared Navigation Bar */}
       <Navbar
-        agentCount={agents.length}
+        agentCount={totalCount || agents.length}
         activePage="directory"
         onOpenRegister={() => setShowRegisterModal(true)}
         onOpenMcp={() => setShowMcpModal(true)}
@@ -102,7 +144,7 @@ export default function DirectoryPage() {
               <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight flex items-center gap-3">
                 <span>Global Agent Directory</span>
                 <span className="text-xs px-2.5 py-1 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/30 font-mono font-bold">
-                  {agents.length} Live
+                  {totalCount} Total
                 </span>
               </h1>
               <p className="text-sm text-slate-400 mt-1 max-w-2xl">
@@ -113,7 +155,7 @@ export default function DirectoryPage() {
 
             <div className="flex items-center gap-3">
               <button
-                onClick={() => fetchData()}
+                onClick={() => fetchAgents(null, false)}
                 className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white transition"
                 title="Refresh Directory"
               >
@@ -202,6 +244,30 @@ export default function DirectoryPage() {
             ))}
           </div>
 
+          {/* Trust Level Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-800/60 text-xs">
+            <span className="text-slate-500 font-medium mr-1 shrink-0">Trust Level:</span>
+            {[
+              { id: "all", label: "All Levels" },
+              { id: "1", label: "Lv.1+ 🔑 Key" },
+              { id: "2", label: "Lv.2+ 🌐 Domain" },
+              { id: "3", label: "Lv.3+ 🛡️ Shield" },
+              { id: "4", label: "Lv.4 ⚡ Live" },
+            ].map((lvl) => (
+              <button
+                key={lvl.id}
+                onClick={() => setSelectedMinTrust(lvl.id)}
+                className={`px-3 py-1 rounded-lg text-xs font-semibold transition border shrink-0 ${
+                  selectedMinTrust === lvl.id
+                    ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-sm"
+                    : "bg-slate-950/80 text-slate-400 border-slate-850 hover:text-white hover:border-slate-700"
+                }`}
+              >
+                {lvl.label}
+              </button>
+            ))}
+          </div>
+
           {/* Namespaces Filter */}
           {namespaces.length > 0 && (
             <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-slate-800/60 text-xs">
@@ -214,7 +280,7 @@ export default function DirectoryPage() {
                     : "bg-slate-950/80 text-slate-400 border-slate-850 hover:text-white hover:border-slate-700"
                 }`}
               >
-                All ({agents.length})
+                All
               </button>
               {namespaces.map((ns) => (
                 <button
@@ -237,19 +303,16 @@ export default function DirectoryPage() {
         {/* Results Counter */}
         <div className="flex items-center justify-between text-xs text-slate-500 mb-6 px-1">
           <span>
-            Showing <strong className="text-slate-200">{filteredAgents.length}</strong> of{" "}
-            <strong className="text-slate-200">{agents.length}</strong> registered agents
+            Showing <strong className="text-slate-200">{agents.length}</strong> of{" "}
+            <strong className="text-slate-200">{totalCount}</strong> registered agents
+            {hasMore && (
+              <span className="ml-2 text-yellow-400/90 font-mono">
+                (+{totalCount - agents.length} more available)
+              </span>
+            )}
           </span>
-          {(searchQuery || selectedNamespace !== "all" || selectedProtocol !== "all" || selectedCategory !== "all") && (
-            <button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedNamespace("all");
-                setSelectedProtocol("all");
-                setSelectedCategory("all");
-              }}
-              className="text-yellow-400 hover:underline"
-            >
+          {isFiltered && (
+            <button onClick={handleResetFilters} className="text-yellow-400 hover:underline">
               Reset filters
             </button>
           )}
@@ -257,18 +320,51 @@ export default function DirectoryPage() {
 
         {/* 3-Column Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAgents.map((agent) => (
+          {agents.map((agent) => (
             <AgentCard key={agent.id} agent={agent} />
           ))}
         </div>
 
+        {/* Load More Button (10-agent chunk pagination) */}
+        {hasMore && (
+          <div className="flex justify-center mt-12 mb-6">
+            <button
+              onClick={handleLoadMore}
+              disabled={isLoadingMore}
+              className="px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 hover:border-yellow-400/50 text-sm font-semibold text-slate-200 hover:text-white transition flex items-center gap-2.5 shadow-lg group disabled:opacity-50"
+            >
+              {isLoadingMore ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-yellow-400" />
+                  <span>불러오는 중...</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="w-4 h-4 text-yellow-400 group-hover:translate-y-0.5 transition" />
+                  <span>더 보기 (+10개 더 불러오기)</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/30 font-mono ml-1">
+                    {totalCount - agents.length}개 남음
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+        )}
+
+        {/* All Loaded Indicator */}
+        {!hasMore && agents.length > 0 && totalCount > 10 && (
+          <div className="text-center mt-12 mb-6 text-xs text-slate-500 font-mono">
+            ✓ 모든 에이전트 목록을 불러왔습니다 (총 {totalCount}개)
+          </div>
+        )}
+
         {/* Empty Search State */}
-        {filteredAgents.length === 0 && (
+        {!isLoading && agents.length === 0 && (
           <div className="text-center py-16 bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl">
             <Cpu className="w-8 h-8 text-slate-600 mx-auto mb-3" />
             <p className="text-sm font-semibold text-slate-300">No agents match your query</p>
             <p className="text-xs text-slate-500 mt-1">
-              Try searching for 'scout@github', 'aid_01M30...', or clearing your filters.
+              Try searching for &apos;scout@github&apos;, &apos;aid_01M30...&apos;, or clearing your filters.
             </p>
           </div>
         )}
@@ -282,7 +378,7 @@ export default function DirectoryPage() {
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
         namespaces={namespaces}
-        onSuccess={fetchData}
+        onSuccess={() => fetchAgents(null, false)}
       />
 
       <McpSetupModal isOpen={showMcpModal} onClose={() => setShowMcpModal(false)} />

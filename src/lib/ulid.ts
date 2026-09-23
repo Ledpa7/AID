@@ -19,3 +19,8 @@ export function generateCardId(): string {
 export function generateKeyId(): string {
   return `key_${ulid()}`;
 }
+
+export function generateTokenId(): string {
+  return `tok_${ulid()}`;
+}
+
