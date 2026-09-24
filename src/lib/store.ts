@@ -53,7 +53,11 @@ export function extractCategory(alias: string, desc?: string): AgentCategory {
 // Global in-memory cache for agent health checks
 const healthStatusCache = new Map<string, AgentHealthStatus>();
 
+// Global in-memory cache for domain challenge tokens
+const domainChallengeCache = new Map<string, string>();
+
 // Pure fallback store for offline/local development
+
 const globalStore: {
   namespaces: Namespace[];
   agents: Agent[];
@@ -354,21 +358,24 @@ export class AIDStore {
     }
 
     const cleanDomain = sanitizeDomain(ns.domain);
-    const expectedToken = generateDomainChallengeToken(ns.slug, cleanDomain);
+    let expectedToken: string;
 
     const supabase = this.getSupabaseClient();
     if (supabase) {
       // Check existing verification record
       const { data: existing } = await supabase
         .from("aid_domain_verifications")
-        .select("*")
+        .select("challenge_token")
         .eq("namespace_id", ns.id)
         .order("created_at", { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (!existing) {
-        // Create verification challenge record
+      if (existing && existing.challenge_token) {
+        expectedToken = existing.challenge_token;
+      } else {
+        // Generate new unpredictable cryptographically salted token
+        expectedToken = generateDomainChallengeToken(ns.slug, cleanDomain);
         await supabase.from("aid_domain_verifications").insert({
           id: `dver_${ns.id.replace(/^ns_/, "")}`,
           namespace_id: ns.id,
@@ -379,6 +386,13 @@ export class AIDStore {
           created_at: new Date().toISOString(),
         });
       }
+    } else {
+      let cached = domainChallengeCache.get(ns.id);
+      if (!cached) {
+        cached = generateDomainChallengeToken(ns.slug, cleanDomain);
+        domainChallengeCache.set(ns.id, cached);
+      }
+      expectedToken = cached;
     }
 
     return {
@@ -412,7 +426,10 @@ export class AIDStore {
     }
 
     // Run real-time DNS TXT query via Google / Cloudflare
-    const dnsResult = await verifyDnsTxtRecord(challenge.domain, challenge.challengeToken);
+    // Calculate legacy un-salted token as fallback for backwards compatibility
+    const legacyToken = `aid-verification=${crypto.createHash("sha256").update(`${slug}:${challenge.domain}`).digest("hex").substring(0, 24)}`;
+    const dnsResult = await verifyDnsTxtRecord(challenge.domain, challenge.challengeToken, legacyToken);
+
 
     if (!dnsResult.success) {
       return {
@@ -676,12 +693,13 @@ export class AIDStore {
         primaryAddress: `${data.default_alias}@${nsSlug}`,
         endpoints,
         publicKey: primaryKey?.public_key,
-        isDomainVerified: !!data.aid_namespaces?.is_verified,
+        isDomainVerified: !isCommunity && !!data.aid_namespaces?.is_verified,
         isKeyVerified: !!primaryKey,
         isLimited,
         limitedReason: isLimited ? "No public API/MCP endpoint supported (profile metadata only)" : undefined,
         registeredBy: isCommunity ? "COMMUNITY" : "OWNER",
         createdAt: data.created_at,
+
         updatedAt: data.updated_at,
       };
     }
@@ -825,12 +843,13 @@ export class AIDStore {
           primaryAddress: aliasData.full_address || `${agentData.default_alias}@${nsSlug}`,
           endpoints,
           publicKey: primaryKey?.public_key,
-          isDomainVerified: !!agentData.aid_namespaces?.is_verified,
+          isDomainVerified: !isComm && !!agentData.aid_namespaces?.is_verified,
           isKeyVerified: !!primaryKey,
           isLimited: isLim,
           limitedReason: isLim ? "No public API/MCP endpoint supported (profile metadata only)" : undefined,
           registeredBy: isComm ? "COMMUNITY" : "OWNER",
           createdAt: agentData.created_at,
+
           updatedAt: agentData.updated_at,
         };
         return this.buildResolutionResponse(agent);
@@ -901,14 +920,18 @@ export class AIDStore {
       ],
       publicKey: params.publicKey,
       cardSnapshot: params.cardSnapshot,
-      isDomainVerified: ns.isVerified,
+      isDomainVerified: ns.isVerified && (params.registeredBy || "OWNER") === "OWNER",
       isKeyVerified: !!params.publicKey,
       registeredBy: params.registeredBy || "OWNER",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
     newAgent.securityAudit = auditAgentSecurity(newAgent);
-    newAgent.trustLadder = calculateTrustLadder(newAgent);
+    newAgent.trustLadder = calculateTrustLadder({
+      ...newAgent,
+      registeredBy: newAgent.registeredBy,
+    });
+
 
 
     const supabase = this.getSupabaseClient();

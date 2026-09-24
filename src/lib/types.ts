@@ -238,4 +238,75 @@ export interface PaginatedAgentsResult {
   limit: number;
 }
 
+// ==========================================
+// Agent-to-Agent Attestation & Proof Types
+// ==========================================
+
+export interface AgentPassportTokenPayload {
+  aid: string;
+  address: string;
+  displayName: string;
+  publicKey: string;
+  namespace: string;
+  isDomainVerified: boolean;
+  trustLevel: number;
+  capabilities: string[];
+  issuedAt: number;
+  expiresAt: number;
+}
+
+export interface AgentPassportToken {
+  version: "aid-vc-v1";
+  payload: AgentPassportTokenPayload;
+  rootSignature: string; // Ed25519 signature by AID Root Authority
+}
+
+export type ExecutionStatusCode = "SUCCESS" | "FAILED" | "SECURITY_BLOCKED" | "TIMEOUT";
+
+export interface ExecutionReceipt {
+  receiptId: string;            // rcpt_01M...
+  requesterAddress: string;     // e.g. orchestrator@enterprise
+  executorAddress: string;      // e.g. scout@github
+  executorAid: string;          // aid_01M...
+  inputHash: string;            // sha256 hex of input/prompt
+  outputHash: string;           // sha256 hex of result/output
+  executionTimeMs: number;
+  statusCode: ExecutionStatusCode;
+  errorMessage?: string;
+  timestamp: number;
+  executorSignature: string;    // Ed25519 signature by executor agent
+}
+
+export interface CreateReceiptParams {
+  requesterAddress: string;
+  executorAddress: string;
+  executorAid: string;
+  inputPayload: any;
+  outputPayload: any;
+  executionTimeMs: number;
+  statusCode?: ExecutionStatusCode;
+  errorMessage?: string;
+  privateKeyPem: string;
+}
+
+export interface VerifyReceiptParams {
+  receipt: ExecutionReceipt;
+  inputPayload?: any;
+  outputPayload?: any;
+  executorPublicKey?: string;
+}
+
+export interface AgentReputationMetrics {
+  address: string;
+  totalExecutions: number;
+  successRate: number;        // 0.0 - 1.0
+  averageLatencyMs: number;
+  failedExecutions: number;
+  securityBlockedCount: number;
+  reputationScore: number;    // 0 - 100
+  tier: "ELITE" | "RELIABLE" | "UNPROVEN" | "HIGH_RISK";
+  lastActiveAt: string;
+}
+
+
 

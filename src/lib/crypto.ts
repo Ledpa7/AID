@@ -70,13 +70,84 @@ export function verifyEd25519Signature({
   }
 }
 
+interface StoredChallenge {
+  subject: string;
+  expiresAt: number;
+}
+
+// Global in-memory cache for ephemeral challenge nonces with 5-minute auto-expiry
+const challengeCache = new Map<string, StoredChallenge>();
+
+function pruneExpiredChallenges() {
+  const now = Date.now();
+  challengeCache.forEach((record, challenge) => {
+    if (record.expiresAt < now) {
+      challengeCache.delete(challenge);
+    }
+  });
+}
+
+
 /**
- * Generates an ephemeral challenge nonce for ownership verification
+ * Generates an ephemeral challenge nonce for ownership verification and stores it in cache
  */
 export function generateChallenge(subject: string): { challenge: string; expiresAt: number } {
+  pruneExpiredChallenges();
+
   const nonce = crypto.randomBytes(16).toString("hex");
   const timestamp = Date.now();
   const expiresAt = timestamp + 1000 * 60 * 5; // 5 minutes validity
-  const challenge = `AID-AUTH:${subject}:${nonce}:${timestamp}`;
+  const cleanSubject = subject.trim().toLowerCase();
+  const challenge = `AID-AUTH:${cleanSubject}:${nonce}:${timestamp}`;
+
+  challengeCache.set(challenge, {
+    subject: cleanSubject,
+    expiresAt,
+  });
+
   return { challenge, expiresAt };
 }
+
+/**
+ * Validates and consumes an ephemeral challenge nonce (single-use / replay-proof)
+ */
+export function consumeChallenge(
+  challenge: string,
+  expectedSubject?: string
+): { valid: boolean; error?: string } {
+  pruneExpiredChallenges();
+
+  const stored = challengeCache.get(challenge);
+  if (!stored) {
+    return {
+      valid: false,
+      error: "Challenge nonce not found, expired, or already consumed (Replay Attack blocked).",
+    };
+  }
+
+  const now = Date.now();
+  if (stored.expiresAt < now) {
+    challengeCache.delete(challenge);
+    return {
+      valid: false,
+      error: "Challenge nonce has expired.",
+    };
+  }
+
+  if (expectedSubject) {
+    const cleanExpected = expectedSubject.trim().toLowerCase();
+    if (stored.subject !== cleanExpected) {
+      return {
+        valid: false,
+        error: `Challenge subject mismatch. Issued for '${stored.subject}', received for '${cleanExpected}'.`,
+      };
+    }
+  }
+
+  // Single-use: burn immediately upon successful consumption to block replay attacks
+  challengeCache.delete(challenge);
+
+  return { valid: true };
+}
+
+

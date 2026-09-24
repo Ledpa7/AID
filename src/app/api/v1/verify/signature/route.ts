@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AIDStore } from "@/lib/store";
-import { verifyEd25519Signature } from "@/lib/crypto";
+import { verifyEd25519Signature, consumeChallenge } from "@/lib/crypto";
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,11 +54,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Replay attack defense: If message is an AID challenge, enforce single-use consumption & subject match
+    if (message.startsWith("AID-AUTH:")) {
+      const challengeCheck = consumeChallenge(message, resolvedAddress || resolvedAid);
+      if (!challengeCheck.valid) {
+        return NextResponse.json(
+          {
+            valid: false,
+            error: challengeCheck.error || "Invalid or replayed challenge nonce.",
+          },
+          { status: 401 }
+        );
+      }
+    }
+
     const isValid = verifyEd25519Signature({
       publicKey: targetKey,
       message,
       signature,
     });
+
 
     if (!isValid) {
       return NextResponse.json(

@@ -14,18 +14,25 @@ export async function GET(
     let isVerified = false;
 
     if (resolution) {
-      isVerified = resolution.verification.domain || resolution.verification.key;
+      const isOwner = resolution.registeredBy === "OWNER";
+      const isDomainVerified = resolution.verification.domain;
+      const isKeyVerified = resolution.verification.key;
+
       if (resolution.status !== "ACTIVE") {
         statusText = resolution.status.toLowerCase();
-        statusColor = "#f59e0b"; // amber
-      } else if (isVerified) {
-        statusText = "verified";
+        statusColor = "#ef4444"; // red
+      } else if (isOwner && isDomainVerified) {
+        statusText = "official | verified";
         statusColor = "#10b981"; // emerald
+      } else if (isKeyVerified) {
+        statusText = isOwner ? "official | key verified" : "community | key verified";
+        statusColor = "#06b6d4"; // cyan
       } else {
-        statusText = "registered";
-        statusColor = "#facc15"; // neon yellow
+        statusText = isOwner ? "official | registered" : "community | registered";
+        statusColor = "#f59e0b"; // amber
       }
     }
+
 
     const leftLabel = `aid : ${rawAddress || "agent"}`;
     // Approximate SVG text width calculation

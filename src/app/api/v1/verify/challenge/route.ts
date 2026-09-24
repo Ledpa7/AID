@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateChallenge } from "@/lib/crypto";
+import { checkRateLimit, getClientIp, createRateLimitResponse } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`challenge:${clientIp}`, { limit: 60, windowMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return createRateLimitResponse(rateCheck);
+    }
+
     const body = await request.json();
     const { subject } = body;
 

@@ -22,13 +22,19 @@ export function sanitizeDomain(domain: string): string {
 }
 
 /**
- * Generates a standard, secure verification token for a domain.
+ * Generates an unpredictable, cryptographically salted verification token for a domain.
+ * An optional explicit salt can be passed for deterministic reproduction or testing.
  */
-export function generateDomainChallengeToken(slug: string, domain: string): string {
+export function generateDomainChallengeToken(
+  slug: string,
+  domain: string,
+  salt?: string
+): string {
   const cleanDomain = sanitizeDomain(domain);
+  const randomSalt = salt || crypto.randomBytes(16).toString("hex");
   const hash = crypto
     .createHash("sha256")
-    .update(`${slug}:${cleanDomain}`)
+    .update(`${slug}:${cleanDomain}:${randomSalt}`)
     .digest("hex")
     .substring(0, 24);
   return `aid-verification=${hash}`;
@@ -40,7 +46,8 @@ export function generateDomainChallengeToken(slug: string, domain: string): stri
  */
 export async function verifyDnsTxtRecord(
   domain: string,
-  expectedToken: string
+  expectedToken: string,
+  fallbackToken?: string
 ): Promise<DnsVerificationResult> {
   const cleanDomain = sanitizeDomain(domain);
   if (!cleanDomain) {
@@ -67,9 +74,13 @@ export async function verifyDnsTxtRecord(
       const flattened = txtRecords.map((chunk) => chunk.join(""));
       allRecordsFound.push(...flattened);
 
-      // Check if any TXT record matches the expected challenge token
+      // Check if any TXT record matches the expected challenge token or fallback token
       for (const record of flattened) {
-        if (record.trim() === expectedToken.trim() || record.includes(expectedToken.trim())) {
+        const cleanRecord = record.trim();
+        const matchesPrimary = cleanRecord === expectedToken.trim() || cleanRecord.includes(expectedToken.trim());
+        const matchesFallback = fallbackToken && (cleanRecord === fallbackToken.trim() || cleanRecord.includes(fallbackToken.trim()));
+
+        if (matchesPrimary || matchesFallback) {
           return {
             success: true,
             matchedRecord: record,
@@ -79,6 +90,7 @@ export async function verifyDnsTxtRecord(
         }
       }
     } catch (err: any) {
+
       // ENODATA or ENOTFOUND is expected if host has no TXT record
       if (err.code !== "ENODATA" && err.code !== "ENOTFOUND" && err.code !== "ESERVFAIL") {
         console.warn(`DNS query warning for ${host}:`, err.message);

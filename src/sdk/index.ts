@@ -1,4 +1,17 @@
 import crypto from "crypto";
+import {
+  issueAgentPassportToken,
+  verifyAgentPassportTokenOffline,
+  createExecutionReceipt,
+  verifyExecutionReceipt,
+  getAidRootPublicKey,
+} from "../lib/attestation";
+import {
+  AgentPassportToken,
+  ExecutionReceipt,
+  CreateReceiptParams,
+  VerifyReceiptParams,
+} from "../lib/types";
 
 export interface KeyPairResult {
   publicKey: string; // "ed25519:<hex>"
@@ -179,6 +192,51 @@ export class AID {
 
     return await res.json();
   }
+
+  /**
+   * Issues a verifiable Agent Passport Token (AVC)
+   */
+  static issuePassport(params: Parameters<typeof issueAgentPassportToken>[0]): AgentPassportToken {
+    return issueAgentPassportToken(params);
+  }
+
+  /**
+   * Completely offline, 0ms verification of an Agent Passport Token
+   */
+  static verifyPassportOffline(token: AgentPassportToken, expectedRootPublicKey?: string) {
+    return verifyAgentPassportTokenOffline(token, expectedRootPublicKey);
+  }
+
+  /**
+   * Creates an Ed25519-signed Proof of Execution (PoE) Receipt
+   */
+  static createReceipt(params: CreateReceiptParams): ExecutionReceipt {
+    return createExecutionReceipt(params);
+  }
+
+  /**
+   * Verifies an Execution Receipt (hashes and Ed25519 signature)
+   */
+  static verifyReceipt(params: VerifyReceiptParams) {
+    return verifyExecutionReceipt(params);
+  }
+
+  /**
+   * Gets the public key of the AID Root Authority
+   */
+  static getRootPublicKey(): string {
+    return getAidRootPublicKey();
+  }
 }
 
+export {
+  issueAgentPassportToken,
+  verifyAgentPassportTokenOffline,
+  createExecutionReceipt,
+  verifyExecutionReceipt,
+  getAidRootPublicKey,
+};
+export type { AgentPassportToken, ExecutionReceipt, CreateReceiptParams, VerifyReceiptParams };
+
 export default AID;
+

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AIDStore } from "@/lib/store";
+import { checkRateLimit, getClientIp, createRateLimitResponse } from "@/lib/ratelimit";
 
 export async function GET(
   request: NextRequest,
@@ -35,6 +36,12 @@ export async function POST(
   { params }: { params: { slug: string } }
 ) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`verify-dns:${clientIp}`, { limit: 20, windowMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return createRateLimitResponse(rateCheck);
+    }
+
     const slug = decodeURIComponent(params.slug || "").replace(/^@/, "").toLowerCase();
     const result = await AIDStore.verifyDomain(slug);
 

@@ -6,6 +6,7 @@ interface TrustCandidate {
   isKeyVerified?: boolean;
   publicKey?: string;
   isDomainVerified?: boolean;
+  registeredBy?: "OWNER" | "COMMUNITY";
   endpoints?: { url: string; protocol: string; isActive?: boolean }[];
   isLimited?: boolean;
   securityAudit?: SecurityAuditReport;
@@ -27,17 +28,19 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
     !agent.isLimited &&
     agent.healthStatus?.status !== "DOWN";
 
-
+  const isCommunity = agent.registeredBy === "COMMUNITY";
 
   const badges: TrustBadgeItem[] = [
     {
       id: "registered",
       level: 0,
-      name: "Registered",
-      icon: "⚪",
+      name: isCommunity ? "Community Entry" : "Registered",
+      icon: isCommunity ? "👥" : "⚪",
       achieved: isRegistered,
-      title: "Registry Record Active",
-      description: "Permanent AID (ULID) and alias handle registered.",
+      title: isCommunity ? "Open Community Registration" : "Registry Record Active",
+      description: isCommunity
+        ? "Permissionless open community submission. Permanent AID (ULID) active."
+        : "Permanent AID (ULID) and alias handle registered by verified owner.",
     },
     {
       id: "key",
@@ -55,10 +58,17 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
       name: "Domain Verified",
       icon: "🌐",
       achieved: hasDomain,
-      title: "Domain Ownership Verified",
-      description: "Validated via live DNS TXT record (_aid.domain.com).",
-      actionHint: "Add a verification token to your DNS TXT record to earn the spoof-proof badge.",
+      title: hasDomain ? "Domain Ownership Verified" : "Domain Ownership Pending",
+      description: hasDomain
+        ? "Validated via live DNS TXT record (_aid.domain.com) by verified owner."
+        : isCommunity
+        ? "Community submission unclaimed by domain owner. Domain owner can claim via token."
+        : "Validated via live DNS TXT record (_aid.domain.com).",
+      actionHint: hasDomain
+        ? undefined
+        : "Add a verification token to your DNS TXT record to earn the spoof-proof badge.",
     },
+
     {
       id: "shield",
       level: 3,

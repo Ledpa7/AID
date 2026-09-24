@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeFetchAgentCard } from "@/lib/ssrf";
+import { checkRateLimit, getClientIp, createRateLimitResponse } from "@/lib/ratelimit";
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`inspect:${clientIp}`, { limit: 30, windowMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return createRateLimitResponse(rateCheck);
+    }
+
     const body = await request.json();
     const { url } = body;
 
@@ -12,6 +19,7 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
 
     const result = await safeFetchAgentCard(url);
 

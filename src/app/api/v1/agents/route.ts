@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AIDStore } from "@/lib/store";
+import { checkRateLimit, getClientIp, createRateLimitResponse } from "@/lib/ratelimit";
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,8 +38,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    const rateCheck = checkRateLimit(`register:${clientIp}`, { limit: 30, windowMs: 60 * 1000 });
+    if (!rateCheck.success) {
+      return createRateLimitResponse(rateCheck);
+    }
+
     const body = await request.json();
     const { namespace, alias, displayName, description, endpointUrl, protocol, publicKey, cardSnapshot, registeredBy } = body;
+
 
     if (!namespace || !alias || !displayName || !endpointUrl) {
       return NextResponse.json(

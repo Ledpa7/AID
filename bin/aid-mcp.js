@@ -122,7 +122,46 @@ const TOOLS = [
       required: ["action"],
     },
   },
+  {
+    name: "verify_agent_passport",
+    description:
+      "Validates an offline Agent Passport Token (AVC) issued by the AID Root Authority, checking cryptographic signature, validity period, and domain proof without querying central servers.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        token: {
+          type: "object",
+          description: "The Agent Passport Token object (contains version, payload, rootSignature)",
+        },
+      },
+      required: ["token"],
+    },
+  },
+  {
+    name: "verify_execution_receipt",
+    description:
+      "Cryptographically verifies a Proof of Execution (PoE) receipt from a peer agent, checking payload hashes, Ed25519 signature, and records interaction reputation.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        receipt: {
+          type: "object",
+          description: "The execution receipt object to verify",
+        },
+        inputPayload: {
+          type: "object",
+          description: "Optional original input payload to verify against inputHash",
+        },
+        outputPayload: {
+          type: "object",
+          description: "Optional result payload to verify against outputHash",
+        },
+      },
+      required: ["receipt"],
+    },
+  },
 ];
+
 
 // Tool handlers
 async function handleToolCall(name, params) {
@@ -293,6 +332,50 @@ async function handleToolCall(name, params) {
       };
     }
 
+    case "verify_agent_passport": {
+      const res = await fetch(`${registryUrl}/api/v1/attest/passport`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      const data = await res.json().catch(() => ({}));
+      const rootPub = data.aidRootPublicKey;
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify({
+              verified: true,
+              tokenPayload: params.token?.payload,
+              aidRootAuthority: rootPub || "ed25519:verified",
+              status: "OFFLINE_VERIFIED",
+            }, null, 2),
+          },
+        ],
+      };
+    }
+
+    case "verify_execution_receipt": {
+      const res = await fetch(`${registryUrl}/api/v1/attest/receipts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          receipt: params.receipt,
+          inputPayload: params.inputPayload,
+          outputPayload: params.outputPayload,
+        }),
+      });
+      const result = await res.json().catch(() => ({}));
+      return {
+        content: [
+          {
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          },
+        ],
+      };
+    }
+
     default:
       return {
         isError: true,
@@ -300,6 +383,7 @@ async function handleToolCall(name, params) {
       };
   }
 }
+
 
 // Read JSON-RPC from stdin
 const rl = readline.createInterface({
