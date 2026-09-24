@@ -34,7 +34,7 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
     {
       id: "registered",
       level: 0,
-      name: isCommunity ? "Community Entry" : "Registered",
+      name: isCommunity ? "Community Registered" : "Registered",
       icon: isCommunity ? "👥" : "⚪",
       achieved: isRegistered,
       title: isCommunity ? "Open Community Registration" : "Registry Record Active",

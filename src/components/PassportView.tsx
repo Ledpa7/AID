@@ -277,7 +277,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 {agent.registeredBy === "COMMUNITY" ? (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30 text-xs font-semibold">
                     <Users className="w-3 h-3 text-purple-400" />
-                    Community Listed
+                    Community Registered
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">

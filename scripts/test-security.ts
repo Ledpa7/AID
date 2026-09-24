@@ -3,7 +3,7 @@ import { AIDStore } from "../src/lib/store";
 
 async function runSecurityShieldTests() {
   console.log("==================================================");
-  console.log("🛡️  AID Security Shield (보안 보호막) Test Suite");
+  console.log("🛡️  AID Security Shield Test Suite");
   console.log("==================================================\n");
 
   let passed = 0;

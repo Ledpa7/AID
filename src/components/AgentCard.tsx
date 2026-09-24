@@ -47,10 +47,10 @@ export default function AgentCard({ agent }: AgentCardProps) {
             {isCommunity ? (
               <span
                 className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30"
-                title="Community submitted agent"
+                title="Community registered agent"
               >
                 <Users className="w-3 h-3 text-purple-400" />
-                Community
+                Community Registered
               </span>
             ) : (
               <span

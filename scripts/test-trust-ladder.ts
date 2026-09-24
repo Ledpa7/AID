@@ -3,7 +3,7 @@ import { AIDStore } from "../src/lib/store";
 
 async function runTrustLadderTests() {
   console.log("==================================================");
-  console.log("🏆  AID Progressive Trust Ladder (5단계 뱃지 사다리) Test Suite");
+  console.log("🏆  AID Progressive Trust Ladder (5-Tier Badge) Test Suite");
   console.log("==================================================\n");
 
   let passed = 0;

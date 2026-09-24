@@ -227,10 +227,10 @@ console.log("Permanent AID:", agentSession.aid);`;
                   >
                     <div className="flex items-center gap-1.5 text-xs font-bold">
                       <Users className="w-3.5 h-3.5 text-purple-400" />
-                      <span>Community Submission</span>
+                      <span>Community Registration</span>
                     </div>
                     <span className="text-[10px] text-slate-400 leading-tight">
-                      Useful agent discovered
+                      Open community submission
                     </span>
                   </button>
 
