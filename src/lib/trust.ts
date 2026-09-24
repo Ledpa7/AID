@@ -36,8 +36,8 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
       name: "Registered",
       icon: "⚪",
       achieved: isRegistered,
-      title: "레지스트리 등록 완료",
-      description: "영구 불변 AID(ULID) 및 가독 주소(Alias) 발급 완료.",
+      title: "Registry Record Active",
+      description: "Permanent AID (ULID) and alias handle registered.",
     },
     {
       id: "key",
@@ -45,9 +45,9 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
       name: "Key Verified",
       icon: "🔑",
       achieved: hasKey,
-      title: "암호학적 공개키 검증",
-      description: "Ed25519 공개키 등록 및 챌린지 서명 검증 가능.",
-      actionHint: "Ed25519 공개키를 등록하면 Lv.1이 즉시 잠금 해제됩니다.",
+      title: "Cryptographic Key Verified",
+      description: "Ed25519 public key registered and verifiable via challenge signature.",
+      actionHint: "Register an Ed25519 public key to immediately unlock Lv.1.",
     },
     {
       id: "domain",
@@ -55,9 +55,9 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
       name: "Domain Verified",
       icon: "🌐",
       achieved: hasDomain,
-      title: "도메인 공식 소유권 확인",
-      description: "DNS TXT 레코드(_aid.domain.com)를 통한 실시간 소유권 검증 통과.",
-      actionHint: "도메인 DNS TXT 레코드에 인증 토큰을 추가해 사칭 방지 뱃지를 획득하세요.",
+      title: "Domain Ownership Verified",
+      description: "Validated via live DNS TXT record (_aid.domain.com).",
+      actionHint: "Add a verification token to your DNS TXT record to earn the spoof-proof badge.",
     },
     {
       id: "shield",
@@ -65,9 +65,9 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
       name: "Shield Safe",
       icon: "🛡️",
       achieved: isShieldSafe,
-      title: "보안 보호막 (Security Shield) 통과",
-      description: "임의 쉘 실행(RCE), 파일 파괴, 비밀키 탈취 등 악성 벡터 미탐지.",
-      actionHint: "도구 스키마에서 위험한 명령어(exec, bash)를 제거하고 안전한 권한만 선언하세요.",
+      title: "Security Shield Passed",
+      description: "No malicious vectors detected (RCE shell, file destroy, credential exfil, SSRF).",
+      actionHint: "Remove dangerous shell commands and restrict tool permissions to earn this badge.",
     },
     {
       id: "live",
@@ -75,9 +75,9 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
       name: "Live Responding",
       icon: "⚡",
       achieved: isLive,
-      title: "실시간 엔드포인트 활성",
-      description: "공개 호출 가능한 엔드포인트가 연결되어 즉시 통신 가능.",
-      actionHint: "공개 REST/MCP/A2A 엔드포인트 URL을 연결해 실시간 호출 뱃지를 받으세요.",
+      title: "Live Endpoint Responding",
+      description: "Publicly callable communication endpoint is connected and responding.",
+      actionHint: "Connect a live public REST/MCP/A2A endpoint URL to receive the live badge.",
     },
   ];
 
@@ -107,13 +107,13 @@ export function calculateTrustLadder(agent: TrustCandidate): TrustLadder {
   // Next recommendation
   let nextAction: string | undefined;
   if (!hasKey) {
-    nextAction = "다음 신뢰 잠금 해제: Ed25519 공개키를 등록하세요.";
+    nextAction = "Next Trust Unlock: Register an Ed25519 public key.";
   } else if (!hasDomain) {
-    nextAction = "다음 신뢰 잠금 해제: DNS TXT 레코드로 도메인 소유권을 증명하세요.";
+    nextAction = "Next Trust Unlock: Prove domain ownership via DNS TXT record.";
   } else if (!isShieldSafe) {
-    nextAction = "다음 신뢰 잠금 해제: Security Shield 감사 경고 항목을 조치하세요.";
+    nextAction = "Next Trust Unlock: Address Security Shield audit warnings.";
   } else if (!isLive) {
-    nextAction = "다음 신뢰 잠금 해제: 유효한 통신 엔드포인트를 연결하세요.";
+    nextAction = "Next Trust Unlock: Connect a live communication endpoint.";
   }
 
   return {

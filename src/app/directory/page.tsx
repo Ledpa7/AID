@@ -336,14 +336,14 @@ export default function DirectoryPage() {
               {isLoadingMore ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-yellow-400" />
-                  <span>불러오는 중...</span>
+                  <span>Loading...</span>
                 </>
               ) : (
                 <>
                   <ChevronDown className="w-4 h-4 text-yellow-400 group-hover:translate-y-0.5 transition" />
-                  <span>더 보기 (+10개 더 불러오기)</span>
+                  <span>Load More (+10 Agents)</span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-400/10 text-yellow-400 border border-yellow-400/30 font-mono ml-1">
-                    {totalCount - agents.length}개 남음
+                    {totalCount - agents.length} remaining
                   </span>
                 </>
               )}
@@ -354,7 +354,7 @@ export default function DirectoryPage() {
         {/* All Loaded Indicator */}
         {!hasMore && agents.length > 0 && totalCount > 10 && (
           <div className="text-center mt-12 mb-6 text-xs text-slate-500 font-mono">
-            ✓ 모든 에이전트 목록을 불러왔습니다 (총 {totalCount}개)
+            ✓ All registered agents loaded ({totalCount} total)
           </div>
         )}
 

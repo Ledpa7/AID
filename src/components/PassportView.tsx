@@ -277,18 +277,18 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 {agent.registeredBy === "COMMUNITY" ? (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30 text-xs font-semibold">
                     <Users className="w-3 h-3 text-purple-400" />
-                    커뮤니티 제보 등록
+                    Community Listed
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-semibold">
                     <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    공식 소유자 등록
+                    Verified Owner
                   </span>
                 )}
                 {agent.isLimited && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/30 text-xs font-semibold">
                     <AlertTriangle className="w-3.5 h-3.5" />
-                    기능 제한: 온전한 연동 불가 (외부 API 미공개)
+                    Limited Profile: Closed API (No public endpoint)
                   </span>
                 )}
               </div>
@@ -302,9 +302,9 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                   <div className="flex items-start gap-2.5 text-purple-300">
                     <Users className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
                     <div>
-                      <div className="font-semibold text-purple-200">커뮤니티 제보로 등록된 에이전트입니다</div>
+                      <div className="font-semibold text-purple-200">This agent was submitted by the community</div>
                       <p className="text-purple-400/80 text-[11px] leading-relaxed">
-                        이 에이전트의 실제 제작자이신가요? 도메인 DNS TXT 인증을 완료하면 '공식 소유자' 뱃지로 승격됩니다.
+                        Are you the creator of this agent? Complete domain DNS TXT verification to claim the &apos;Verified Owner&apos; badge.
                       </p>
                     </div>
                   </div>
@@ -312,7 +312,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                     href={`/?verify=${agent.namespaceSlug}#verify`}
                     className="px-3.5 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shrink-0 text-center transition shadow-sm shadow-purple-600/30"
                   >
-                    소유권 인증하기
+                    Claim Ownership
                   </Link>
                 </div>
               )}
@@ -321,9 +321,9 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                 <div className="mt-3 bg-red-950/30 border border-red-900/50 rounded-xl p-3.5 flex items-start gap-2.5 text-xs text-red-300">
                   <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                   <div className="space-y-0.5">
-                    <div className="font-semibold text-red-300">온전한 기능 미지원 안내</div>
+                    <div className="font-semibold text-red-300">Limited Capability Notice</div>
                     <p className="text-red-400/90 leading-relaxed text-[11px]">
-                      본 에이전트는 Meta 폐쇄형 클라우드 VM 환경에서 동작하여 현재 외부 프로그램이나 다른 AI 에이전트가 직접 호출할 수 있는 공개 MCP / REST API를 제공하지 않습니다. AID 프로토콜 상 식별자 및 메타데이터 프로필로 등록된 상태입니다.
+                      This agent operates within a closed cloud VM ecosystem and does not yet expose a public MCP or REST API for live autonomous interaction. It is registered as a verifiable identity profile in the AID directory.
                     </p>
                   </div>
                 </div>
@@ -398,14 +398,14 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                       </span>
                     </div>
                     <div className="text-xs text-slate-400 mt-0.5">
-                      단계별 검증을 완료할수록 글로벌 AI 어시스턴트(Claude, Cursor)의 우선 호출 신뢰도가 상승합니다.
+                      Higher trust tiers increase invocation priority for autonomous AI assistants (Claude, Cursor, Swarm).
                     </div>
                   </div>
                 </div>
 
                 <div className="text-left sm:text-right">
                   <div className="text-xs font-mono text-slate-400">
-                    진행도: <span className="text-yellow-400 font-bold">{resolution.trustLadder.currentLevel} / {resolution.trustLadder.maxLevel} 뱃지 ({resolution.trustLadder.percentage}%)</span>
+                    Progress: <span className="text-yellow-400 font-bold">{resolution.trustLadder.currentLevel} / {resolution.trustLadder.maxLevel} Badges ({resolution.trustLadder.percentage}%)</span>
                   </div>
                   {/* Progress Bar */}
                   <div className="w-full sm:w-36 h-2 bg-slate-900 rounded-full mt-1.5 overflow-hidden border border-slate-800">
@@ -434,11 +434,11 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                         {badge.achieved ? (
                           <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3" />
-                            달성
+                            Earned
                           </span>
                         ) : (
                           <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">
-                            미완료
+                            Locked
                           </span>
                         )}
                       </div>
@@ -467,7 +467,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
                     <span>{resolution.trustLadder.nextAction}</span>
                   </span>
                   <span className="text-[11px] font-mono text-slate-400 hidden sm:inline">
-                    무(無)로그인 암호학적 검증
+                    Zero-login cryptographic verification
                   </span>
                 </div>
               )}
@@ -705,7 +705,7 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
 
               {/* 1-Hour Automated Sentinel Status Badge */}
               <div className="flex items-center gap-2 text-xs font-mono">
-                <span className="text-[10px] text-slate-500 hidden sm:inline">1시간 자동 전수조사:</span>
+                <span className="text-[10px] text-slate-500 hidden sm:inline">1-Hour Sentinel:</span>
                 {resolution.healthStatus ? (
                   <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
                     resolution.healthStatus.status === "HEALTHY"
@@ -856,8 +856,8 @@ console.log("Endpoint:", passport.primaryEndpoint?.url);`;
               <div className="bg-red-950/20 border border-red-900/40 rounded-xl p-3.5 text-xs text-red-300 flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="text-red-200 font-semibold">폐쇄형 샌드박스 알림:</strong>{" "}
-                  {agent.limitedReason || "이 에이전트는 외부 API가 비공개된 폐쇄형 생태계입니다. 프로필 및 명세 조회가 제공되며, 라이브 다이렉트 프롬프트 전송은 제한됩니다."}
+                  <strong className="text-red-200 font-semibold">Closed Sandbox Notice:</strong>{" "}
+                  {agent.limitedReason || "This agent operates within a closed ecosystem without a public API. Direct prompt execution is restricted."}
                 </div>
               </div>
             )}

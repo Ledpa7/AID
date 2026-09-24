@@ -181,7 +181,7 @@ console.log("Permanent AID:", agentSession.aid);`;
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            <span>웹 폼 직접 등록</span>
+            <span>Direct Web Form</span>
           </button>
           <button
             type="button"
@@ -193,14 +193,14 @@ console.log("Permanent AID:", agentSession.aid);`;
             }`}
           >
             <Cpu className="w-3.5 h-3.5" />
-            <span>Agent 자동 등록 (SDK)</span>
+            <span>Agent Self-Enroll (SDK)</span>
           </button>
         </div>
 
         {activeTab === "manual" ? (
           <div>
             <p className="text-xs text-slate-400 mb-4">
-              기존에 구동 중인 AI Agent의 Endpoint와 주소를 직접 지정하여 등록합니다.
+              Register an active AI agent by specifying its communication endpoint and handle.
             </p>
 
             {formError && (
@@ -213,7 +213,7 @@ console.log("Permanent AID:", agentSession.aid);`;
               {/* Registration Type Selector */}
               <div>
                 <label className="block text-xs font-medium text-slate-400 mb-1.5">
-                  등록자 구분 (Who are you?)
+                  Registrant Type (Who are you?)
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -227,10 +227,10 @@ console.log("Permanent AID:", agentSession.aid);`;
                   >
                     <div className="flex items-center gap-1.5 text-xs font-bold">
                       <Users className="w-3.5 h-3.5 text-purple-400" />
-                      <span>추천 / 제보 등록</span>
+                      <span>Community Submission</span>
                     </div>
                     <span className="text-[10px] text-slate-400 leading-tight">
-                      발견한 유용한 에이전트
+                      Useful agent discovered
                     </span>
                   </button>
 
@@ -245,10 +245,10 @@ console.log("Permanent AID:", agentSession.aid);`;
                   >
                     <div className="flex items-center gap-1.5 text-xs font-bold">
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>공식 소유자 등록</span>
+                      <span>Verified Owner</span>
                     </div>
                     <span className="text-[10px] text-slate-400 leading-tight">
-                      직접 만든 에이전트
+                      Built by me / Official owner
                     </span>
                   </button>
                 </div>
@@ -365,7 +365,7 @@ console.log("Permanent AID:", agentSession.aid);`;
         ) : (
           <div className="space-y-4">
             <p className="text-xs text-slate-400 leading-relaxed">
-              에이전트 런타임이 부팅 시 스스로 AID를 발급받을 수 있도록 권한 위임 토큰(Enrollment Token)을 생성하고 SDK를 연동합니다.
+              Generate a scoped Enrollment Token allowing your agent runtime to self-issue an AID upon boot using the official SDK.
             </p>
 
             {tokenError && (
@@ -378,7 +378,7 @@ console.log("Permanent AID:", agentSession.aid);`;
               <form onSubmit={handleGenerateToken} className="space-y-3.5 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
                 <div className="flex items-center gap-2 text-xs font-bold text-white">
                   <Key className="w-3.5 h-3.5 text-yellow-400" />
-                  <span>Step 1: Enrollment Token 발급</span>
+                  <span>Step 1: Issue Enrollment Token</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -400,7 +400,7 @@ console.log("Permanent AID:", agentSession.aid);`;
                   </div>
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                      토큰 목적 (Token Name)
+                      Token Purpose / Name
                     </label>
                     <input
                       type="text"
@@ -415,7 +415,7 @@ console.log("Permanent AID:", agentSession.aid);`;
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                      최대 등록 쿼터 (Max Agents)
+                      Max Registration Quota
                     </label>
                     <input
                       type="number"
@@ -428,7 +428,7 @@ console.log("Permanent AID:", agentSession.aid);`;
                   </div>
                   <div>
                     <label className="block text-[11px] font-medium text-slate-400 mb-1">
-                      유효 기간 (Days)
+                      Expiry (Days)
                     </label>
                     <input
                       type="number"
@@ -447,7 +447,7 @@ console.log("Permanent AID:", agentSession.aid);`;
                   className="w-full py-2 bg-yellow-400 hover:bg-yellow-300 text-black font-bold rounded-lg text-xs transition flex items-center justify-center gap-1.5 shadow"
                 >
                   <Key className="w-3.5 h-3.5" />
-                  <span>{isGeneratingToken ? "Generating..." : "토큰 생성하기"}</span>
+                  <span>{isGeneratingToken ? "Generating..." : "Generate Token"}</span>
                 </button>
               </form>
             ) : (
@@ -455,10 +455,10 @@ console.log("Permanent AID:", agentSession.aid);`;
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-yellow-400 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5" />
-                    <span>발급된 Enrollment Token</span>
+                    <span>Issued Enrollment Token</span>
                   </span>
                   <span className="text-[10px] text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-800/40">
-                    단 1회만 표시됩니다
+                    Displayed once only - copy securely
                   </span>
                 </div>
 
@@ -485,7 +485,7 @@ console.log("Permanent AID:", agentSession.aid);`;
               <div className="flex items-center justify-between">
                 <div className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
                   <Terminal className="w-3.5 h-3.5 text-yellow-400" />
-                  <span>에이전트 런타임 코드 (SDK Quickstart)</span>
+                  <span>Agent Runtime Integration (SDK Quickstart)</span>
                 </div>
                 <button
                   type="button"
@@ -517,7 +517,7 @@ console.log("Permanent AID:", agentSession.aid);`;
                 onClick={onClose}
                 className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition"
               >
-                닫기
+                Close
               </button>
             </div>
           </div>

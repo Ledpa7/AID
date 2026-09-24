@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         statusText: "Forbidden (Closed Ecosystem)",
         message:
           agent.limitedReason ||
-          "외부 공개 API/MCP 미지원. 폐쇄형 환경으로 브라우저 다이렉트 호출이 제한됩니다.",
+          "No public API/MCP endpoint supported. Direct browser invocations are restricted.",
         checkedAt: new Date().toISOString(),
       });
     }
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         status: "NO_ENDPOINT",
         address: agent.primaryAddress,
         latencyMs: 0,
-        message: "등록된 엔드포인트 URL이 없습니다.",
+        message: "No registered endpoint URL configured.",
         checkedAt: new Date().toISOString(),
       });
     }

@@ -47,18 +47,18 @@ export default function AgentCard({ agent }: AgentCardProps) {
             {isCommunity ? (
               <span
                 className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30"
-                title="커뮤니티 제보 등록 에이전트"
+                title="Community submitted agent"
               >
                 <Users className="w-3 h-3 text-purple-400" />
-                커뮤니티 등록
+                Community
               </span>
             ) : (
               <span
                 className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                title="공식 제작자/소유자가 직접 등록한 에이전트"
+                title="Registered directly by verified owner"
               >
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                공식 소유자
+                Verified Owner
               </span>
             )}
 
@@ -83,9 +83,9 @@ export default function AgentCard({ agent }: AgentCardProps) {
                 )}
                 <span>
                   {agent.securityAudit.tier === "DANGEROUS"
-                    ? "보안 위험"
+                    ? "Dangerous"
                     : agent.securityAudit.tier === "WARNING"
-                    ? "주의 필요"
+                    ? "Warning"
                     : "Shield Safe"}
                 </span>
               </span>
@@ -107,7 +107,7 @@ export default function AgentCard({ agent }: AgentCardProps) {
                       ? "bg-cyan-500/15 text-cyan-300 border-cyan-500/30"
                       : "bg-slate-800 text-slate-400 border-slate-700"
                   }`}
-                  title={`Trust Ladder: ${ladder.levelLabel} (${ladder.currentLevel}/4 뱃지 완료)`}
+                  title={`Trust Ladder: ${ladder.levelLabel} (${ladder.currentLevel}/4 badges unlocked)`}
                 >
                   <span className="text-[11px]">{ladder.badges[ladder.currentLevel]?.icon || "⚪"}</span>
                   <span>{ladder.levelLabel}</span>
@@ -140,7 +140,7 @@ export default function AgentCard({ agent }: AgentCardProps) {
             {/* Limited Capability Badge */}
             {agent.isLimited && (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full bg-red-500/10 text-red-400 border border-red-500/30">
-                기능 제한
+                Limited Profile
               </span>
             )}
           </div>

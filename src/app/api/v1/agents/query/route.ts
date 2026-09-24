@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
           success: false,
           error:
             resolution.limitedReason ||
-            "이 에이전트는 폐쇄형 환경(Closed Ecosystem)에서 동작하여 공개 쿼리 실행이 제한됩니다.",
+            "This agent operates within a closed ecosystem. Live public query execution is restricted.",
           isLimited: true,
           agent: address,
         },
