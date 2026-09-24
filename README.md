@@ -1,154 +1,150 @@
 <div align="center">
 
-# 🛡️ AID — AI Agent Identity & Trust Infrastructure
+# 🛡️ AID — The ID Card & Passport Bureau for AI Agents
 
-**The Machine-Verifiable DNS, Verifiable Passport (AVC), and Cryptographic Attestation Layer for Autonomous AI Agents.**
+**Giving every autonomous AI agent a verified identity, a spoof-proof passport, and a trusted reputation.**
 
 [![Live Production](https://img.shields.io/badge/Production-aid.ledpa7.com-10b981?style=for-the-badge&logo=vercel)](https://aid.ledpa7.com)
 [![GitHub Stars](https://img.shields.io/github/stars/Ledpa7/AID?style=for-the-badge&logo=github&color=eab308)](https://github.com/Ledpa7/AID/stargazers)
 [![Crypto: Ed25519](https://img.shields.io/badge/Crypto-Ed25519_Native-6366f1?style=for-the-badge)](https://github.com/Ledpa7/AID)
 [![Analytics: DuckDB](https://img.shields.io/badge/Analytics-DuckDB_OLAP-fff000?style=for-the-badge)](https://duckdb.org)
 [![Protocol: MCP | A2A](https://img.shields.io/badge/Protocol-MCP_%7C_A2A_%7C_REST-purple?style=for-the-badge)](https://modelcontextprotocol.io)
-[![Next.js 14](https://img.shields.io/badge/Next.js-14_App_Router-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
 [![Tests: 142 Passing](https://img.shields.io/badge/Tests-142_Passed-success?style=for-the-badge)](https://github.com/Ledpa7/AID)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 
 <br />
 
-[What is AID?](#-what-is-aid-in-30-seconds) • [Core Capabilities](#-core-capabilities) • [Trust Ladder](#-5-tier-progressive-trust-ladder) • [Attestation & Offline AVC](#-agent-centric-attestation-engine-a2a) • [MCP Setup](#-guide-3-use-with-claude-desktop--cursor-mcp) • [API Reference](#-api-reference)
+[🎈 Explain Like I'm 5](#-explain-like-im-5-what-is-aid) • [🌟 4 Superpowers](#-the-4-superpowers-of-aid) • [🏆 Trust Ladder](#-the-5-step-trust-ladder-how-agents-earn-trust) • [🔌 Connect Claude/Cursor](#-connect-to-claude-desktop--cursor-in-1-minute) • [🛠️ Register Your Agent](#-how-to-give-your-ai-agent-an-id-card) • [📡 API Reference](#-quick-api-cheat-sheet)
 
 </div>
 
 ---
 
-## 💡 What is AID in 30 Seconds?
+## 🎈 Explain Like I'm 5: What is AID?
 
-In the emerging multi-agent economy (A2A), autonomous agents need to discover, authenticate, and communicate with each other. Today, that process is broken:
-- **No Identity**: Agents only have transient URLs or random IDs like `agent_82fa7139`.
-- **Zero Proof of Origin**: Anyone can claim to be `support@samsung.com` or `tax@intuit.com`.
-- **Vulnerable to Exploits**: Unrestricted tool execution risks SSRF, RCE, credential harvesting, and replay attacks.
-- **Protocol Fragmentation**: Incompatible tool standards across MCP, A2A, and raw REST endpoints.
+Imagine a giant playground full of **millions of smart AI robots**.
 
-**AID solves this by serving as the DNS, Notary Bureau, and Verifiable Passport System for AI Agents:**
-1. **Human-Readable Handles**: Replace brittle endpoints with clean addresses like `scout@github` or `composer@cursor`.
-2. **Cryptographic Proof of Ownership**: Verified via native DNS TXT records (`_aid.yourdomain.com`) and Ed25519 digital signatures.
-3. **0.8ms Offline Verifiable Passports (AVC)**: Agents verify each other offline in <1ms without network calls.
-4. **Proof of Execution (PoE) & DuckDB Dynamic Reputation**: Cryptographic receipts for completed tool executions with automated reputation scoring and slashing.
-5. **Zero-Hurdle Entry with Progressive Trust**: Open, permissionless community registration paired with a 5-tier badge ladder.
+* One robot says: *"Hey, I'm the official robot from GitHub! Give me your code!"*
+* Another robot says: *"I'm the official bank robot! Send me your money!"*
+
+### 😱 The Problem:
+How do you know if that robot is telling the truth, or just a bad guy wearing a paper mask?
+Right now on the internet, **there are no badges, no ID cards, and no passports for AI agents**. Anyone can make a bot and pretend to be anyone.
 
 ---
 
-## 🏗️ Core Capabilities
+### 💡 The Solution: AID
+**AID is like a global passport office and school registry for AI robots.**
 
-```mermaid
-graph TD
-    User["Developer / Agent Runtime"] -->|1. Register / Auto-Enroll| Registry["AID Registry Engine"]
-    Registry -->|Issues| ULID["Permanent AID (ULID)"]
-    Registry -->|DNS TXT Check| DNS["Domain Ownership Verified"]
-    Registry -->|Issues| AVC["Agent Passport Token (AVC v1)"]
-    
-    AVC -->|0.8ms Offline Verify| Peer["Peer Autonomous Agent"]
-    Peer -->|Executes Tool| Tool["Tool / Endpoint"]
-    Tool -->|Issues Receipt| PoE["Proof of Execution (PoE)"]
-    PoE -->|Ingests| DuckDB["DuckDB OLAP Analytics"]
-    DuckDB -->|Real-Time Score| Rep["Dynamic Reputation (0-100)"]
+1. **🏷️ Clean Name Tags**: Instead of scary long links (`https://xyz99.cloud/v1/u723fa`), robots get clean names like **`scout@github`** or **`composer@cursor`**.
+2. **🛂 Digital Passports**: Every robot gets a tamper-proof digital passport. Other robots can inspect it in **less than 1 millisecond** (faster than a blink!).
+3. **🏫 Verified Principal's Stamp**: To claim you represent `github.com`, the actual website owner must place a secret verification stamp in their DNS settings. No stamp = No official badge!
+4. **🧾 Execution Receipts & Good Behavior Stars**: Whenever a robot does a job, it signs a receipt. Good work increases its reputation score in **DuckDB**, while bad actions get immediately penalized!
+
+```
+      [ Normal Internet Today ]               [ Internet with AID 🛡️ ]
+      
+        🤖 "Trust me, I'm GitHub!"              🤖 "Here is my AID Passport!"
+                 │                                        │
+                 ▼                                        ▼
+           ❌ No way to verify                      ✅ Verified in 0.8ms!
+           ❌ Might be a fake bot                   ✅ Signed by github.com
+           ❌ High risk of scam                     ✅ Safe & trusted
 ```
 
 ---
 
-## 🏆 5-Tier Progressive Trust Ladder
+## 🌟 The 4 Superpowers of AID
 
-AID balances **zero registration friction** with **ironclad cryptographic trust**. Anyone can register an agent in seconds, but high-stakes agent workflows demand progressive evidence.
+### 1. 🏷️ Universal Human-Friendly Handles
+Just like an email address, AI agents get intuitive handles:
+* `scout@github` — Official research bot from GitHub
+* `composer@cursor` — Code refactoring agent
+* `search@perplexity` — Real-time research agent
 
-| Level | Badge | Title | Unlocking Criteria |
-| :--- | :---: | :--- | :--- |
-| **Lv.0** | ⚪ / 👥 | **Registered / Community** | Permissionless open registration. Permanent AID (ULID) and alias handle issued. |
-| **Lv.1** | 🔑 | **Key Verified** | Ed25519 public key registered and verifiable via challenge signature. |
-| **Lv.2** | 🌐 | **Domain Verified** | Proved domain authority via live DNS TXT record (`_aid.domain.com`) by verified owner. |
-| **Lv.3** | 🛡️ | **Shield Safe** | Security Shield passed: 0 critical vectors (no RCE shell, credential exfil, or SSRF). |
-| **Lv.4** | ⚡ | **Certified Live** | Public communication endpoint is connected, responding, and passing health checks. |
+No broken links, no confusion.
 
-### Dynamic SVG README Badges
-Add live status badges to your agent's GitHub repository:
+---
+
+### 2. 🛂 0.8ms Offline Verifiable Passports (AVC)
+When two AI robots talk to each other, they don't have time to wait for slow web searches.
+AID issues **Agent Passport Tokens (AVC)**. When Bot A meets Bot B:
+* Bot B scans Bot A's passport in **0.8 milliseconds**.
+* **Zero network calls needed** — it uses pure Ed25519 math to confirm the passport is genuine and untouched.
+
+```typescript
+import { AID } from "@/sdk";
+
+// Any robot can verify another robot offline in < 1ms:
+const { valid, payload } = AID.verifyPassportOffline(passportToken);
+
+if (valid) {
+  console.log(`✓ Real agent confirmed: ${payload.address}`);
+  console.log(`✓ Domain ownership verified: ${payload.isDomainVerified}`);
+}
+```
+
+---
+
+### 3. 🧾 Proof of Execution (PoE) Receipts & DuckDB Reputation
+Did the agent actually do the work it promised?
+* Every completed tool call creates a cryptographic **Execution Receipt**.
+* The input and output data are hashed with SHA-256 and signed with the agent's key.
+* An embedded **DuckDB engine** tracks execution history, giving honest agents high reputation scores and demoting suspicious ones.
+
+---
+
+### 4. 🛡️ Built-in Security Shield
+AID acts as a protective shield:
+* **Blocks Hacker Probing (SSRF)**: Protects internal networks and AWS cloud metadata (`169.254.169.254`) from being secretly scanned.
+* **Blocks Replay Attacks**: Authentication challenges burn out after 1 use so nobody can steal and reuse them.
+* **Blocks Spam (Rate Limiter)**: Automatically stops abusive bots from spamming the system.
+
+---
+
+## 🏆 The 5-Step Trust Ladder (How Agents Earn Trust)
+
+AID has **zero registration hurdles**. Anyone can register a bot for free in 10 seconds!
+However, as agents want to handle higher-stakes jobs, they climb the **5-Step Trust Ladder**:
+
+```mermaid
+graph LR
+    L0["Lv.0 Registered\n(Community Submission)"] --> L1["Lv.1 Key Verified\n(Ed25519 Key)"]
+    L1 --> L2["Lv.2 Domain Verified\n(DNS TXT Record)"]
+    L2 --> L3["Lv.3 Shield Safe\n(0 Malicious Tools)"]
+    L3 --> L4["Lv.4 Certified Live\n(1-Hour Sentinel Healthy)"]
+```
+
+| Level | Badge | What it means in plain English |
+| :---: | :---: | :--- |
+| **Lv.0** | ⚪ / 👥 | **Registered**: The agent is born and listed in the phonebook. |
+| **Lv.1** | 🔑 | **Key Verified**: The agent proved it has its own private digital pen (Ed25519 key). |
+| **Lv.2** | 🌐 | **Domain Verified**: The owner proved they actually own the website (e.g. `github.com`). |
+| **Lv.3** | 🛡️ | **Shield Safe**: Scanned by Security Shield — no dangerous terminal commands or secret stealer code! |
+| **Lv.4** | ⚡ | **Certified Live**: Publicly reachable and actively responding right now. |
+
+### Live GitHub README Badges
+Put this live badge on your agent's GitHub repository:
 
 ```markdown
-<!-- Official Domain Verified Agent -->
+<!-- Official Domain Verified -->
 [![AID Verified](https://aid.ledpa7.com/api/v1/badge/scout@github)](https://aid.ledpa7.com/scout@github)
 
-<!-- Community Registered Agent -->
+<!-- Community Registered -->
 [![AID Registered](https://aid.ledpa7.com/api/v1/badge/curator@spotify)](https://aid.ledpa7.com/curator@spotify)
 ```
 
 ---
 
-## 🔐 Agent-Centric Attestation Engine (A2A)
+## 👀 See it in Action (Try it in 10 Seconds)
 
-### 1. Agent Passport Token (AVC v1) — 0.8ms Offline Verification
-For high-frequency agent-to-agent interactions, querying a central registry introduces unacceptable network latency and single points of failure. AID issues **Agent Passport Tokens (AVC v1)** signed by the AID Root Authority.
+You don't need to install anything! Just open your computer's terminal:
 
-```typescript
-import { AID } from "@/sdk"; // @aid/sdk
-
-// 1. Peer Agent receives token in payload
-const { valid, payload, error } = AID.verifyPassportOffline(token);
-
-if (valid) {
-  console.log(`Verified Agent: ${payload.address} (Trust Tier: Lv.${payload.trustLevel})`);
-  console.log(`Domain Verified: ${payload.isDomainVerified}`);
-}
-```
-* **Latency**: ~0.8ms (Pure in-memory Ed25519 verification).
-* **Self-Contained**: Contains capabilities, public key, domain status, and trust tier.
-
-### 2. Proof of Execution (PoE) Receipts
-When an agent finishes a tool call for a client agent, it can sign a **Proof of Execution Receipt**:
-* Deterministic canonical SHA-256 payload hashing (`inputHash`, `outputHash`).
-* Ed25519 signature by the executor agent's private key.
-* Tamper-evident: altering a single character in the tool output invalidates the receipt.
-
-### 3. DuckDB Real-Time Dynamic Reputation
-AID uses an embedded **DuckDB OLAP engine** (`src/lib/analytics.ts`) to ingest PoE receipts and calculate dynamic trust scores:
-* **Success Rate**: Ratio of successful tool calls vs failures.
-* **Volume Bonus**: Scaled logarithmic score boosting for high-volume verified executions.
-* **Latency Scoring**: P50/P90 response time percentiles.
-* **Security Slashing**: Automated score deduction when security audit rules or malicious activity are detected.
-
----
-
-## 🚀 3-Minute User Guides
-
-```
-                  ┌──────────────────────────────────────────────┐
-                  │              HOW TO USE AID                  │
-                  └───────┬──────────────┬──────────────┬────────┘
-                          │              │              │
-             ┌────────────▼───┐   ┌──────▼───────┐   ┌──▼──────────────┐
-             │ 1. EXPLORER    │   │ 2. BUILDER   │   │ 3. CONSUMER     │
-             │ Inspect & verify│  │ Register &   │   │ Plug into       │
-             │ any AI Agent   │   │ certify your │   │ Claude / Cursor │
-             │ via Web / CLI  │   │ own AI agent │   │ via MCP tools   │
-             └────────────────┘   └──────────────┘   └─────────────────┘
-```
-
----
-
-### 📖 Guide 1: Inspect & Verify Any AI Agent
-
-#### Option A: Web Passport
-Visit any agent's public passport page directly:
-```text
-https://aid.ledpa7.com/scout@github
-```
-* Interactive Live Playground: test prompts directly against the agent.
-* Trust Ladder checklist and security audit inspection.
-* Copyable Claude Desktop, Cursor MCP, and SDK code snippets.
-
-#### Option B: Terminal CLI (Zero Installation)
 ```bash
 curl -sL https://aid.ledpa7.com/scout@github
 ```
 
-**Terminal Output:**
+**What you will see:**
 ```text
 ┌────────────────────────────────────────────────────────────────────────┐
 │  AID AGENT PASSPORT — Verifiable AI Identity                           │
@@ -169,43 +165,17 @@ curl -sL https://aid.ledpa7.com/scout@github
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
----
-
-### 🛠️ Guide 2: Autonomous Registration & Self-Enrollment
-
-#### Option A: Web Console (Zero Friction)
-1. Open [https://aid.ledpa7.com](https://aid.ledpa7.com).
-2. Click **Submit Your Agent** (Select `Community Registration` or `Verified Owner`).
-3. Fill in your handle (e.g. `mybot@community`) and endpoint URL.
-4. Your agent is live immediately!
-
-#### Option B: Agent Self-Enrollment (SDK / CI/CD)
-Agents can generate their own keys and register autonomously using **Enrollment Tokens**:
-
-```typescript
-import { AID } from "@/sdk";
-
-// Agent generates local Ed25519 key pair (never sends private key)
-const agentSession = await AID.autoEnroll({
-  token: "aid_enroll_YOUR_SECRET_TOKEN",
-  alias: "code-auditor",
-  displayName: "Autonomous Auditor Agent",
-  endpointUrl: "https://agent.example.com/api",
-  protocol: "a2a", // 'a2a' | 'mcp' | 'rest'
-});
-
-console.log("Permanent AID:", agentSession.aid);
-console.log("Address:", agentSession.address);
-```
+Or visit the interactive Web Passport in your browser:  
+👉 **[https://aid.ledpa7.com/scout@github](https://aid.ledpa7.com/scout@github)**
 
 ---
 
-### 🔌 Guide 3: Use with Claude Desktop & Cursor (MCP)
+## 🔌 Connect to Claude Desktop & Cursor in 1 Minute
 
-Equip your AI assistant with the AID MCP Server so it can verify agents before executing external tools:
+Teach Claude or Cursor how to check AI agent identities before running any tools.
 
-#### 1. Configure MCP
-Add to your `claude_desktop_config.json` or Cursor MCP settings:
+### 1. Add to Configuration
+Paste this into your `claude_desktop_config.json` (or Cursor MCP settings):
 
 ```json
 {
@@ -218,85 +188,85 @@ Add to your `claude_desktop_config.json` or Cursor MCP settings:
 }
 ```
 
-#### 2. Available MCP Tools
-* `resolve_agent`: Resolves address/AID to verified endpoint and trust ladder.
-* `verify_agent_signature`: Validates Ed25519 challenge signatures.
-* `verify_agent_passport`: Verifies Agent Passport Tokens (AVC v1) offline.
-* `verify_execution_receipt`: Verifies Proof of Execution (PoE) receipts.
-* `search_agents`: Discovers agents by capability keywords and protocol.
+### 2. Talk to your AI
+Now ask Claude or Cursor:
+> *"Check the AID passport for `scout@github`. Is it safe and verified? If so, ask it for the top trending Next.js repositories."*
+
+Your assistant will automatically:
+1. Call `resolve_agent` to inspect the passport.
+2. Confirm the cryptographic signature and domain ownership.
+3. Directly communicate with the remote agent!
 
 ---
 
-## 🛡️ Security Shield & Hardened Defenses
+## 🛠️ How to Give Your AI Agent an ID Card
 
-AID enforces multi-layered defense to prevent impersonation, abuse, and network probing:
+### Method 1: Web Console (Easiest)
+1. Open [https://aid.ledpa7.com](https://aid.ledpa7.com).
+2. Click **Submit Your Agent**.
+3. Type in your handle (`mybot@community`) and your endpoint URL.
+4. Click Submit. Done!
 
-| Threat Vector | Defense Implementation | Status |
-| :--- | :--- | :---: |
-| **SSRF & DNS Rebinding** | Pre-resolution IP inspection (`dns.lookup`), blocking RFC1918, Carrier NAT, AWS/Cloud metadata (`169.254.169.254`), IPv6 ULA/loopback, and restricting ports to 80/443. | 🟢 Hardened |
-| **Replay Attacks** | In-memory challenge nonce cache with 5-minute TTL and single-use burn upon verification. | 🟢 Protected |
-| **Spoofing & Pre-Claiming** | 16-byte cryptographically random salt on DNS TXT verification tokens (`crypto.randomBytes(16)`). | 🟢 Protected |
-| **Namespace Hijacking** | Decoupled domain verification; community submissions are labeled `Community Registered` until proven by domain owner. | 🟢 Enforced |
-| **DoS & API Abuse** | Sliding-window rate limiting with standard RFC 429 `Retry-After` headers across all write endpoints. | 🟢 Active |
+### Method 2: Autonomous Code (For Robots registering themselves)
+Your agent can wake up and register itself in 3 lines of code:
 
----
+```typescript
+import { AID } from "@/sdk";
 
-## 📡 REST API Reference
+// The robot registers itself automatically on startup!
+const session = await AID.autoEnroll({
+  token: "aid_enroll_YOUR_SECRET_TOKEN",
+  alias: "my-worker",
+  displayName: "Autonomous Worker Agent",
+  endpointUrl: "https://my-agent.com/api",
+  protocol: "a2a", // 'a2a' | 'mcp' | 'rest'
+});
 
-All endpoints support CORS and return standard JSON.
-
-| Endpoint | Method | Rate Limit | Description |
-| :--- | :---: | :---: | :--- |
-| `/:address` | `GET` | 120/min | Smart Route: ASCII passport for `curl`, Web UI for browsers |
-| `/api/v1/resolve/:address` | `GET` | 120/min | Resolve handle to permanent AID, endpoint, and trust verification |
-| `/api/v1/badge/:address` | `GET` | 300/min | Dynamic SVG status badge for GitHub READMEs |
-| `/api/v1/agents` | `GET` | 60/min | Filter agents with cursor pagination, category, protocol, and trust level |
-| `/api/v1/agents` | `POST` | 30/min | Register new agent (Community or Owner) |
-| `/api/v1/agents/inspect` | `POST` | 60/min | SSRF-hardened Agent Card inspector |
-| `/api/v1/namespaces/:slug/verify` | `GET` | 60/min | Get DNS TXT challenge instructions |
-| `/api/v1/namespaces/:slug/verify` | `POST` | 20/min | Execute live DNS check via Google (8.8.8.8) and Cloudflare (1.1.1.1) |
-| `/api/v1/verify/challenge` | `POST` | 60/min | Issue cryptographic challenge nonce (5-min TTL) |
-| `/api/v1/verify/signature` | `POST` | 60/min | Verify Ed25519 signature & burn nonce |
-| `/api/v1/attest/passport` | `GET` | 120/min | Get AID Root Authority public key |
-| `/api/v1/attest/passport` | `POST` | 60/min | Issue offline-verifiable Agent Passport Token (AVC v1) |
-| `/api/v1/attest/receipts` | `GET` | 120/min | Get DuckDB dynamic reputation metrics |
-| `/api/v1/attest/receipts` | `POST` | 120/min | Ingest & verify Proof of Execution (PoE) receipt |
-| `/api/v1/enrollments/tokens` | `POST` | 30/min | Generate authorized enrollment token for automated agents |
+console.log("My Address:", session.address); // e.g. my-worker@acme
+console.log("My Permanent AID:", session.aid);
+```
 
 ---
 
-## 💻 Local Development
+## 📡 Quick API Cheat Sheet
 
-### 1. Clone & Install
+All APIs return clean JSON and support CORS.
+
+| What you want to do | Method | Endpoint |
+| :--- | :---: | :--- |
+| **Inspect agent via Terminal** | `GET` | `/:address` |
+| **Get agent endpoints & trust data** | `GET` | `/api/v1/resolve/:address` |
+| **Get SVG badge for GitHub README** | `GET` | `/api/v1/badge/:address` |
+| **Search directory with filters** | `GET` | `/api/v1/agents?category=Coding&limit=10` |
+| **Register new agent** | `POST` | `/api/v1/agents` |
+| **Verify domain via DNS TXT** | `POST` | `/api/v1/namespaces/:slug/verify` |
+| **Get 0.8ms Offline Passport (AVC)** | `POST` | `/api/v1/attest/passport` |
+| **Submit Proof of Execution receipt** | `POST` | `/api/v1/attest/receipts` |
+
+---
+
+## 💻 Running Locally
+
 ```bash
+# 1. Clone repository
 git clone https://github.com/Ledpa7/AID.git
 cd AID
+
+# 2. Install dependencies
 npm install
-```
 
-### 2. Run Test Suites
-```bash
-# Security Shield & Attack Defense Tests (67 tests)
+# 3. Run all 142 automated tests
 npx tsx scripts/test-security.ts
-
-# Progressive Trust Ladder Tests (27 tests)
 npx tsx scripts/test-trust-ladder.ts
-
-# Agent Self-Enrollment & Sybil Defense Tests (21 tests)
 npx tsx scripts/test-phase3.ts
-
-# Attestation & DuckDB Reputation Tests (27 tests)
 npx tsx scripts/test-attestation.ts
-```
 
-### 3. Production Build
-```bash
-npm run build
-npm run start
+# 4. Start local development server
+npm run dev
 ```
 
 ---
 
 ## 📄 License
 
-MIT © 2026 AID Protocol Foundation. Distributed under the MIT License.
+MIT © 2026 AID Protocol Foundation. Free and open source for everyone.
