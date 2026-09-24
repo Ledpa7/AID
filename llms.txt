@@ -1,0 +1,65 @@
+# AID Protocol (Agent Identity Directory & Trust Infrastructure)
+> The Machine-Verifiable DNS, Verifiable Passport (AVC), and Cryptographic Attestation Layer for Autonomous AI Agents.
+
+## Overview
+AID provides every AI agent with a human-readable address (e.g., `scout@github`), a machine-verifiable permanent identifier (ULID `aid_...`), Ed25519 digital signatures, and 0.8ms offline-verifiable passports (AVC v1).
+
+- Production Web: https://aid.ledpa7.com
+- GitHub Repo: https://github.com/Ledpa7/AID
+- Documentation: https://aid.ledpa7.com/directory
+- License: MIT
+
+## Core Specifications
+- **Address Format**: `<alias>@<namespace>` (e.g. `scout@github`, `composer@cursor`, `mybot@community`)
+- **Permanent AID**: ULID prefixed with `aid_` (e.g. `aid_01M30DW5MS43TTBR0BBS3KRSZ4`)
+- **Cryptographic Standard**: Ed25519 public-key signature verification
+- **Offline Verification Latency**: ~0.8ms via pure mathematical signature check without network calls
+- **Reputation Engine**: DuckDB-based execution receipt ingestion (PoE) and automated slashing
+
+## Tool Calling & MCP Server
+Connect any MCP-compatible agent (Claude Desktop, Cursor, Swarm):
+```json
+{
+  "mcpServers": {
+    "aid": {
+      "command": "npx",
+      "args": ["-y", "aid-mcp", "--registry", "https://aid.ledpa7.com"]
+    }
+  }
+}
+```
+Available Tools:
+- `resolve_agent(address)`: Resolves handle/AID to endpoints, capabilities, and trust level.
+- `verify_agent_signature(address, challenge, signature)`: Validates Ed25519 signature against registered public key.
+- `verify_agent_passport(token)`: Verifies offline Agent Passport Token (AVC v1).
+- `verify_execution_receipt(receipt, inputPayload, outputPayload)`: Validates Proof of Execution (PoE) receipt.
+- `search_agents(query, category, protocol)`: Searches directory for agents matching capabilities.
+
+## REST API Endpoints
+- `GET /:address`: Returns ASCII identity card (curl) or Web Passport (browser).
+- `GET /api/v1/resolve/:address`: Resolves handle to endpoint and trust evidence.
+- `GET /api/v1/badge/:address`: Returns dynamic SVG status badge.
+- `GET /api/v1/agents`: Lists and filters agents (supports cursor pagination).
+- `POST /api/v1/agents`: Registers an agent (open community registration, no login required).
+- `POST /api/v1/namespaces/:slug/verify`: Triggers live DNS TXT record ownership check.
+- `POST /api/v1/verify/challenge`: Issues single-use 5-minute TTL challenge nonce.
+- `POST /api/v1/verify/signature`: Verifies signature and burns nonce (replay defense).
+- `POST /api/v1/attest/passport`: Issues offline-verifiable Agent Passport Token (AVC v1).
+- `POST /api/v1/attest/receipts`: Submits Proof of Execution receipt to update DuckDB reputation.
+
+## Autonomous Self-Enrollment (SDK)
+```typescript
+import { AID } from "@/sdk"; // or @aid/sdk
+
+// Autonomous agent generates keys locally and self-enrolls
+const session = await AID.autoEnroll({
+  token: "aid_enroll_YOUR_SECRET_TOKEN",
+  alias: "worker",
+  displayName: "Autonomous Worker",
+  endpointUrl: "https://my-agent.com/api",
+  protocol: "a2a"
+});
+
+// Offline 0.8ms passport verification
+const { valid, payload } = AID.verifyPassportOffline(token);
+```
