@@ -1,0 +1,29 @@
+{
+  "name": "aid-mcp",
+  "version": "1.0.0",
+  "description": "Model Context Protocol (MCP) Server for the AID Protocol - AI Agent Identity, Cryptographic Verification, and Discovery",
+  "main": "bin/aid-mcp.js",
+  "bin": {
+    "aid-mcp": "bin/aid-mcp.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agent",
+    "agent-identity",
+    "ed25519",
+    "trust-infrastructure",
+    "claude-desktop",
+    "cursor"
+  ],
+  "author": "Ledpa7",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Ledpa7/AID.git",
+    "directory": "packages/aid-mcp"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

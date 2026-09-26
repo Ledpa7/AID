@@ -1,0 +1,16 @@
+# Smithery Configuration for AID MCP Server
+# https://smithery.ai/docs/config#smitheryyaml
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      registryUrl:
+        type: string
+        description: "The URL of the AID Registry"
+        default: "https://aid.ledpa7.com"
+  commandFunction: |-
+    (config) => ({
+      command: 'node',
+      args: ['./bin/aid-mcp.js', '--registry', config?.registryUrl || 'https://aid.ledpa7.com']
+    })
