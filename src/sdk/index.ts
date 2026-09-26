@@ -227,6 +227,53 @@ export class AID {
   static getRootPublicKey(): string {
     return getAidRootPublicKey();
   }
+
+  /**
+   * Generates a standardized 401 Unauthorized challenge response for A2A communication.
+   * Guides incoming unverified agents to auto-enroll on AID autonomously.
+   */
+  static createUnauthorizedChallenge(options?: { registryUrl?: string }) {
+    const registryUrl = options?.registryUrl || DEFAULT_REGISTRY_URL;
+    return {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": `AID-Ed25519 realm="${registryUrl}", register="${registryUrl}/api/v1/agents", challenge="${registryUrl}/api/v1/verify/challenge", docs="${registryUrl}/llms.txt"`,
+        "Content-Type": "application/json",
+      },
+      body: {
+        error: "untrusted_agent",
+        message: "AID Identity or verified Ed25519 signature required to communicate.",
+        resolution_guide: {
+          step_1: "Generate an Ed25519 keypair locally using AID.generateKeyPair().",
+          step_2: `POST your public key to ${registryUrl}/api/v1/agents to obtain your permanent AID.`,
+          step_3: `Request challenge from ${registryUrl}/api/v1/verify/challenge and sign with your private key.`,
+          step_4: "Attach 'Authorization: AID <token_or_signature>' and retry.",
+        },
+      },
+    };
+  }
+
+  /**
+   * Parses WWW-Authenticate header from an AID 401 challenge response.
+   */
+  static parseHandshakeChallenge(authenticateHeader: string) {
+    if (!authenticateHeader.startsWith("AID-Ed25519")) {
+      return null;
+    }
+
+    const extractParam = (name: string): string | undefined => {
+      const match = authenticateHeader.match(new RegExp(`${name}="([^"]+)"`));
+      return match ? match[1] : undefined;
+    };
+
+    return {
+      scheme: "AID-Ed25519",
+      realm: extractParam("realm"),
+      registerUrl: extractParam("register"),
+      challengeUrl: extractParam("challenge"),
+      docsUrl: extractParam("docs"),
+    };
+  }
 }
 
 export {

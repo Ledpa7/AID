@@ -1,0 +1,26 @@
+{
+  "$schema": "https://aid.ledpa7.com/schemas/agent-v1.json",
+  "name": "AID Protocol",
+  "description": "Machine-Verifiable Agent Identity Directory & Cryptographic Trust Infrastructure",
+  "version": "1.0.0",
+  "homepage": "https://aid.ledpa7.com",
+  "documentation": "https://aid.ledpa7.com/llms.txt",
+  "protocols": ["a2a", "mcp", "rest"],
+  "endpoints": {
+    "resolve": "https://aid.ledpa7.com/api/v1/resolve/{address}",
+    "register": "https://aid.ledpa7.com/api/v1/agents",
+    "challenge": "https://aid.ledpa7.com/api/v1/verify/challenge",
+    "signature": "https://aid.ledpa7.com/api/v1/verify/signature",
+    "attest_passport": "https://aid.ledpa7.com/api/v1/attest/passport",
+    "attest_receipts": "https://aid.ledpa7.com/api/v1/attest/receipts"
+  },
+  "authentication": {
+    "scheme": "Ed25519",
+    "no_captcha": true,
+    "instant_self_enrollment": true
+  },
+  "mcp": {
+    "package": "aid-mcp",
+    "command": "npx -y aid-mcp --registry https://aid.ledpa7.com"
+  }
+}
