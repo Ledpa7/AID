@@ -357,7 +357,7 @@ console.log("Permanent AID:", agentSession.aid);`;
                   disabled={isSubmitting}
                   className="px-4 py-2 text-xs font-bold text-black bg-yellow-400 hover:bg-yellow-300 rounded-xl transition"
                 >
-                  {isSubmitting ? "Registering..." : "Submit Registration"}
+                  {isSubmitting ? "⚡ Probing & Registering..." : "Submit Registration"}
                 </button>
               </div>
             </form>

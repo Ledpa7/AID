@@ -239,3 +239,97 @@ export async function safeFetchAgentCard(urlStr: string, maxRedirects = 3): Prom
 
   return { ok: false, error: "Failed to fetch agent card within redirect limits." };
 }
+
+export interface LivenessCheckResult {
+  alive: boolean;
+  status?: number;
+  latencyMs?: number;
+  error?: string;
+}
+
+/**
+ * Validates whether an agent endpoint is currently reachable and responding to network probes.
+ * Blocks SSRF (localhost / private cloud IPs), dead domains, connection refused, and 404/5xx errors.
+ * Accepts 2xx, 3xx, 401 (challenge required), 403, and 405 (method not allowed) as valid proof of life.
+ */
+export async function validateEndpointLiveness(urlStr: string, timeoutMs = 4000): Promise<LivenessCheckResult> {
+  const startTime = performance.now();
+  let parsed: URL;
+  try {
+    parsed = new URL(urlStr);
+  } catch {
+    return { alive: false, error: "Invalid URL string format." };
+  }
+
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    return { alive: false, error: "Protocol must be HTTP or HTTPS." };
+  }
+
+  // SSRF Guard Check: Disallow private/internal IPs & localhosts
+  const hostValidation = await validateHostIsSafe(parsed.hostname);
+  if (!hostValidation.safe) {
+    return { alive: false, error: hostValidation.error || "Access to internal, loopback, or cloud metadata endpoints is prohibited." };
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(urlStr, {
+      method: "GET",
+      signal: controller.signal,
+      redirect: "follow",
+      headers: {
+        "User-Agent": "AID-Liveness-Probe/1.0 (+https://aid.ledpa7.com)",
+        Accept: "application/json, text/plain, */*",
+      },
+    });
+    clearTimeout(timer);
+    const latencyMs = Math.round(performance.now() - startTime);
+
+    // 200~399, 401 (Auth / A2A Challenge), 403, 405 (Method not allowed e.g. POST-only endpoint)
+    const isAliveStatus =
+      (res.status >= 200 && res.status < 400) ||
+      res.status === 401 ||
+      res.status === 403 ||
+      res.status === 405;
+
+    if (!isAliveStatus) {
+      if (res.status === 404) {
+        return {
+          alive: false,
+          status: res.status,
+          latencyMs,
+          error: `Endpoint not found (HTTP 404). Please verify that the target URL path exists.`,
+        };
+      }
+      return {
+        alive: false,
+        status: res.status,
+        latencyMs,
+        error: `Endpoint returned error status code (HTTP ${res.status}).`,
+      };
+    }
+
+    return {
+      alive: true,
+      status: res.status,
+      latencyMs,
+    };
+  } catch (err: any) {
+    clearTimeout(timer);
+    const latencyMs = Math.round(performance.now() - startTime);
+    if (err.name === "AbortError" || err.message?.includes("aborted")) {
+      return {
+        alive: false,
+        latencyMs,
+        error: `Endpoint probe timed out after ${timeoutMs / 1000}s. Server did not respond.`,
+      };
+    }
+    return {
+      alive: false,
+      latencyMs,
+      error: `Failed to connect to endpoint: ${err.message || "Connection refused or unreachable."}`,
+    };
+  }
+}

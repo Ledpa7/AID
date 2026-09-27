@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AIDStore } from "@/lib/store";
 import { checkRateLimit, getClientIp, createRateLimitResponse } from "@/lib/ratelimit";
+import { validateEndpointLiveness } from "@/lib/ssrf";
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,18 +40,32 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const clientIp = getClientIp(request);
-    const rateCheck = checkRateLimit(`register:${clientIp}`, { limit: 30, windowMs: 60 * 1000 });
+    const rateCheck = checkRateLimit(`register:${clientIp}`, { limit: 15, windowMs: 60 * 1000 });
     if (!rateCheck.success) {
       return createRateLimitResponse(rateCheck);
     }
 
     const body = await request.json();
-    const { namespace, alias, displayName, description, endpointUrl, protocol, publicKey, cardSnapshot, registeredBy } = body;
+    const { namespace, alias, displayName, description, endpointUrl, protocol, publicKey, cardSnapshot, registeredBy, endpoints } = body;
 
+    const targetUrl = endpointUrl || (Array.isArray(endpoints) && endpoints[0]?.url);
+    const targetProtocol = protocol || (Array.isArray(endpoints) && endpoints[0]?.protocol) || "a2a";
 
-    if (!namespace || !alias || !displayName || !endpointUrl) {
+    if (!namespace || !alias || !displayName || !targetUrl) {
       return NextResponse.json(
         { error: "Missing required fields: namespace, alias, displayName, endpointUrl" },
+        { status: 400 }
+      );
+    }
+
+    // ⚡ Real-Time Liveness & Anti-Spam Gatekeeper Check
+    const liveness = await validateEndpointLiveness(targetUrl);
+    if (!liveness.alive) {
+      return NextResponse.json(
+        {
+          error: `[Liveness Probe Failed] 에이전트 엔드포인트 서버가 응답하지 않습니다: ${liveness.error}`,
+          liveness,
+        },
         { status: 400 }
       );
     }
@@ -60,14 +75,14 @@ export async function POST(request: NextRequest) {
       alias,
       displayName,
       description,
-      endpointUrl,
-      protocol: protocol || "a2a",
+      endpointUrl: targetUrl,
+      protocol: targetProtocol,
       publicKey,
       cardSnapshot,
       registeredBy: registeredBy === "COMMUNITY" ? "COMMUNITY" : "OWNER",
     });
 
-    return NextResponse.json(newAgent, { status: 201 });
+    return NextResponse.json({ ...newAgent, initialLiveness: liveness }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
