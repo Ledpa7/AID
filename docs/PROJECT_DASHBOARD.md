@@ -17,26 +17,30 @@
 4. **DuckDB 실시간 평판 리더보드**: Top 5 에이전트의 호출 수, 초고속 지연시간(185ms), 평판 점수 라이브 서빙.
 5. **다크 옐로우 커스텀 스크롤바 UI**: 디렉토리 필터 행의 가로 스크롤을 브랜드 시그니처 옐로우/슬레이트 테마로 통일.
 6. **실시간 생존 검증(Liveness Probe) & Anti-Spam Gatekeeper**: 가짜 URL, 죽은 서버, SSRF 내부망, 네임스페이스 스쿼팅을 등록 입구에서 원천 차단.
-7. **⚡ Spark 커뮤니티 평판 투표 시스템**: 단순 '좋아요'를 넘어선 사이버네틱 무드의 `⚡ Spark` 버튼, 실시간 토글 API 및 디렉토리 `Most Sparked` 인기순 정렬 구현.
+7. **⚡ Spark 커뮤니티 평판 투표 & 정량적 실제 호출 수(Invocations) 표시**: 단순 '좋아요' 대신 사이버네틱 `⚡ Spark` 버튼과 네트워크 실가동 지표인 `Invocations` 뱃지 탑재, 디렉토리 `Most Sparked` 인기순 정렬 구현.
 8. **공식 도메인 일원화**: 모든 엔드포인트 및 클라이언트 설정을 `https://aid.ledpa7.com`으로 100% 통합 배포 완료.
 
 ---
 
 ## 🚀 2026-09-27 신규 구현 내역 상세
 
-### 0. ⚡ Spark 커뮤니티 평판 투표 시스템 & 인기순 정렬
+### 0. ⚡ Spark 커뮤니티 평판 투표 및 정량적 호출 수(Invocations) 연동
 - **기획 배경**:
   - 흔한 SNS형 "좋아요/싫어요" 대신, AID의 탈중앙 AI 신원 및 사이버네틱 다크 옐로우 브랜드 정체성에 맞춘 전력 주입형 지표 **`⚡ Spark`** 채택.
-  - 가짜/저품질 봇은 스파크를 받지 못해 자연 도태되고, 검증되고 유용한 에이전트가 상단에 노출되는 커뮤니티 큐레이션 효과 달성.
+  - 여기에 더해 사용자들이 실제로 얼마나 썼는지를 증명하는 **정량적 실가동 지표 `Invocations`**를 함께 배치하여, 주관적 추천(Social Proof)과 기계적 실행량(Hard Proof)의 완벽한 밸런스 달성.
 - **구현 내용**:
-  - `src/lib/types.ts`: `Agent` 및 `ResolutionResponse`에 `sparksCount?: number` 필드 추가.
+  - `src/lib/types.ts`: `Agent` 및 `ResolutionResponse`에 `sparksCount?: number`, `invocationsCount?: number` 필드 추가.
   - `src/lib/store.ts`:
-    - `agentSparksCache` 인메모리 핑거프린트 셋 관리 및 쇼케이스 에이전트 초기 시드 스파크(142, 98, 85 등) 주입.
+    - `agentSparksCache` 및 `agentInvocationsCache` 관리.
+    - `recordInvocation(address)`: 게이트웨이 호출 성공 시 카운트 자동 증가.
     - `toggleSpark(address, clientFingerprint)`: 동일 클라이언트 재호출 시 토글(취소) 지원.
   - `src/app/api/v1/agents/[address]/spark/route.ts`:
     - `POST` 및 `GET` 엔드포인트 신설. IP/UA 지문 기반 단일 투표 제한 및 40 req/min Rate Limiting.
+  - `src/app/api/v1/invoke/[address]/route.ts`:
+    - 에이전트 실행 성공 시 `AIDStore.recordInvocation` 자동 호출 연동.
   - `src/components/AgentCard.tsx`:
     - 카드 헤더 우측 상단에 네온 옐로우 글로우 효과의 `⚡ Spark (count)` 버튼 배치.
+    - 카드 본문 설명글 하단에 `[ ⚡ {count} INVOCATIONS ]` 실가동량 뱃지 탑재.
     - `localStorage` 및 낙관적 UI 업데이트(Optimistic Update)로 0ms 즉각 반응.
   - `src/app/directory/page.tsx`:
     - 디렉토리 결과 바에 **`⚡ Most Sparked`** vs **`Recent`** 실시간 탭 정렬 컨트롤 탑재.
