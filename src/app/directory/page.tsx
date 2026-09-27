@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Search, PlusCircle, RefreshCw, Cpu, CheckCircle2, ChevronDown } from "lucide-react";
+import { Search, PlusCircle, RefreshCw, Cpu, CheckCircle2, ChevronDown, Zap } from "lucide-react";
 import { Agent, Namespace } from "@/lib/types";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -20,6 +20,7 @@ export default function DirectoryPage() {
   const [selectedProtocol, setSelectedProtocol] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMinTrust, setSelectedMinTrust] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<"sparks" | "recent">("sparks");
 
   // Modals
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -314,8 +315,8 @@ export default function DirectoryPage() {
           )}
         </div>
 
-        {/* Results Counter */}
-        <div className="flex items-center justify-between text-xs text-slate-500 mb-6 px-1">
+        {/* Results Counter & Sort Controls */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-500 mb-6 px-1">
           <span>
             Showing <strong className="text-slate-200">{agents.length}</strong> of{" "}
             <strong className="text-slate-200">{totalCount}</strong> registered agents
@@ -325,16 +326,49 @@ export default function DirectoryPage() {
               </span>
             )}
           </span>
-          {isFiltered && (
-            <button onClick={handleResetFilters} className="text-yellow-400 hover:underline">
-              Reset filters
-            </button>
-          )}
+
+          <div className="flex items-center gap-3">
+            {/* Sort Toggle: Sparks vs Recent */}
+            <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-xs">
+              <button
+                type="button"
+                onClick={() => setSortBy("sparks")}
+                className={`px-2.5 py-1 rounded-md font-semibold transition flex items-center gap-1 ${
+                  sortBy === "sparks"
+                    ? "bg-yellow-400 text-slate-950 font-bold shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <Zap className="w-3 h-3" />
+                <span>Most Sparked</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setSortBy("recent")}
+                className={`px-2.5 py-1 rounded-md font-semibold transition ${
+                  sortBy === "recent"
+                    ? "bg-slate-800 text-white font-bold"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                Recent
+              </button>
+            </div>
+
+            {isFiltered && (
+              <button onClick={handleResetFilters} className="text-yellow-400 hover:underline">
+                Reset filters
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 3-Column Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {agents.map((agent) => (
+          {(sortBy === "sparks"
+            ? [...agents].sort((a, b) => (b.sparksCount ?? 0) - (a.sparksCount ?? 0))
+            : agents
+          ).map((agent) => (
             <AgentCard
               key={agent.id}
               agent={agent}

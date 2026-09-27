@@ -70,6 +70,7 @@ export interface Agent {
   securityAudit?: SecurityAuditReport;
   trustLadder?: TrustLadder;
   healthStatus?: AgentHealthStatus;
+  sparksCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -159,6 +160,7 @@ export interface ResolutionResponse {
   securityAudit?: SecurityAuditReport;
   trustLadder?: TrustLadder;
   healthStatus?: AgentHealthStatus;
+  sparksCount?: number;
   resolvedAt: string;
 }
 

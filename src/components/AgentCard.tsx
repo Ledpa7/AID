@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShieldCheck, ShieldAlert, Shield, CheckCircle2, Copy, Check, ExternalLink, Users, Play } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Shield, CheckCircle2, Copy, Check, ExternalLink, Users, Play, Zap } from "lucide-react";
 import { Agent } from "@/lib/types";
 import { calculateTrustLadder } from "@/lib/trust";
 
@@ -14,6 +14,63 @@ interface AgentCardProps {
 export default function AgentCard({ agent, onInvoke }: AgentCardProps) {
   const [copiedHandle, setCopiedHandle] = useState(false);
   const [copiedAid, setCopiedAid] = useState(false);
+  const [sparksCount, setSparksCount] = useState(agent.sparksCount ?? 0);
+  const [isSparked, setIsSparked] = useState(false);
+  const [isSparking, setIsSparking] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("aid_sparked_agents");
+      if (stored) {
+        const list: string[] = JSON.parse(stored);
+        if (list.includes(agent.primaryAddress.toLowerCase())) {
+          setIsSparked(true);
+        }
+      }
+    } catch {}
+  }, [agent.primaryAddress]);
+
+  const handleSpark = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isSparking) return;
+
+    setIsSparking(true);
+    const nextSparked = !isSparked;
+    const nextCount = nextSparked ? sparksCount + 1 : Math.max(0, sparksCount - 1);
+
+    // Optimistic Update
+    setIsSparked(nextSparked);
+    setSparksCount(nextCount);
+
+    try {
+      // LocalStorage update
+      const stored = localStorage.getItem("aid_sparked_agents");
+      let list: string[] = stored ? JSON.parse(stored) : [];
+      const key = agent.primaryAddress.toLowerCase();
+      if (nextSparked) {
+        if (!list.includes(key)) list.push(key);
+      } else {
+        list = list.filter((k) => k !== key);
+      }
+      localStorage.setItem("aid_sparked_agents", JSON.stringify(list));
+
+      // Server Sync
+      const res = await fetch(`/api/v1/agents/${encodeURIComponent(agent.primaryAddress)}/spark`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setSparksCount(data.sparksCount);
+      }
+    } catch {
+      // Rollback
+      setIsSparked(!nextSparked);
+      setSparksCount(sparksCount);
+    } finally {
+      setIsSparking(false);
+    }
+  };
 
   const handleCopy = (text: string, type: "handle" | "aid", e?: React.MouseEvent) => {
     if (e) {
@@ -144,9 +201,28 @@ export default function AgentCard({ agent, onInvoke }: AgentCardProps) {
               </span>
             )}
           </div>
-          <span className={`uppercase text-[10px] font-mono px-2 py-0.5 rounded border shrink-0 ${agent.isLimited ? "bg-red-950/40 text-red-300 border-red-800/40" : "bg-slate-800 text-slate-300 border-slate-700"}`}>
-            {agent.isLimited ? "Closed API" : primaryProtocol}
-          </span>
+
+          <div className="flex items-center gap-2 shrink-0">
+            {/* ⚡ Spark Button */}
+            <button
+              type="button"
+              onClick={handleSpark}
+              disabled={isSparking}
+              title={isSparked ? "Remove Spark" : "Spark this agent with energy!"}
+              className={`px-2.5 py-1 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 border shrink-0 cursor-pointer ${
+                isSparked
+                  ? "bg-yellow-400/20 text-yellow-300 border-yellow-400 shadow-[0_0_12px_rgba(250,204,21,0.3)] scale-105"
+                  : "bg-slate-900/90 text-slate-400 border-slate-800 hover:border-yellow-400/60 hover:text-yellow-400 hover:bg-slate-850"
+              }`}
+            >
+              <Zap className={`w-3.5 h-3.5 transition-colors ${isSparked ? "fill-yellow-400 text-yellow-400" : "text-slate-400"}`} />
+              <span>{sparksCount}</span>
+            </button>
+
+            <span className={`uppercase text-[10px] font-mono px-2 py-1 rounded border shrink-0 ${agent.isLimited ? "bg-red-950/40 text-red-300 border-red-800/40" : "bg-slate-800 text-slate-300 border-slate-700"}`}>
+              {agent.isLimited ? "Closed API" : primaryProtocol}
+            </span>
+          </div>
         </div>
 
         {/* Permanent AID Chip with 1-Click Copy & Direct Link */}

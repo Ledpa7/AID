@@ -56,6 +56,20 @@ const healthStatusCache = new Map<string, AgentHealthStatus>();
 // Global in-memory cache for domain challenge tokens
 const domainChallengeCache = new Map<string, string>();
 
+// Global in-memory cache for agent sparks: agentAddress -> Set of clientFingerprints
+const agentSparksCache = new Map<string, Set<string>>();
+
+// Initial seed sparks for showcase agents to give life to directory
+const defaultSeedSparks: Record<string, number> = {
+  "scout@github": 142,
+  "composer@cursor": 98,
+  "search@perplexity": 85,
+  "registry@aid": 120,
+  "sentinel@aid": 76,
+  "ui@v0": 64,
+  "livebot@community": 19,
+};
+
 // Pure fallback store for offline/local development
 
 const globalStore: {
@@ -564,6 +578,7 @@ export class AIDStore {
           isLimited,
           limitedReason: isLimited ? "No public API/MCP endpoint supported (profile metadata only)" : undefined,
           registeredBy: isCommunity ? "COMMUNITY" : "OWNER",
+          sparksCount: this.getSparksCount(`${d.default_alias}@${nsSlug}`),
           createdAt: d.created_at,
           updatedAt: d.updated_at,
         };
@@ -572,6 +587,7 @@ export class AIDStore {
     return globalStore.agents.map((a) => ({
       ...a,
       category: a.category || extractCategory(a.defaultAlias, a.description),
+      sparksCount: this.getSparksCount(a.primaryAddress),
     }));
   }
 
@@ -758,11 +774,59 @@ export class AIDStore {
           securityAudit: agent.securityAudit || auditAgentSecurity(agent),
         }),
       healthStatus: agent.healthStatus || healthStatusCache.get(agent.primaryAddress) || healthStatusCache.get(agent.id),
+      sparksCount: this.getSparksCount(agent.primaryAddress),
       resolvedAt: new Date().toISOString(),
     };
+  }
 
+  static getSparksCount(address: string): number {
+    const key = (address || "").toLowerCase().trim();
+    if (!agentSparksCache.has(key)) {
+      const seedCount = defaultSeedSparks[key] ?? Math.max(3, (key.length * 7) % 25);
+      const initialSet = new Set<string>();
+      for (let i = 0; i < seedCount; i++) {
+        initialSet.add(`seed_anon_${i}`);
+      }
+      agentSparksCache.set(key, initialSet);
+    }
+    return agentSparksCache.get(key)!.size;
+  }
 
+  static hasClientSparked(address: string, clientFingerprint: string): boolean {
+    const key = (address || "").toLowerCase().trim();
+    const set = agentSparksCache.get(key);
+    return !!set && set.has(clientFingerprint);
+  }
 
+  static async toggleSpark(
+    address: string,
+    clientFingerprint: string
+  ): Promise<{ sparked: boolean; sparksCount: number }> {
+    const agent = await this.resolveAddress(address);
+    if (!agent) {
+      throw new Error(`Agent '${address}' not found.`);
+    }
+
+    const key = agent.address.toLowerCase().trim();
+    if (!agentSparksCache.has(key)) {
+      this.getSparksCount(key);
+    }
+
+    const set = agentSparksCache.get(key)!;
+    let sparked = false;
+
+    if (set.has(clientFingerprint)) {
+      set.delete(clientFingerprint);
+      sparked = false;
+    } else {
+      set.add(clientFingerprint);
+      sparked = true;
+    }
+
+    return {
+      sparked,
+      sparksCount: set.size,
+    };
   }
 
   static async resolveAddress(address: string): Promise<ResolutionResponse | null> {
