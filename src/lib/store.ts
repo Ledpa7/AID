@@ -592,8 +592,8 @@ export class AIDStore {
           isLimited,
           limitedReason: isLimited ? "No public API/MCP endpoint supported (profile metadata only)" : undefined,
           registeredBy: isCommunity ? "COMMUNITY" : "OWNER",
-          sparksCount: this.getSparksCount(`${d.default_alias}@${nsSlug}`),
-          invocationsCount: this.getInvocationsCount(`${d.default_alias}@${nsSlug}`),
+          sparksCount: d.sparks_count !== undefined && d.sparks_count !== null ? Number(d.sparks_count) : this.getSparksCount(`${d.default_alias}@${nsSlug}`),
+          invocationsCount: d.invocations_count !== undefined && d.invocations_count !== null ? Number(d.invocations_count) : this.getInvocationsCount(`${d.default_alias}@${nsSlug}`),
           createdAt: d.created_at,
           updatedAt: d.updated_at,
         };
@@ -810,6 +810,21 @@ export class AIDStore {
     const current = this.getInvocationsCount(key);
     const next = current + 1;
     agentInvocationsCache.set(key, next);
+
+    // Sync to Supabase in background if available
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      const [aliasPart] = key.split("@");
+      if (aliasPart) {
+        Promise.resolve(
+          supabase
+            .from("aid_agents")
+            .update({ invocations_count: next, updated_at: new Date().toISOString() })
+            .eq("default_alias", aliasPart)
+        ).catch((err: any) => console.error("Supabase invocation sync error:", err));
+      }
+    }
+
     return next;
   }
 
@@ -857,9 +872,25 @@ export class AIDStore {
       sparked = true;
     }
 
+    const count = set.size;
+
+    // Sync to Supabase in background if available
+    const supabase = this.getSupabaseClient();
+    if (supabase) {
+      const [aliasPart] = key.split("@");
+      if (aliasPart) {
+        Promise.resolve(
+          supabase
+            .from("aid_agents")
+            .update({ sparks_count: count, updated_at: new Date().toISOString() })
+            .eq("default_alias", aliasPart)
+        ).catch((err: any) => console.error("Supabase spark sync error:", err));
+      }
+    }
+
     return {
       sparked,
-      sparksCount: set.size,
+      sparksCount: count,
     };
   }
 

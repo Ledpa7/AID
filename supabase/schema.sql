@@ -128,11 +128,28 @@ CREATE TABLE IF NOT EXISTS aid_enrollment_tokens (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- 11. Agent Sparks (Community Reputation & Upvoting)
+CREATE TABLE IF NOT EXISTS aid_agent_sparks (
+    id BIGSERIAL PRIMARY KEY,
+    agent_id TEXT NOT NULL REFERENCES aid_agents(id) ON DELETE CASCADE,
+    client_fingerprint TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(agent_id, client_fingerprint)
+);
+
+-- Upgrade aid_agents table with persistent metrics
+ALTER TABLE aid_agents ADD COLUMN IF NOT EXISTS sparks_count INT NOT NULL DEFAULT 0;
+ALTER TABLE aid_agents ADD COLUMN IF NOT EXISTS invocations_count INT NOT NULL DEFAULT 0;
+
 -- Create Indexes for High-Performance Resolution
 CREATE INDEX IF NOT EXISTS idx_aid_agent_aliases_full_address ON aid_agent_aliases(full_address);
 CREATE INDEX IF NOT EXISTS idx_aid_agents_namespace ON aid_agents(namespace_id);
+CREATE INDEX IF NOT EXISTS idx_aid_agents_sparks ON aid_agents(sparks_count DESC);
+CREATE INDEX IF NOT EXISTS idx_aid_agents_invocations ON aid_agents(invocations_count DESC);
+CREATE INDEX IF NOT EXISTS idx_aid_agent_sparks_lookup ON aid_agent_sparks(agent_id, client_fingerprint);
 CREATE INDEX IF NOT EXISTS idx_aid_endpoints_agent ON aid_agent_endpoints(agent_id);
 CREATE INDEX IF NOT EXISTS idx_aid_identity_events_agent ON aid_identity_events(agent_id);
 CREATE INDEX IF NOT EXISTS idx_aid_enrollment_tokens_hash ON aid_enrollment_tokens(token_hash);
 CREATE INDEX IF NOT EXISTS idx_aid_enrollment_tokens_ns ON aid_enrollment_tokens(namespace_id);
+
 
