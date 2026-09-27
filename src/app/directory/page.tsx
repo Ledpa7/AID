@@ -10,6 +10,7 @@ import AgentCard from "@/components/AgentCard";
 import RegisterAgentModal from "@/components/RegisterAgentModal";
 import McpSetupModal from "@/components/McpSetupModal";
 import InvokeAgentModal from "@/components/InvokeAgentModal";
+import LeaderboardWidget from "@/components/LeaderboardWidget";
 
 export default function DirectoryPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -175,6 +176,15 @@ export default function DirectoryPage() {
             </div>
           </div>
         </div>
+
+        {/* Live DuckDB Attestation Leaderboard Widget */}
+        <LeaderboardWidget
+          agents={agents}
+          onInvokeAgent={(agent) => {
+            setInvokingAgent(agent);
+            setShowInvokeModal(true);
+          }}
+        />
 
         {/* Filter & Search Toolbar */}
         <div className="bg-[#0f172a]/60 border border-slate-800/80 rounded-2xl p-4 sm:p-5 mb-8 backdrop-blur-sm space-y-4">
