@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import AgentCard from "@/components/AgentCard";
 import RegisterAgentModal from "@/components/RegisterAgentModal";
 import McpSetupModal from "@/components/McpSetupModal";
+import InvokeAgentModal from "@/components/InvokeAgentModal";
 
 export default function DirectoryPage() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -19,6 +20,12 @@ export default function DirectoryPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedMinTrust, setSelectedMinTrust] = useState<string>("all");
 
+  // Modals
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showMcpModal, setShowMcpModal] = useState(false);
+  const [showInvokeModal, setShowInvokeModal] = useState(false);
+  const [invokingAgent, setInvokingAgent] = useState<Agent | null>(null);
+
   // Pagination states
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -26,9 +33,6 @@ export default function DirectoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // Modals
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [showMcpModal, setShowMcpModal] = useState(false);
 
   // Initial load of namespaces
   useEffect(() => {
@@ -321,7 +325,14 @@ export default function DirectoryPage() {
         {/* 3-Column Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {agents.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} />
+            <AgentCard
+              key={agent.id}
+              agent={agent}
+              onInvoke={(a) => {
+                setInvokingAgent(a);
+                setShowInvokeModal(true);
+              }}
+            />
           ))}
         </div>
 
@@ -382,6 +393,11 @@ export default function DirectoryPage() {
       />
 
       <McpSetupModal isOpen={showMcpModal} onClose={() => setShowMcpModal(false)} />
+      <InvokeAgentModal
+        agent={invokingAgent}
+        isOpen={showInvokeModal}
+        onClose={() => setShowInvokeModal(false)}
+      />
     </div>
   );
 }

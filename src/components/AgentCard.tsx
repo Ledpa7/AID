@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, ShieldAlert, Shield, CheckCircle2, Copy, Check, ExternalLink, Users } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Shield, CheckCircle2, Copy, Check, ExternalLink, Users, Play } from "lucide-react";
 import { Agent } from "@/lib/types";
 import { calculateTrustLadder } from "@/lib/trust";
 
-
 interface AgentCardProps {
   agent: Agent;
+  onInvoke?: (agent: Agent) => void;
 }
 
-export default function AgentCard({ agent }: AgentCardProps) {
+export default function AgentCard({ agent, onInvoke }: AgentCardProps) {
   const [copiedHandle, setCopiedHandle] = useState(false);
   const [copiedAid, setCopiedAid] = useState(false);
 
@@ -184,32 +184,37 @@ export default function AgentCard({ agent }: AgentCardProps) {
         </p>
       </div>
 
-      {/* Footer: View Passport & Copy Handle Buttons */}
-      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-3">
+      {/* Footer: View Passport, Run & Copy Handle Buttons */}
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between gap-2">
         <Link
           href={`/${encodeURIComponent(agent.primaryAddress)}`}
-          className="flex-1 py-2 px-3 rounded-xl bg-yellow-400/10 hover:bg-yellow-400 text-yellow-400 hover:text-black font-semibold text-xs border border-yellow-400/30 transition flex items-center justify-center gap-1.5"
+          className="flex-1 py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs border border-slate-800 transition flex items-center justify-center gap-1.5"
         >
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>View Passport</span>
-          <ExternalLink className="w-3 h-3 ml-0.5" />
+          <ShieldCheck className="w-3.5 h-3.5 text-yellow-400" />
+          <span>Passport</span>
+          <ExternalLink className="w-3 h-3 ml-0.5 opacity-60" />
         </Link>
+
+        {onInvoke && (
+          <button
+            onClick={() => onInvoke(agent)}
+            className="py-2 px-3 rounded-xl bg-yellow-400 hover:bg-yellow-300 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-1 shadow-md shadow-yellow-400/10 cursor-pointer"
+            title="Invoke agent directly via AID Gateway"
+          >
+            <Play className="w-3 h-3 fill-current" />
+            <span>Run</span>
+          </button>
+        )}
 
         <button
           onClick={() => handleCopy(agent.primaryAddress, "handle")}
-          className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-300 hover:text-white transition flex items-center gap-1.5"
+          className="py-2 px-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs text-slate-400 hover:text-white transition flex items-center gap-1"
           title="Copy Handle"
         >
           {copiedHandle ? (
-            <>
-              <Check className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-emerald-400">Copied!</span>
-            </>
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
           ) : (
-            <>
-              <Copy className="w-3.5 h-3.5 text-slate-400" />
-              <span>Copy</span>
-            </>
+            <Copy className="w-3.5 h-3.5 text-slate-400" />
           )}
         </button>
       </div>
