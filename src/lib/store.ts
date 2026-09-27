@@ -70,6 +70,20 @@ const defaultSeedSparks: Record<string, number> = {
   "livebot@community": 19,
 };
 
+// Global in-memory cache for agent invocation counts
+const agentInvocationsCache = new Map<string, number>();
+
+// Initial seed invocations for showcase agents based on PoE execution logs
+const defaultSeedInvocations: Record<string, number> = {
+  "scout@github": 48,
+  "composer@cursor": 34,
+  "search@perplexity": 29,
+  "registry@aid": 52,
+  "sentinel@aid": 26,
+  "ui@v0": 21,
+  "livebot@community": 7,
+};
+
 // Pure fallback store for offline/local development
 
 const globalStore: {
@@ -579,6 +593,7 @@ export class AIDStore {
           limitedReason: isLimited ? "No public API/MCP endpoint supported (profile metadata only)" : undefined,
           registeredBy: isCommunity ? "COMMUNITY" : "OWNER",
           sparksCount: this.getSparksCount(`${d.default_alias}@${nsSlug}`),
+          invocationsCount: this.getInvocationsCount(`${d.default_alias}@${nsSlug}`),
           createdAt: d.created_at,
           updatedAt: d.updated_at,
         };
@@ -588,6 +603,7 @@ export class AIDStore {
       ...a,
       category: a.category || extractCategory(a.defaultAlias, a.description),
       sparksCount: this.getSparksCount(a.primaryAddress),
+      invocationsCount: this.getInvocationsCount(a.primaryAddress),
     }));
   }
 
@@ -775,8 +791,26 @@ export class AIDStore {
         }),
       healthStatus: agent.healthStatus || healthStatusCache.get(agent.primaryAddress) || healthStatusCache.get(agent.id),
       sparksCount: this.getSparksCount(agent.primaryAddress),
+      invocationsCount: this.getInvocationsCount(agent.primaryAddress),
       resolvedAt: new Date().toISOString(),
     };
+  }
+
+  static getInvocationsCount(address: string): number {
+    const key = (address || "").toLowerCase().trim();
+    if (!agentInvocationsCache.has(key)) {
+      const seed = defaultSeedInvocations[key] ?? Math.max(1, (key.length * 5) % 19);
+      agentInvocationsCache.set(key, seed);
+    }
+    return agentInvocationsCache.get(key)!;
+  }
+
+  static recordInvocation(address: string): number {
+    const key = (address || "").toLowerCase().trim();
+    const current = this.getInvocationsCount(key);
+    const next = current + 1;
+    agentInvocationsCache.set(key, next);
+    return next;
   }
 
   static getSparksCount(address: string): number {

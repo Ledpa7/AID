@@ -262,6 +262,9 @@ export async function POST(
       console.error("DuckDB PoE ingestion error:", err)
     );
 
+    // Record real-time invocation in AIDStore
+    AIDStore.recordInvocation(resolution.address);
+
     return NextResponse.json({
       success: isSuccess,
       isSimulation,

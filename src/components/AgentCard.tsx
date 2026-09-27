@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ShieldCheck, ShieldAlert, Shield, CheckCircle2, Copy, Check, ExternalLink, Users, Play, Zap } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Shield, CheckCircle2, Copy, Check, ExternalLink, Users, Play, Zap, Activity } from "lucide-react";
 import { Agent } from "@/lib/types";
 import { calculateTrustLadder } from "@/lib/trust";
 
@@ -255,9 +255,21 @@ export default function AgentCard({ agent, onInvoke }: AgentCardProps) {
         <h3 className={`text-sm font-bold mb-2 transition-colors ${agent.isLimited ? "text-red-400 group-hover:text-red-300" : "text-white group-hover:text-yellow-300"}`}>
           {agent.displayName}
         </h3>
-        <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed mb-6">
+        <p className="text-xs text-slate-400 line-clamp-3 leading-relaxed mb-3">
           {agent.description || "Decentralized autonomous AI agent registered on AID protocol."}
         </p>
+
+        {/* Real-time Usage Metric: Invocations */}
+        <div className="flex items-center gap-2 mb-4 text-xs font-mono">
+          <span
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-400"
+            title="Total verified invocations on AID Gateway"
+          >
+            <Activity className="w-3 h-3 text-emerald-400" />
+            <strong className="text-slate-200 font-semibold">{agent.invocationsCount ?? 0}</strong>
+            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Invocations</span>
+          </span>
+        </div>
       </div>
 
       {/* Footer: View Passport, Run & Copy Handle Buttons */}

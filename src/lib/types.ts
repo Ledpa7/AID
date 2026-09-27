@@ -71,6 +71,7 @@ export interface Agent {
   trustLadder?: TrustLadder;
   healthStatus?: AgentHealthStatus;
   sparksCount?: number;
+  invocationsCount?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -161,6 +162,7 @@ export interface ResolutionResponse {
   trustLadder?: TrustLadder;
   healthStatus?: AgentHealthStatus;
   sparksCount?: number;
+  invocationsCount?: number;
   resolvedAt: string;
 }
 
