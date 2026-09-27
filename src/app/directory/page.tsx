@@ -210,7 +210,7 @@ export default function DirectoryPage() {
             </div>
 
             {/* Protocol Filters */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 text-xs shrink-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1 md:pb-0 text-xs shrink-0">
               <span className="text-slate-500 font-medium mr-1 hidden sm:inline">Protocol:</span>
               {[
                 { id: "all", label: "All" },
@@ -234,7 +234,7 @@ export default function DirectoryPage() {
           </div>
 
           {/* Category Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-800/60 text-xs">
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pt-2 pb-1.5 border-t border-slate-800/60 text-xs">
             <span className="text-slate-500 font-medium mr-1 shrink-0">Category:</span>
             {[
               { id: "all", label: "All" },
@@ -259,7 +259,7 @@ export default function DirectoryPage() {
           </div>
 
           {/* Trust Level Filter Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-slate-800/60 text-xs">
+          <div className="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pt-2 pb-1.5 border-t border-slate-800/60 text-xs">
             <span className="text-slate-500 font-medium mr-1 shrink-0">Trust Level:</span>
             {[
               { id: "all", label: "All Levels" },
@@ -284,7 +284,7 @@ export default function DirectoryPage() {
 
           {/* Namespaces Filter */}
           {namespaces.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-slate-800/60 text-xs">
+            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pt-2 pb-2 border-t border-slate-800/60 text-xs">
               <span className="text-slate-500 font-medium mr-1 shrink-0">Namespaces:</span>
               <button
                 onClick={() => setSelectedNamespace("all")}
