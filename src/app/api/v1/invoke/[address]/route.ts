@@ -3,6 +3,7 @@ import { AIDStore } from "@/lib/store";
 import { ingestExecutionReceipt } from "@/lib/analytics";
 import { hashPayload, getAidRootKeyPair } from "@/lib/attestation";
 import { validateHostIsSafe } from "@/lib/ssrf";
+import { checkRateLimit } from "@/lib/ratelimit";
 import { ulid } from "ulid";
 import crypto from "crypto";
 
@@ -96,6 +97,16 @@ export async function POST(
   const startTime = Date.now();
   const rawAddress = decodeURIComponent(params.address || "").trim();
 
+  // Rate Limiting: 60 requests per minute per IP to prevent proxy abuse & DDoS
+  const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+  const rateLimit = checkRateLimit(`invoke_${clientIp}`, { limit: 60, windowMs: 60 * 1000 });
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: "Too many invocation requests. Rate limit exceeded (60 req/min)." },
+      { status: 429, headers: { "Retry-After": rateLimit.retryAfterSeconds.toString() } }
+    );
+  }
+
   try {
     const resolution = await AIDStore.resolveAddress(rawAddress);
     if (!resolution) {
@@ -171,6 +182,7 @@ export async function POST(
 
       const response = await fetch(absoluteTargetUrl, {
         method: "POST",
+        redirect: "error", // Defend against Open Redirect SSRF bypass to internal IPs
         headers: {
           "Content-Type": "application/json",
           "X-AID-Gateway": "v1",
@@ -180,6 +192,12 @@ export async function POST(
         signal: controller.signal,
       });
       clearTimeout(timeoutId);
+
+      // Defend against memory exhaustion (512KB payload ceiling)
+      const contentLength = response.headers.get("content-length");
+      if (contentLength && parseInt(contentLength, 10) > 512 * 1024) {
+        throw new Error("Target endpoint payload exceeds 512KB security ceiling.");
+      }
 
       responseData = await response.json().catch(() => ({}));
       isSuccess = response.ok;
