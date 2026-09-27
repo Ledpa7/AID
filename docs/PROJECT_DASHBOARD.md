@@ -17,11 +17,31 @@
 4. **DuckDB 실시간 평판 리더보드**: Top 5 에이전트의 호출 수, 초고속 지연시간(185ms), 평판 점수 라이브 서빙.
 5. **다크 옐로우 커스텀 스크롤바 UI**: 디렉토리 필터 행의 가로 스크롤을 브랜드 시그니처 옐로우/슬레이트 테마로 통일.
 6. **실시간 생존 검증(Liveness Probe) & Anti-Spam Gatekeeper**: 가짜 URL, 죽은 서버, SSRF 내부망, 네임스페이스 스쿼팅을 등록 입구에서 원천 차단.
-7. **공식 도메인 일원화**: 모든 엔드포인트 및 클라이언트 설정을 `https://aid.ledpa7.com`으로 100% 통합 배포 완료.
+7. **⚡ Spark 커뮤니티 평판 투표 시스템**: 단순 '좋아요'를 넘어선 사이버네틱 무드의 `⚡ Spark` 버튼, 실시간 토글 API 및 디렉토리 `Most Sparked` 인기순 정렬 구현.
+8. **공식 도메인 일원화**: 모든 엔드포인트 및 클라이언트 설정을 `https://aid.ledpa7.com`으로 100% 통합 배포 완료.
 
 ---
 
 ## 🚀 2026-09-27 신규 구현 내역 상세
+
+### 0. ⚡ Spark 커뮤니티 평판 투표 시스템 & 인기순 정렬
+- **기획 배경**:
+  - 흔한 SNS형 "좋아요/싫어요" 대신, AID의 탈중앙 AI 신원 및 사이버네틱 다크 옐로우 브랜드 정체성에 맞춘 전력 주입형 지표 **`⚡ Spark`** 채택.
+  - 가짜/저품질 봇은 스파크를 받지 못해 자연 도태되고, 검증되고 유용한 에이전트가 상단에 노출되는 커뮤니티 큐레이션 효과 달성.
+- **구현 내용**:
+  - `src/lib/types.ts`: `Agent` 및 `ResolutionResponse`에 `sparksCount?: number` 필드 추가.
+  - `src/lib/store.ts`:
+    - `agentSparksCache` 인메모리 핑거프린트 셋 관리 및 쇼케이스 에이전트 초기 시드 스파크(142, 98, 85 등) 주입.
+    - `toggleSpark(address, clientFingerprint)`: 동일 클라이언트 재호출 시 토글(취소) 지원.
+  - `src/app/api/v1/agents/[address]/spark/route.ts`:
+    - `POST` 및 `GET` 엔드포인트 신설. IP/UA 지문 기반 단일 투표 제한 및 40 req/min Rate Limiting.
+  - `src/components/AgentCard.tsx`:
+    - 카드 헤더 우측 상단에 네온 옐로우 글로우 효과의 `⚡ Spark (count)` 버튼 배치.
+    - `localStorage` 및 낙관적 UI 업데이트(Optimistic Update)로 0ms 즉각 반응.
+  - `src/app/directory/page.tsx`:
+    - 디렉토리 결과 바에 **`⚡ Most Sparked`** vs **`Recent`** 실시간 탭 정렬 컨트롤 탑재.
+
+---
 
 ### 1. 실시간 생존 검증 (Liveness Probe Gatekeeper) & 스팸 방어벽
 - **취약점 배경**: 인증 없이 가짜 도메인(`https://fake-trash-domain.xyz`)이나 죽은 서버를 무작위로 수천 개 등록하여 디렉토리를 도배하거나, 내부망 IP를 찔러보는 SSRF 공격 가능성 제거 필요.
