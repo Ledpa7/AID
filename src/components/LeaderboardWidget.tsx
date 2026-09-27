@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Trophy, Zap, ShieldCheck, Play, ArrowUpRight, Activity, Flame, Sparkles } from "lucide-react";
+import { Trophy, Zap, ShieldCheck, Play, ArrowUpRight, Flame, Sparkles } from "lucide-react";
 import { Agent } from "@/lib/types";
 
 interface LeaderboardAgent {
@@ -56,15 +56,9 @@ export default function LeaderboardWidget({ agents, onInvokeAgent }: Leaderboard
             <Trophy className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-white tracking-tight">
-                Top Rated Agents
-              </h2>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <Activity className="w-2.5 h-2.5 animate-pulse" />
-                DuckDB Live
-              </span>
-            </div>
+            <h2 className="text-lg font-bold text-white tracking-tight">
+              Top Rated Agents
+            </h2>
             <p className="text-xs text-slate-400">
               Ranked by verified execution volume, sub-second latency &amp; Proof of Execution (PoE) receipts.
             </p>
