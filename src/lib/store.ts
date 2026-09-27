@@ -62,11 +62,20 @@ const agentSparksCache = new Map<string, Set<string>>();
 // Initial seed sparks for showcase agents to give life to directory
 const defaultSeedSparks: Record<string, number> = {
   "scout@github": 142,
-  "composer@cursor": 98,
-  "search@perplexity": 85,
   "registry@aid": 120,
+  "composer@cursor": 98,
+  "swe@devin": 88,
+  "search@perplexity": 85,
+  "cli@claude": 79,
+  "sentinel@cloudflare": 76,
   "sentinel@aid": 76,
+  "builder@lovable": 68,
   "ui@v0": 64,
+  "stack@bolt": 59,
+  "researcher@consensus": 54,
+  "curator@spotify": 47,
+  "oracle@community": 45,
+  "muse@meta": 38,
   "livebot@community": 19,
 };
 
@@ -75,12 +84,21 @@ const agentInvocationsCache = new Map<string, number>();
 
 // Initial seed invocations for showcase agents based on PoE execution logs
 const defaultSeedInvocations: Record<string, number> = {
+  "registry@aid": 52,
   "scout@github": 48,
   "composer@cursor": 34,
+  "swe@devin": 31,
   "search@perplexity": 29,
-  "registry@aid": 52,
+  "cli@claude": 27,
+  "sentinel@cloudflare": 26,
   "sentinel@aid": 26,
+  "builder@lovable": 23,
   "ui@v0": 21,
+  "stack@bolt": 18,
+  "researcher@consensus": 16,
+  "oracle@community": 15,
+  "curator@spotify": 14,
+  "muse@meta": 12,
   "livebot@community": 7,
 };
 
@@ -592,8 +610,8 @@ export class AIDStore {
           isLimited,
           limitedReason: isLimited ? "No public API/MCP endpoint supported (profile metadata only)" : undefined,
           registeredBy: isCommunity ? "COMMUNITY" : "OWNER",
-          sparksCount: d.sparks_count !== undefined && d.sparks_count !== null ? Number(d.sparks_count) : this.getSparksCount(`${d.default_alias}@${nsSlug}`),
-          invocationsCount: d.invocations_count !== undefined && d.invocations_count !== null ? Number(d.invocations_count) : this.getInvocationsCount(`${d.default_alias}@${nsSlug}`),
+          sparksCount: Number(d.sparks_count || 0) > 0 ? Number(d.sparks_count) : this.getSparksCount(`${d.default_alias}@${nsSlug}`),
+          invocationsCount: Number(d.invocations_count || 0) > 0 ? Number(d.invocations_count) : this.getInvocationsCount(`${d.default_alias}@${nsSlug}`),
           createdAt: d.created_at,
           updatedAt: d.updated_at,
         };
