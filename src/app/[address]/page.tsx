@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     agent?.description ||
     `Verified AI Agent Identity for ${resolution.address}. Cryptographic Ed25519 key, domain trust evidence, and communication endpoints.`;
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aid-beryl.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aid.ledpa7.com";
   const pageUrl = `${baseUrl}/${encodeURIComponent(resolution.address)}`;
 
   return {
@@ -104,7 +104,7 @@ export default async function PassportPage({ params }: PageProps) {
     notFound();
   }
 
-  const domainUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aid-beryl.vercel.app";
+  const domainUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aid.ledpa7.com";
 
   return <PassportView agent={agent} resolution={resolution} domainUrl={domainUrl} />;
 }

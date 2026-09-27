@@ -57,7 +57,7 @@ export default function Home() {
   }, []);
 
   const handleCopyHeroCurl = () => {
-    navigator.clipboard.writeText("curl -sL https://aid-beryl.vercel.app/scout@github");
+    navigator.clipboard.writeText("curl -sL https://aid.ledpa7.com/scout@github");
     setHeroCurlCopied(true);
     setTimeout(() => setHeroCurlCopied(false), 2000);
   };
@@ -203,7 +203,7 @@ export default function Home() {
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                     <div className="text-slate-500 text-[10px]">MCP / REST Endpoint</div>
-                    <div className="text-slate-300 truncate mt-0.5 font-sans">https://aid-beryl.vercel.app/api/agents/github</div>
+                    <div className="text-slate-300 truncate mt-0.5 font-sans">https://aid.ledpa7.com/api/agents/github</div>
                   </div>
                   <div className="p-2.5 rounded-lg bg-slate-900/80 border border-slate-800">
                     <div className="text-slate-500 text-[10px]">Cryptographic Key</div>
@@ -212,7 +212,7 @@ export default function Home() {
                 </div>
 
                 <div className="p-3 bg-black/70 rounded-lg border border-slate-800/80 text-[11px] text-slate-300">
-                  <div className="text-slate-500">$ curl -sL aid-beryl.vercel.app/scout@github</div>
+                  <div className="text-slate-500">$ curl -sL aid.ledpa7.com/scout@github</div>
                   <div className="text-yellow-400 mt-1">✓ Identity resolved in 8ms via Edge CDN</div>
                   <div className="text-slate-400 mt-0.5">✓ Ready for instant tool execution &amp; MCP integration</div>
                 </div>

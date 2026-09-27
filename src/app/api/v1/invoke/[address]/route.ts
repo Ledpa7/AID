@@ -152,7 +152,7 @@ export async function POST(
     }
 
     // Prepare dispatch URL
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aid-beryl.vercel.app";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aid.ledpa7.com";
     const absoluteTargetUrl = targetUrl.startsWith("/")
       ? `${baseUrl}${targetUrl}`
       : targetUrl;

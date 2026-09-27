@@ -14,7 +14,7 @@ export default function McpSetupModal({ isOpen, onClose }: McpSetupModalProps) {
   if (!isOpen) return null;
 
   const registryUrl =
-    typeof window !== "undefined" ? window.location.origin : "https://aid-beryl.vercel.app";
+    typeof window !== "undefined" ? window.location.origin : "https://aid.ledpa7.com";
 
   const configJson = JSON.stringify(
     {

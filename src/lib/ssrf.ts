@@ -194,7 +194,7 @@ export async function safeFetchAgentCard(urlStr: string, maxRedirects = 3): Prom
         redirect: "manual", // Do NOT automatically follow redirects!
         headers: {
           Accept: "application/json",
-          "User-Agent": "AID-Inspector/0.2 (+https://aid-beryl.vercel.app)",
+          "User-Agent": "AID-Inspector/0.2 (+https://aid.ledpa7.com)",
         },
       });
     } catch (err: any) {

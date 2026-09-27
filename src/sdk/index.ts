@@ -67,7 +67,7 @@ export interface VerifySignatureOptions {
 const DEFAULT_REGISTRY_URL =
   typeof process !== "undefined" && process.env?.AID_REGISTRY_URL
     ? process.env.AID_REGISTRY_URL.replace(/\/$/, "")
-    : "https://aid-beryl.vercel.app";
+    : "https://aid.ledpa7.com";
 
 export class AID {
   /**

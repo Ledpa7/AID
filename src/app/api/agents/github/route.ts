@@ -6,7 +6,7 @@ interface GitHubAgentRequest {
 }
 
 const GITHUB_HEADERS: Record<string, string> = {
-  "User-Agent": "AID-Scout-Agent/1.0 (https://aid-beryl.vercel.app; scout@github)",
+  "User-Agent": "AID-Scout-Agent/1.0 (https://aid.ledpa7.com; scout@github)",
   Accept: "application/vnd.github.v3+json",
 };
 

@@ -1,7 +1,7 @@
 # 🚀 AID Project Dashboard & Development Changelog
 
 > **Project**: AID (Agent Identity Directory & Trust Infrastructure)  
-> **Status**: Production Live (`https://aid.ledpa7.com` / `https://aid-beryl.vercel.app`)  
+> **Status**: Production Live (`https://aid.ledpa7.com`)  
 > **Repository**: [Ledpa7/AID](https://github.com/Ledpa7/AID)  
 > **Last Updated**: 2026-09-25
 

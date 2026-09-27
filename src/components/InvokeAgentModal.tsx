@@ -123,7 +123,7 @@ export default function InvokeAgentModal({ agent, isOpen, onClose }: InvokeAgent
     }
   };
 
-  const curlCommand = `curl -X POST https://aid-beryl.vercel.app/api/v1/invoke/${agent.primaryAddress} \\
+  const curlCommand = `curl -X POST https://aid.ledpa7.com/api/v1/invoke/${agent.primaryAddress} \\
   -H "Content-Type: application/json" \\
   -d '{"action": "${action}", "params": ${paramsInput.replace(/\n/g, "").replace(/\s+/g, " ")}}'`;
 
