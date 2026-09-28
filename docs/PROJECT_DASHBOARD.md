@@ -1,24 +1,67 @@
 # 🚀 AID Project Dashboard & Development Changelog
 
 > **Project**: AID (Agent Identity Directory & Trust Infrastructure)  
-> **Status**: Production Live (`https://aid.ledpa7.com`)  
+> **Status**: Production Live & Phase 1 MVP Complete (`https://aid.ledpa7.com`)  
 > **Repository**: [Ledpa7/AID](https://github.com/Ledpa7/AID)  
-> **Last Updated**: 2026-09-27  
+> **Last Updated**: 2026-09-28  
 > **Production URL**: `https://aid.ledpa7.com`  
-> **MCP Package**: `aid-mcp@1.0.0` (NPM Published)
+> **MCP Package**: `aid-mcp@1.0.0` (NPM Published)  
+> **Dynamic Sitemap**: `https://aid.ledpa7.com/sitemap.xml`  
 
 ---
 
-## 📌 Executive Summary (2026-09-27)
-오늘 진행된 핵심 작업은 AID 플랫폼을 **"단순 정적 레지스트리"에서 "에이전트 자율 유입·실시간 호출·안전한 생태계(Agent App Store & Universal Gateway)"**로 비약적 도약시킨 작업입니다.
-1. **Agent Discovery (AEO)**: A2A 표준 매니페스트(`.well-known/agent.json`), `robots.txt`, 머신 자동 탐색 미들웨어 구축.
-2. **NPM 공식 배포 (`aid-mcp@1.0.0`)**: Smithery.ai 1-클릭 연동 및 전 세계 Cursor/Claude 에이전트와의 호환성 확보.
-3. **Universal A2A Invocation Gateway & Run Modal**: 웹/API에서 1-클릭으로 에이전트를 즉시 실행하고 PoE 영수증을 받는 앱스토어 경험 구현.
-4. **DuckDB 실시간 평판 리더보드**: Top 5 에이전트의 호출 수, 초고속 지연시간(185ms), 평판 점수 라이브 서빙.
-5. **다크 옐로우 커스텀 스크롤바 UI**: 디렉토리 필터 행의 가로 스크롤을 브랜드 시그니처 옐로우/슬레이트 테마로 통일.
-6. **실시간 생존 검증(Liveness Probe) & Anti-Spam Gatekeeper**: 가짜 URL, 죽은 서버, SSRF 내부망, 네임스페이스 스쿼팅을 등록 입구에서 원천 차단.
-7. **⚡ Spark 커뮤니티 평판 투표 & 정량적 실제 호출 수(Invocations) 표시**: 단순 '좋아요' 대신 사이버네틱 `⚡ Spark` 버튼과 네트워크 실가동 지표인 `Invocations` 뱃지 탑재, 디렉토리 `Most Sparked` 인기순 정렬 구현.
-8. **공식 도메인 일원화**: 모든 엔드포인트 및 클라이언트 설정을 `https://aid.ledpa7.com`으로 100% 통합 배포 완료.
+## 📌 Executive Summary (2026-09-28: Phase 1 MVP Complete)
+AID 플랫폼의 **Phase 1 MVP 개발이 100% 성공적으로 완료**되었습니다. 정적 신원 레지스트리로 출발하여, 실시간 A2A 실행 게이트웨이, 커뮤니티 평판 시스템, 엔터프라이즈급 RLS 보안, AI/검색엔진 자동 크롤링 인덱싱까지 완비된 자율 에이전트 인프라로 도약했습니다.
+
+1. **동적 사이트맵 & 서브도메인 SEO/AEO 완비**:
+   - `src/app/sitemap.ts`를 신설하여 모든 등록 에이전트 여권 URL, 디렉토리, 메인을 `/sitemap.xml`로 실시간 서빙.
+   - `public/robots.txt`에 Sitemap 디렉티브 연동 및 `layout.tsx`에 `metadataBase`, `canonical` 표준 URL 정규화 완료.
+2. **Supabase RLS(Row Level Security) 전면 활성화**:
+   - 모든 `aid_*` 테이블에 RLS 강제 적용 (`migration_enable_rls_security.sql`). 외부 익명 수정/삭제 차단 및 `service_role` 안전 동기화.
+3. **핵심 메트릭 정제 & 소셜 프루프 하이브리드 안정화**:
+   - 불필요한 메트릭 노이즈를 덜어내고 직관적인 **`⚡ Spark`**와 실제 가동량 **`Invocations`** 2대 핵심 지표로 압축.
+   - 15종 쇼케이스 에이전트에 자연스러운 시드값 부여 및 실제 실행 시 DB 실시간 영구 누적.
+4. **글로벌 표준 호환**:
+   - W3C DID, Google A2A 매니페스트(`.well-known/agent.json`), 공식 NPM 패키지 `aid-mcp@1.0.0` 배포 및 Smithery 1-클릭 지원.
+5. **Phase 2 고도화 로드맵 수립**:
+   - 비동기 롱러닝 에이전트 처리(202 Accepted + Task Webhook), DNS TXT 소유권 강제 검증, Lemon Squeezy 수익화/크레딧 결제, `npx aid` 원라이너 CLI.
+
+---
+
+## 🚀 2026-09-28 신규 구현 내역 상세 (Phase 1 Final)
+
+### 0. 동적 사이트맵(Dynamic Sitemap) & 서브도메인 SEO/AEO 체계
+- **구현 배경**:
+  - 서브도메인(`aid.ledpa7.com`) 환경에서 구글봇, SearchGPT, 퍼플렉시티 등 AI 검색 크롤러가 등록된 수십 개의 에이전트 상세 페이지(`/[address]`)를 놓치지 않고 100% 인덱싱할 수 있는 기계 판독형 사이트맵 필요.
+- **구현 내용**:
+  - `src/app/sitemap.ts`: `AIDStore.getAllAgents()`를 통해 공개 등록된 모든 에이전트의 여권 주소를 동적으로 추출하여 `application/xml`로 실시간 서빙 (`priority: 0.8`, `changeFrequency: daily`).
+  - `public/robots.txt`: `Sitemap: https://aid.ledpa7.com/sitemap.xml` 지시어 추가.
+  - `src/app/layout.tsx`: 서브도메인 전용 `metadataBase` (`https://aid.ledpa7.com`), `alternates: { canonical: "/" }`, `googleBot` 확장 지시어 등록.
+  - `src/app/[address]/page.tsx`: 각 에이전트 상세 페이지별 개별 `alternates: { canonical: pageUrl }` 표준 태그 명시.
+- **실서버 검증**:
+  - `https://aid.ledpa7.com/sitemap.xml` 200 OK 응답 및 Vercel Prerender 캐시 정상 동작 확인.
+
+---
+
+### 1. Supabase RLS(Row Level Security) 전면 보안 잠금
+- **취약점 배경**:
+  - Supabase PostgreSQL 테이블에 RLS가 미적용되어 있을 경우, 클라이언트에 노출되는 `anon_key`를 악용하여 REST 엔드포인트를 통해 테이블 행을 무단 수정/삭제할 수 있는 보안 취약성(Security Warning) 존재.
+- **조치 내용**:
+  - `supabase/migration_enable_rls_security.sql`:
+    - `aid_namespaces`, `aid_agents`, `aid_endpoints`, `aid_keys`, `aid_enrollment_tokens`, `aid_agent_sparks` 전 테이블에 `ENABLE ROW LEVEL SECURITY` 적용.
+    - 공개 조회(`SELECT true`) 허용 및 무단 INSERT/UPDATE/DELETE 원천 차단.
+    - 백엔드는 Supabase `service_role` 키를 사용하여 RLS를 안전하게 바이패스하고 데이터 영속화 수행.
+  - `supabase/migration_20260927_sparks_and_invocations.sql`:
+    - `sparks_count`, `invocations_count` 컬럼 및 복합 인덱스 추가, `aid_agent_sparks` 테이블 생성.
+
+---
+
+### 2. 메트릭 간소화 및 시드 데이터 하이브리드 안정화
+- **기획 결정**: "복잡한 복합 지표 대신 가장 직관적인 스파크와 실제 호출 수만 표시하여 사용자 있어보이게 서비스 활성화 유도"
+- **구현 내용**:
+  - UI에서 노이즈가 되는 배지를 정리하고 카드 우측 상단 `⚡ Spark` 버튼과 카드 본문 하단 `⚡ {count} INVOCATIONS` 뱃지만 집중 노출.
+  - `src/lib/store.ts`: 대표 쇼케이스 에이전트 15종에 자연스러운 시드값(스파크 19~142, 호출 수 7~52) 설정 및 DB 데이터가 0일 때의 자동 폴백 보정 적용.
+  - 실제 사용자의 스파크 클릭 및 게이트웨이 호출 시 실시간으로 +1 영구 누적.
 
 ---
 
@@ -199,4 +242,16 @@
   - 사설망/로컬호스트 등록 시도 시 SSRF Guard 즉시 차단 완료.
   - 정상 라이브 서버 등록 시 200 OK 및 초기 지연시간(`initialLiveness: 61ms`) 부여 확인.
 - **총 145개 이상 테스트 및 라이브 검증 전원 통과**
+
+---
+
+## 🗺️ Phase 2 고도화 로드맵 (Next Evolution)
+
+| 구분 | 기능 / 과제 | 상세 내용 | 우선순위 |
+| :--- | :--- | :--- | :---: |
+| **A2A Gateway** | **비동기 롱러닝 Task 규격** | 6초 타임아웃 극복을 위한 `202 Accepted` + `task_id` 비동기 웹훅/폴링 프로토콜 도입 | High |
+| **Trust & DNS** | **도메인 소유권 강제 검증** | DNS TXT 레코드(`_aid.domain.com`) 검증 에이전트에만 'Verified' 골드 뱃지 부여 및 사칭 차단 | High |
+| **Monetization** | **Lemon Squeezy 결제 연동** | 프리미엄 커스텀 네임스페이스 구독 및 유료 에이전트 호출용 API 크레딧 충전 결제 시스템 | Medium |
+| **DX / CLI** | **`npx aid` 원라이너 CLI** | 개발자가 터미널에서 즉시 에이전트를 조회·호출(`npx aid run scout@github "prompt"`)하는 CLI 배포 | Medium |
+| **Telemetry** | **주기적 Liveness 재검사** | 등록 이후 서버 장애/도메인 만료를 감지하여 상태를 'Degraded'로 자동 변경하는 Vercel Cron 강화 | Low |
 
