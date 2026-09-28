@@ -5,3 +5,4 @@ Allow: /
 # Agent Discovery & LLM Context Documents
 Agent-Manifest: https://aid.ledpa7.com/.well-known/agent.json
 LLMs-Txt: https://aid.ledpa7.com/llms.txt
+Sitemap: https://aid.ledpa7.com/sitemap.xml
